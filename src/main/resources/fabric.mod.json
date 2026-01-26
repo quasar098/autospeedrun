@@ -1,0 +1,31 @@
+{
+	"schemaVersion": 1,
+	"id": "autospeedrun",
+	"version": "${version}",
+	"name": "AutoSpeedrun",
+	"description": "Automatic Speedruns API",
+	"authors": [
+		"quasar098"
+	],
+	"contact": {
+		"homepage": "https://quasar.name/",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/autospeedrun/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"name.quasar.autospeedrun.Autospeedrun"
+		]
+	},
+	"mixins": [
+		"autospeedrun.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.18.4",
+		"minecraft": "~1.16.1",
+		"java": ">=8",
+		"fabric": "*"
+	}
+}

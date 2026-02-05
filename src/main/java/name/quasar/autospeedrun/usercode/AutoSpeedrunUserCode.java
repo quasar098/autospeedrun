@@ -15,6 +15,9 @@ import static name.quasar.autospeedrun.Util.announceAction;
 
 public class AutoSpeedrunUserCode {
     int tickCount = 0;
+
+    final int F3_DEBUG_TEXT_COLOR = 0xffdddddd;
+
     //<editor-fold desc="int[][][] glyphChecks = { ... };">
     int[][][] glyphChecks = {
         {  // (space)
@@ -970,6 +973,43 @@ public class AutoSpeedrunUserCode {
     };
     //</editor-fold>
 
+    String readScreenString(int sx, int sy, int color) {
+        char decidedChar = '\0';
+        int decidedCharPixelsWidth = 0;
+        StringBuilder total = new StringBuilder();
+        for (int j = 0; j < 100; j++) {
+            charLoop : for (int i = 0; i < glyphChecks.length; i++) {
+                char c = (char) (i + 32);
+                for (int x = 0; x < glyphChecks[i][0].length; x++) {
+                    for (int y = 0; y < glyphChecks[i].length; y++) {
+                        boolean expected = glyphChecks[i][y][x] == 1;
+                        for (int d = 0; d < 4; d++) {
+                            int rgba = AutoSpeedrunApi.getScreenshotPixelRGBA(sx + x * 2 + (d % 2), sy + y * 2 + (d / 2));
+                            if ((rgba == color) ^ (expected)) {
+                                continue charLoop;
+                            }
+                        }
+                    }
+                }
+                decidedChar = c;
+                decidedCharPixelsWidth = c != ' ' ? glyphChecks[i][0].length * 2 : 8;
+            }
+            if (decidedChar == '\0') {
+//                    AutoSpeedrunApi.chatMessage("nothing found");
+                break;
+            } else {
+                if (decidedChar == ' ' && total.toString().endsWith(" ")) {
+                    total.deleteCharAt(total.length()-1);
+                    break;
+                }
+//                    AutoSpeedrunApi.chatMessage("char is '" + decidedChar + "', width " + decidedCharPixelsWidth);
+                total.append(decidedChar);
+                sx += decidedCharPixelsWidth;
+            }
+        }
+        return total.toString();
+    }
+
     public void init() {
         tickCount = 0;
     }
@@ -981,44 +1021,26 @@ public class AutoSpeedrunUserCode {
 
     public void debug(String debugStr) {
         String[] split = debugStr.split(" ");
-        if (split[0].equals("text")) {
+        if (split[0].equals("text")) {  // text x,y
             String[] pos = split[1].split(",");
             int sx = Integer.parseInt(pos[0]);
             int sy = Integer.parseInt(pos[1]);
-            char decidedChar = '\0';
-            int decidedCharPixelsWidth = 0;
-            StringBuilder total = new StringBuilder();
-            for (int j = 0; j < 100; j++) {
-                charLoop : for (int i = 0; i < glyphChecks.length; i++) {
-                    char c = (char) (i + 32);
-                    for (int x = 0; x < glyphChecks[i][0].length; x++) {
-                        for (int y = 0; y < glyphChecks[i].length; y++) {
-                            boolean expected = glyphChecks[i][y][x] == 1;
-                            for (int d = 0; d < 4; d++) {
-                                int rgba = AutoSpeedrunApi.getScreenshotPixelRGBA(sx + x * 2 + (d % 2), sy + y * 2 + (d / 2));
-                                if ((rgba == 0xffdddddd) ^ (expected)) {
-                                    continue charLoop;
-                                }
-                            }
-                        }
-                    }
-                    decidedChar = c;
-                    decidedCharPixelsWidth = c != ' ' ? glyphChecks[i][0].length * 2 : 8;
+            AutoSpeedrunApi.chatMessage("\"" + readScreenString(sx, sy, F3_DEBUG_TEXT_COLOR) + "\"");
+        } else if (split[0].equals("f3")) {  // f3
+            String previous = "";
+            int sy = 4;
+            for (int j = 0; j < 30; j++) {
+                String current =  readScreenString(4, sy, F3_DEBUG_TEXT_COLOR);
+                if (j == 0 && current.isEmpty()) {
+                    AutoSpeedrunApi.chatMessage("f3 is not open (probably)");
                 }
-                if (decidedChar == '\0') {
-//                    AutoSpeedrunApi.chatMessage("nothing found");
+                AutoSpeedrunApi.chatMessage(current);
+                if (previous.isEmpty() && current.isEmpty()) {
                     break;
-                } else {
-                    if (decidedChar == ' ' && total.toString().endsWith(" ")) {
-                        total.deleteCharAt(total.length()-1);
-                        break;
-                    }
-//                    AutoSpeedrunApi.chatMessage("char is '" + decidedChar + "', width " + decidedCharPixelsWidth);
-                    total.append(decidedChar);
-                    sx += decidedCharPixelsWidth;
                 }
+                sy += 18;
+                previous = current;
             }
-            AutoSpeedrunApi.chatMessage("\"" + total + "\"");
         }
     }
 }

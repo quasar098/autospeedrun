@@ -1,15 +1,14 @@
 package name.quasar.autospeedrun;
 
-import name.quasar.autospeedrun.usercode.SpeedrunUserCode;
+import name.quasar.autospeedrun.usercode.AutoSpeedrunUserCode;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.Minecraft;
 
 public class AutoSpeedrunTicker implements ClientTickEvents.EndTick {
-    SpeedrunUserCode userCode;
+    public AutoSpeedrunUserCode userCode;
 
-    public AutoSpeedrunTicker() {
-        userCode = new SpeedrunUserCode();
-        userCode.init();
+    public AutoSpeedrunTicker(AutoSpeedrunUserCode userCode) {
+        this.userCode = userCode;
     }
 
     @Override

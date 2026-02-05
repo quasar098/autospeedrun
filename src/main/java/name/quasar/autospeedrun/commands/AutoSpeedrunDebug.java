@@ -5,8 +5,6 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.context.StringRange;
-import com.mojang.brigadier.suggestion.IntegerSuggestion;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
@@ -19,6 +17,8 @@ import net.minecraft.network.chat.TextComponent;
 import java.util.HashMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+
+import static name.quasar.autospeedrun.AutoSpeedrun.userCode;
 
 public class AutoSpeedrunDebug {
     private static HashMap<String, Runnable> debugOptions = null;
@@ -64,6 +64,12 @@ public class AutoSpeedrunDebug {
                         .suggests(new AutoSpeedrunDebugSuggestionsProvider())
                         .executes(AutoSpeedrunDebug::execute).then(
                 Commands.argument("intarg", IntegerArgumentType.integer(1, 9999)).executes(AutoSpeedrunDebug::execute))));
+        dispatcher.register(
+            Commands.literal("userdebug").then(
+                Commands.argument("argument", StringArgumentType.greedyString())
+                        .executes(AutoSpeedrunDebug::userExecute)
+            )
+        );
     }
 
     public static int execute(CommandContext<CommandSourceStack> context) {
@@ -76,6 +82,17 @@ public class AutoSpeedrunDebug {
             debugOptionsWithIntArg.get(command).accept(intarg);
         } else {
             context.getSource().sendFailure(new TextComponent("Unknown subcommand '" + command + "'"));
+        }
+        return Command.SINGLE_SUCCESS;
+    }
+
+    public static int userExecute(CommandContext<CommandSourceStack> context) {
+        String argument = StringArgumentType.getString(context, "argument");
+
+        try {
+            userCode.debug(argument);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return Command.SINGLE_SUCCESS;
     }

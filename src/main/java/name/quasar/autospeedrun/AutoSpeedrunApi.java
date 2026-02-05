@@ -1,8 +1,10 @@
 package name.quasar.autospeedrun;
 
 import com.mojang.blaze3d.platform.NativeImage;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
+import net.minecraft.network.chat.TextComponent;
 import org.lwjgl.glfw.GLFW;
 
 import java.io.File;
@@ -56,21 +58,35 @@ public class AutoSpeedrunApi {
         }
     }
 
-    private static NativeImage img;
+    private volatile static NativeImage img = null;
 
     public static void screenshotAsync(int w, int h) {
         Minecraft mc = Minecraft.getInstance();
         mc.execute(() -> {
-            try (NativeImage img = Screenshot.takeScreenshot(w, h, mc.getMainRenderTarget())) {
-                AutoSpeedrunApi.img = img;
-                announceAction("Screenshot stored in memory");
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+            if (AutoSpeedrunApi.img != null) {
+                img.close();
             }
+            NativeImage img = Screenshot.takeScreenshot(w, h, mc.getMainRenderTarget());
+            AutoSpeedrunApi.img = img;
+            announceAction("Screenshot stored in memory");
         });
     }
 
     public static int getScreenshotPixelRGBA(int x, int y) {
         return img.getPixelRGBA(x, y);
+    }
+
+    public static void chatMessage(String str) {
+        if (Minecraft.getInstance().player != null) {
+            Minecraft.getInstance().player.displayClientMessage(
+                new TextComponent(str).withStyle(ChatFormatting.GREEN), false);
+        }
+    }
+
+    public static void subtitleMessage(String str) {
+        if (Minecraft.getInstance().player != null) {
+            Minecraft.getInstance().player.displayClientMessage(
+                    new TextComponent(str).withStyle(ChatFormatting.GREEN), true);
+        }
     }
 }

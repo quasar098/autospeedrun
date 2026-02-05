@@ -42,16 +42,17 @@ public class AutoSpeedrunDebug {
     public static void initDebugOptions() {
         if (debugOptions == null) {
             debugOptions = new HashMap<>();
-            debugOptions.put("f3_pie_tick_blockentities", AutoSpeedrunApi::showF3PieTickBlockEntities);
-            debugOptions.put("f3_pie_gamerenderer_entities", AutoSpeedrunApi::showF3PieGameRendererEntities);
-            debugOptions.put("f3_show_no_pie", AutoSpeedrunApi::showF3NoPie);
-            debugOptions.put("f3_hide_all", AutoSpeedrunApi::hideF3);
             debugOptions.put("announcer_show", Util::enableAnnouncer);
             debugOptions.put("announcer_hide", Util::disableAnnouncer);
+            debugOptions.put("screenshot1920x1080", () -> AutoSpeedrunApi.screenshotAsync(1920, 1080));
         }
         if (debugOptionsWithIntArg == null) {
             debugOptionsWithIntArg = new HashMap<>();
             debugOptionsWithIntArg.put("tap_key", AutoSpeedrunApi::tapKey);
+            debugOptionsWithIntArg.put("press_key", AutoSpeedrunApi::pressKey);
+            debugOptionsWithIntArg.put("release_key", AutoSpeedrunApi::releaseKey);
+            debugOptionsWithIntArg.put("mouse_move_x", (x) -> AutoSpeedrunApi.moveMouse(x, 0));
+            debugOptionsWithIntArg.put("mouse_move_y", (y) -> AutoSpeedrunApi.moveMouse(0, y));
         }
     }
 

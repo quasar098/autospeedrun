@@ -1,80 +1,76 @@
 package name.quasar.autospeedrun;
 
+import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.Screenshot;
 import org.lwjgl.glfw.GLFW;
 
-import java.lang.reflect.Field;
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 import static name.quasar.autospeedrun.Util.*;
 
 public class AutoSpeedrunApi {
-    public static void showF3PieTickBlockEntities() {
-        Minecraft mc = Minecraft.getInstance();
-        if (mc.player != null && mc.player.containerMenu != null) {
-            LOGGER.info(mc.player.containerMenu);
-            return;  // cannot access f3 when in inventory
-        }
-        announceAction("Showing F3 Pie Tick BlockEntities");
-        mc.options.renderDebug = true;
-        mc.options.renderDebugCharts = true;
-        mc.options.renderFpsChart = false;
-        // lowk kind of sketchy but whatever
-        try {
-            Field debugPathField = Minecraft.class.getDeclaredField("debugPath");
-            debugPathField.setAccessible(true);
-            debugPathField.set(mc, debugPathJoin("root", "tick", "level", "entities", "blockEntities"));
-            debugPathField.setAccessible(false);
-        } catch (NoSuchFieldException | IllegalAccessException ignored) { }
-    }
-
-    public static void showF3PieGameRendererEntities() {
-        Minecraft mc = Minecraft.getInstance();
-        if (mc.player != null && mc.player.containerMenu != null) {
-            return;  // cannot access f3 when in inventory
-        }
-        announceAction("Showing F3 Pie GameRenderer Entities");
-        mc.options.renderDebug = true;
-        mc.options.renderDebugCharts = true;
-        mc.options.renderFpsChart = false;
-        // lowk kind of sketchy but whatever
-        try {
-            Field debugPathField = Minecraft.class.getDeclaredField("debugPath");
-            debugPathField.setAccessible(true);
-            debugPathField.set(mc, debugPathJoin("root", "gameRenderer", "level", "entities"));
-            debugPathField.setAccessible(false);
-        } catch (NoSuchFieldException | IllegalAccessException ignored) { }
-    }
-
-    public static void hideF3() {
-        Minecraft mc = Minecraft.getInstance();
-        if (mc.player != null && mc.player.containerMenu != null) {
-            return;  // cannot access f3 when in inventory
-        }
-        announceAction("Hiding F3");
-        mc.options.renderDebug = false;
-        mc.options.renderDebugCharts = false;
-        mc.options.renderFpsChart = false;
-    }
-
-    public static void showF3NoPie() {
-        announceAction("Showing F3 No Pie");
-        Minecraft mc = Minecraft.getInstance();
-        mc.options.renderDebug = true;
-        mc.options.renderDebugCharts = false;
-        mc.options.renderFpsChart = false;
-    }
-
-    public static void selectHotbarSlot(int slot) {
-        Minecraft mc = Minecraft.getInstance();
-        if (mc.player != null && mc.player.containerMenu != null) {
-            return;  // cannot select slot when in inventory
-        }
-    }
-
-    public static void tapKey(int keyCode) {
-        announceAction("Tap key " + keyCode);
+    public static void tapKey(int key) {
+        announceAction("Tap key " + key);
         Minecraft client = Minecraft.getInstance();
         // window, key, scancode, action, mods
-//        client.execute(() -> client.keyboardHandler.keyPress(client.getWindow().getWindow(), jkey));
+        long window = client.getWindow().getWindow();
+        int scanCode = GLFW.glfwGetKeyScancode(key);
+        client.execute(() -> client.keyboardHandler.keyPress(window, key, scanCode, GLFW.GLFW_PRESS, 0));
+        client.execute(() -> client.keyboardHandler.keyPress(window, key, scanCode, GLFW.GLFW_RELEASE, 0));
+    }
+
+    public static void pressKey(int key) {
+        announceAction("Press key " + key);
+        Minecraft client = Minecraft.getInstance();
+        // window, key, scancode, action, mods
+        long window = client.getWindow().getWindow();
+        int scanCode = GLFW.glfwGetKeyScancode(key);
+        client.execute(() -> client.keyboardHandler.keyPress(window, key, scanCode, GLFW.GLFW_PRESS, 0));
+    }
+
+    public static void releaseKey(int key) {
+        announceAction("Release key " + key);
+        Minecraft client = Minecraft.getInstance();
+        // window, key, scancode, action, mods
+        long window = client.getWindow().getWindow();
+        int scanCode = GLFW.glfwGetKeyScancode(key);
+        client.execute(() -> client.keyboardHandler.keyPress(window, key, scanCode, GLFW.GLFW_RELEASE, 0));
+    }
+
+    public static void moveMouse(double x, double y) {
+        announceAction("Mouse move " + x + "," + y);
+        Minecraft client = Minecraft.getInstance();
+        long window = client.getWindow().getWindow();
+        // lowk kind of sketchy but whatever
+        try {
+            Method method = client.mouseHandler.getClass().getDeclaredMethod("onMove", long.class, double.class, double.class);
+            method.setAccessible(true);
+            method.invoke(client.mouseHandler, window, x, y);
+            method.setAccessible(false);
+        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static NativeImage img;
+
+    public static void screenshotAsync(int w, int h) {
+        Minecraft mc = Minecraft.getInstance();
+        mc.execute(() -> {
+            try (NativeImage img = Screenshot.takeScreenshot(w, h, mc.getMainRenderTarget())) {
+                AutoSpeedrunApi.img = img;
+                announceAction("Screenshot stored in memory");
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    public static int getScreenshotPixelRGBA(int x, int y) {
+        return img.getPixelRGBA(x, y);
     }
 }

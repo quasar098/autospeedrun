@@ -7,8 +7,6 @@ import net.minecraft.client.Screenshot;
 import net.minecraft.network.chat.TextComponent;
 import org.lwjgl.glfw.GLFW;
 
-import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -68,12 +66,33 @@ public class AutoSpeedrunApi {
             }
             NativeImage img = Screenshot.takeScreenshot(w, h, mc.getMainRenderTarget());
             AutoSpeedrunApi.img = img;
-            announceAction("Screenshot stored in memory");
+//            try {
+//                img.writeToFile(new File("bruh.png"));
+//            } catch (IOException e) {
+//                throw new RuntimeException(e);
+//            }
         });
     }
 
     public static int getScreenshotPixelRGBA(int x, int y) {
+        if (img == null) {
+            return 0;
+        }
         return img.getPixelRGBA(x, y);
+    }
+
+    public static int getScreenshotHeight() {
+        if (img == null) {
+            return 0;
+        }
+        return img.getHeight();
+    }
+
+    public static int getScreenshotWidth() {
+        if (img == null) {
+            return 0;
+        }
+        return img.getWidth();
     }
 
     public static void chatMessage(String str) {

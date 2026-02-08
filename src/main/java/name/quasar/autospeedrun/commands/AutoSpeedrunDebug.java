@@ -44,7 +44,7 @@ public class AutoSpeedrunDebug {
             debugOptions = new HashMap<>();
             debugOptions.put("announcer_show", Util::enableAnnouncer);
             debugOptions.put("announcer_hide", Util::disableAnnouncer);
-            debugOptions.put("screenshot1920x1080", () -> AutoSpeedrunApi.screenshotAsync(1920, 1080));
+            debugOptions.put("screenshot", () -> AutoSpeedrunApi.screenshotAsync(1920, 1080));
         }
         if (debugOptionsWithIntArg == null) {
             debugOptionsWithIntArg = new HashMap<>();

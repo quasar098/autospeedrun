@@ -12,6 +12,8 @@ public class Util {
 
     public static String debugPathJoin(String... path) { return String.join("\u001e", path); }
 
+    public static boolean togglePaused = false;
+
     private static boolean announcerEnabled = true;
     public static void enableAnnouncer() { announcerEnabled = true; }
     public static void disableAnnouncer() { announcerEnabled = false; }

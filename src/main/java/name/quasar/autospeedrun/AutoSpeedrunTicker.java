@@ -13,7 +13,7 @@ public class AutoSpeedrunTicker implements ClientTickEvents.EndTick {
 
     @Override
     public void onEndTick(Minecraft client) {
-        if (Minecraft.getInstance().player != null) {
+        if (Minecraft.getInstance().player != null && !Util.togglePaused) {
             userCode.tick();
         }
     }

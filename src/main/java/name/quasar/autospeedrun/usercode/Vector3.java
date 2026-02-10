@@ -24,10 +24,10 @@ public class Vector3 {
     }
 
     public String toString() {
-        return String.format("Vector3<%f, %f, %f>", getX(), getY(), getZ());
+        return String.format("V3<%f, %f, %f>", getX(), getY(), getZ());
     }
 
     public String toString(int prec) {
-        return String.format(String.format("Vector3<%%.%df, %%.%df, %%.%df>", prec, prec, prec), getX(), getY(), getZ());
+        return String.format(String.format("V3<%%.%df, %%.%df, %%.%df>", prec, prec, prec), getX(), getY(), getZ());
     }
 }

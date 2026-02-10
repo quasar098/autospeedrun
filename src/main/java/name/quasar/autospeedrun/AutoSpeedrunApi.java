@@ -64,8 +64,7 @@ public class AutoSpeedrunApi {
             if (AutoSpeedrunApi.img != null) {
                 img.close();
             }
-            NativeImage img = Screenshot.takeScreenshot(w, h, mc.getMainRenderTarget());
-            AutoSpeedrunApi.img = img;
+            AutoSpeedrunApi.img = Screenshot.takeScreenshot(w, h, mc.getMainRenderTarget());
 //            try {
 //                img.writeToFile(new File("bruh.png"));
 //            } catch (IOException e) {

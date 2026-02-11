@@ -30,4 +30,14 @@ public class Vector3 {
     public String toString(int prec) {
         return String.format(String.format("V3<%%.%df, %%.%df, %%.%df>", prec, prec, prec), getX(), getY(), getZ());
     }
+
+    public Double distanceToSquared(Vector3 other) {
+        return (other.getZ() - getZ()) * (other.getZ() - getZ())
+            + (other.getY() - getY()) * (other.getY() - getY())
+            + (other.getX() - getX()) * (other.getX() - getX());
+    }
+
+    public Double distanceTo(Vector3 other) {
+        return Math.sqrt(distanceToSquared(other));
+    }
 }

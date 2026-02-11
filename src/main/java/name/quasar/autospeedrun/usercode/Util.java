@@ -4,6 +4,8 @@ import name.quasar.autospeedrun.AutoSpeedrunApi;
 
 public class Util {
 
+    public static int tickCount = 0;
+
     public static int SCREEN_W = 0;
     public static int SCREEN_H = 0;
 

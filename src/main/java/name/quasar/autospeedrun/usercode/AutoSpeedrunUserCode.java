@@ -6,8 +6,6 @@ import org.lwjgl.glfw.GLFW;
 import java.util.HashMap;
 
 public class AutoSpeedrunUserCode {
-    int tickCount = 0;
-
     int mouseCalibrationStage = 0;
     double mouseCalibrationYaw1 = 0;
     double mouseCalibrationYaw2 = 0;
@@ -18,7 +16,7 @@ public class AutoSpeedrunUserCode {
         // misc useful
         Util.SCREEN_W = 0;
         Util.SCREEN_H = 0;
-        tickCount = 0;
+        Util.tickCount = 0;
 
         // mouse calibration
         mouseCalibrationStage = 0;
@@ -46,7 +44,8 @@ public class AutoSpeedrunUserCode {
         // 4 = collect angle of 0, 0, will look 100, 0
         // 5 = collect angle of 100, 0, will look 10000, 0
         // 6 = collect angle of 10000, 0, will look at 0, 1000
-        if (mouseCalibrationStage > 6) {
+        // 7 = confirm calibration
+        if (mouseCalibrationStage > 7) {
             return false;
         }
         switch (mouseCalibrationStage) {
@@ -82,14 +81,21 @@ public class AutoSpeedrunUserCode {
                 AutoSpeedrunApi.chatMessage(String.format("Calibrated deg/pix = %.4f", degreesPerPixel));
                 lookAtAngles(0.0, 0.0);
                 break;
+            case 7:
+                double resultYaw = F3Information.getYaw();
+                double resultPitch = F3Information.getPitch();
+                if (Math.abs(resultYaw) > 0.1 || Math.abs(resultPitch) > 0.1) {  // todo: better calibration
+                    mouseCalibrationStage = 0;  // restart calibration if not acceptable
+                    return true;
+                }
+                break;
         }
-        // todo do pitch calibrations as well
         mouseCalibrationStage++;
         return true;
     }
 
     public void tick() {
-        tickCount++;
+        Util.tickCount++;
         AutoSpeedrunApi.screenshotAsync(1920, 1080);
         // screen resolution not yet resolved, resolve it before doing anything else
         if (Util.SCREEN_W == 0 || Util.SCREEN_H == 0) {
@@ -110,7 +116,7 @@ public class AutoSpeedrunUserCode {
         BlockLocation targettedBL = F3Information.getTargettedBlockPosition();
         String targettedBlockPositionFormatted = targettedBL == null ? "(not targetting)" : targettedBL.toString();
         AutoSpeedrunApi.subtitleMessage(String.format(
-            "%.2fs %s Y:%.1f,P:%.1f %s %s", tickCount / 20.0, F3Information.getPosition().toString(3),
+            "%.2fs Y:%.1f,P:%.1f %s %s", Util.tickCount / 20.0,
             F3Information.getYaw(), F3Information.getPitch(),
             targettedBlockPositionFormatted, F3Information.getTargettedBlockName()
         ));
@@ -141,6 +147,11 @@ public class AutoSpeedrunUserCode {
             for (BlockLocation bl : WorldBlocks.knownBlocks.keySet()) {
                 name.quasar.autospeedrun.Util.LOGGER.info(bl + " - " + WorldBlocks.knownBlocks.get(bl));
             }
+        } else if (split[0].equals("setnav")) {
+            String[] xyzStr = split[1].split(",");
+            Navigation.goalPosition = new Vector3(
+                Double.parseDouble(xyzStr[0]), Double.parseDouble(xyzStr[1]), Double.parseDouble(xyzStr[2])
+            );
         }
     }
 }

@@ -7,6 +7,12 @@ import net.minecraft.client.Screenshot;
 import net.minecraft.network.chat.TextComponent;
 import org.lwjgl.glfw.GLFW;
 
+import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -92,6 +98,29 @@ public class AutoSpeedrunApi {
             return 0;
         }
         return img.getWidth();
+    }
+
+    public static String getClipboardText() {
+        try {
+            // Get a reference to the system clipboard
+            Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+
+            // Get the contents as a Transferable object
+            Transferable contents = clipboard.getContents(null);
+
+            // Check if the clipboard contains plain text data
+            if (contents != null && contents.isDataFlavorSupported(DataFlavor.stringFlavor)) {
+                // Retrieve the text data as a String
+                return (String) contents.getTransferData(DataFlavor.stringFlavor);
+            }
+        } catch (UnsupportedFlavorException | IOException e) {
+            // Handle exceptions (e.g., if the data is not text or an I/O error occurs)
+            System.err.println("Error reading clipboard: " + e.getMessage());
+        } catch (IllegalStateException e) {
+            // Handle if the clipboard is currently unavailable (e.g., accessed by another app)
+            System.err.println("Clipboard unavailable: " + e.getMessage());
+        }
+        return null; // Return null if no text found or an error occurred
     }
 
     public static void chatMessage(String str) {

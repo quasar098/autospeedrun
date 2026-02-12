@@ -4,6 +4,8 @@ import name.quasar.autospeedrun.AutoSpeedrunApi;
 
 public class Util {
 
+    public static final double SENS = 0.40140846371650696;  // from options.txt
+
     public static int tickCount = 0;
 
     public static int SCREEN_W = 0;

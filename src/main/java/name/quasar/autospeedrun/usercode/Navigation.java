@@ -4,7 +4,43 @@ import name.quasar.autospeedrun.AutoSpeedrunApi;
 import org.lwjgl.glfw.GLFW;
 
 public class Navigation {
-    public static Vector3 goalPosition = null;
+
+    // player hitbox 0.6 wide, so ~0.2 remaining on each side
+    private static final double AXIS_ALIGNMENT_BOUND = 0.15;
+
+    // player hitbox 0.6 wide, so ~0.2 remaining on each side
+    private static final double ARRIVED_AT_DEST_POSITION_BOUND = 0.16;
+    private static final double ARRIVED_AT_DEST_MAX_VELO = 0.16;
+
+    /* the idea with "axis alignment" is if we are on bridge bastion and going up that one side railing with lava on
+       either side we should not be touching the lava by going outside of a bound. we set an axis alignment to
+       prioritize staying on a specific axis */
+
+    public enum AxisAlignment {
+        PRIORITY_X,
+        PRIORITY_Z,
+        INDIFFERENT
+    }
+
+    private static AxisAlignment alignment = AxisAlignment.INDIFFERENT;
+
+    public static AxisAlignment getAlignment() {
+        return alignment;
+    }
+
+    public static void setAlignment(AxisAlignment alignment) {
+        Navigation.alignment = alignment;
+    }
+
+    private static Vector3 goalPosition = null;
+
+    public static Vector3 getGoalPosition() {
+        return goalPosition;
+    }
+
+    public static void setGoalPosition(Vector3 goalPosition) {
+        Navigation.goalPosition = goalPosition;
+    }
 
     public static int[][] movementPWMTable = {
         {-18000, 10},
@@ -48,20 +84,25 @@ public class Navigation {
 
     // saving for later: /userdebug setnav -100.5,64.00,250.5
     public static boolean perform() {
-        AutoSpeedrunApi.releaseKey(GLFW.GLFW_KEY_W);
-        AutoSpeedrunApi.releaseKey(GLFW.GLFW_KEY_A);
-        AutoSpeedrunApi.releaseKey(GLFW.GLFW_KEY_S);
-        AutoSpeedrunApi.releaseKey(GLFW.GLFW_KEY_D);
         if (Navigation.goalPosition == null) {
             return false;
         }
+        Vector3 desired = Navigation.goalPosition;
+//        if (getAlignment() == AxisAlignment.PRIORITY_X) {
+//            if (Math.abs(F3Information.getPosition().getX()-desired.getX()) < AXIS_ALIGNMENT_BOUND) {
+//
+//            }
+//        }
+//        if (getAlignment() == AxisAlignment.PRIORITY_Z) {
+//
+//        }
         double yaw = F3Information.getYaw();
         Double goalYaw = Math.atan2(
-            F3Information.getPosition().getX() - Navigation.goalPosition.getX(),
-            Navigation.goalPosition.getZ() - F3Information.getPosition().getZ()
+            F3Information.getPosition().getX() - desired.getX(),
+            desired.getZ() - F3Information.getPosition().getZ()
         ) * 180 / Math.PI;
-        if (Navigation.goalPosition.distanceTo(F3Information.getPosition()) < 0.16) {
-            // player hitbox 0.8 wide, this means we have arrived
+        if (Navigation.goalPosition.distanceTo(F3Information.getPosition()) < ARRIVED_AT_DEST_POSITION_BOUND) {
+            // this means we have arrived
             AutoSpeedrunApi.chatMessage("Arrived at your destination");
             goalPosition = null;
             return false;
@@ -75,14 +116,14 @@ public class Navigation {
         int encZ = (encoded % 10) - 1;
         AutoSpeedrunApi.chatMessage(encX + "," + encZ);
         if (encX == 1) {
-            AutoSpeedrunApi.pressKey(GLFW.GLFW_KEY_A);
+            MovementInputManager.planPressKeyA();
         } else if (encX == -1) {
-            AutoSpeedrunApi.pressKey(GLFW.GLFW_KEY_D);
+            MovementInputManager.planPressKeyD();
         }
         if (encZ == 1) {
-            AutoSpeedrunApi.pressKey(GLFW.GLFW_KEY_W);
+            MovementInputManager.planPressKeyW();
         } else if (encZ == -1) {
-            AutoSpeedrunApi.pressKey(GLFW.GLFW_KEY_S);
+            MovementInputManager.planPressKeyS();
         }
         pwmTickCount += 1;
         lastPWMIndex = bestPWMIndex;

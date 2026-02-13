@@ -1,6 +1,7 @@
 package name.quasar.autospeedrun.usercode;
 
 import name.quasar.autospeedrun.AutoSpeedrunApi;
+import net.minecraft.client.Minecraft;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.HashMap;
@@ -82,10 +83,6 @@ public class AutoSpeedrunUserCode {
                     Double.parseDouble(xyzStr[0]), Double.parseDouble(xyzStr[1]), Double.parseDouble(xyzStr[2])
                 ));
                 Navigation.setAlignment(Navigation.AxisAlignment.PRIORITY_X);
-                break;
-            case "changeangle":
-                String[] anglesString = split[1].split(",");
-//                MouseInputManager.setInputAngle(Double.parseDouble(anglesString[0]), Double.parseDouble(anglesString[1]));
                 break;
         }
     }

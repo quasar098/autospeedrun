@@ -1,6 +1,7 @@
 package name.quasar.autospeedrun.usercode;
 
 import name.quasar.autospeedrun.AutoSpeedrunApi;
+import net.minecraft.client.Minecraft;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL;
 
@@ -9,6 +10,16 @@ public class MouseInputManager {
     private static double calibrationOffsetX = 0;
     private static double calibrationOffsetY = 0;
     private static double mouseMultiplier = 0;
+
+    public static void lookAtPoint(Vector3 point) {
+        Vector3 cur = F3Information.getPosition();
+        double goalYaw = Math.atan2(point.getX() - cur.getX(), point.getZ() - cur.getZ()) * 180 / Math.PI;
+        double distanceXZ = Math.sqrt(Math.pow(cur.getX() - point.getX(), 2) + Math.pow(cur.getZ() - point.getZ(), 2));
+        double eyeHeight = Util.PLAYER_STANDING_EYE_HEIGHT;  // todo: crouching stuff
+        double goalPitch = Math.atan2((point.getY() - eyeHeight) - cur.getY(), distanceXZ) * 180 / Math.PI;
+        AutoSpeedrunApi.chatMessage("y,p:" + goalYaw + "," + goalPitch);
+        setPlayerAngle(goalYaw, goalPitch);
+    }
 
     public static void setPlayerAngle(double yaw, double pitch) {
         AutoSpeedrunApi.moveMouse(
@@ -48,6 +59,7 @@ public class MouseInputManager {
                 calibrationStage++;
                 return false;
             default:
+//                lookAtPoint(new Vector3(-100.5, 65.00, 239.5));
                 return false;
         }
         return true;

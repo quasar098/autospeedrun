@@ -2,6 +2,7 @@ import pygame
 from math import tan, sin, cos, pi
 from enum import Enum
 from typing import Sequence
+from math import ceil, floor
 
 pygame.init()
 
@@ -79,7 +80,7 @@ class Polygon3D:
 
 
 class BlockFace(Polygon3D):
-    def __init__(self, xyz: Sequence[int], dir_: FaceDirection, color: Sequence[int] = None, wireframe: bool = False):
+    def __init__(self, xyz: Sequence[int], dir_: FaceDirection, color: Sequence[int] = NO_COLOR, wireframe: bool = False):
         self.dir = dir_
         self.x, self.y, self.z = xyz
         if self.dir == FaceDirection.UP:
@@ -132,7 +133,9 @@ class Block:
 
 class PlayerHitbox:
     def __init__(self, xyz: Sequence[float], yaw: float, pitch: float):
-        x, y, z = xyz
+        self.x, self.y, self.z = x, y, z = xyz
+        self.yaw = yaw
+        self.pitch = pitch
         self.bottom_face = Polygon3D([
             [x-0.3, y, z-0.3],
             [x-0.3, y, z+0.3],
@@ -209,11 +212,51 @@ def main():
                 if event.button == 3:
                     player_hitbox = PlayerHitbox([cam_p[0], cam_p[1]-1.62, cam_p[2]], cam_r[1], cam_r[0])
 
-        # queue up the scene for drawing
+        # do the important stuff
         for v in range(0, 10):
             Block([v, 0, v], "grass_block", wireframe=False).queue_draw()
         if player_hitbox is not None:
             player_hitbox.queue_draw()
+            yaw, pitch = player_hitbox.yaw, player_hitbox.pitch
+            px, py, pz = player_hitbox.x, player_hitbox.y+1.62, player_hitbox.z
+            opx, opy, opz = px, py, pz
+            dx = cos(yaw + pi/2)*cos(-pitch)
+            dy = sin(-pitch)
+            dz = sin(yaw + pi/2)*cos(-pitch)
+            while True:
+                sx = floor(px)+1 if dx > 0 else ceil(px)-1
+                sy = floor(py)+1 if dy > 0 else ceil(py)-1
+                sz = floor(pz)+1 if dz > 0 else ceil(pz)-1
+                # print(dx, dy, dz)
+                # print(sx, sy, sz)
+                # print(px, py, pz)
+                if dx == 0:
+                    xt = 99999
+                else:
+                    xt = (sx - px) / dx
+                if dy == 0:
+                    yt = 99999
+                else:
+                    yt = (sy - py) / dy
+                if dz == 0:
+                    zt = 99999
+                else:
+                    zt = (sz - pz) / dz
+                mintime = min(xt, yt, zt)
+                px += dx * mintime
+                py += dy * mintime
+                pz += dz * mintime
+                if distance([px, py, pz], [opx, opy, opz]) >= 20:
+                    break
+                print(px, py, pz)
+                if mintime == xt:
+                    BlockFace([floor(px) - 1, floor(py), floor(pz)], FaceDirection.EAST, wireframe=True).queue_draw()
+                if mintime == yt:
+                    BlockFace([floor(px), floor(py) - 1, floor(pz)], FaceDirection.UP, wireframe=True).queue_draw()
+                if mintime == zt:
+                    BlockFace([floor(px), floor(py), floor(pz) - 1], FaceDirection.SOUTH, wireframe=True).queue_draw()
+
+
 
         # draw faces by z order
         faces_to_draw.sort(key=lambda f: f.z_override or distance(f.get_center_pos(), cam_p), reverse=True)

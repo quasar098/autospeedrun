@@ -196,7 +196,7 @@ def main():
     cam_p = [0.0, 0.0, 0.0]
     cam_r = [0.0, 0.0, 0.0]
 
-    player_hitbox = None
+    player_hitbox = PlayerHitbox([0.11425055107308556, 3.4400000000000013-1.62, 0.19886227225051142], 0.008000000000009777, 0.6540000000000001)
 
     running = True
     while running:
@@ -211,6 +211,7 @@ def main():
                     skip_mouse_move = True
                 if event.button == 3:
                     player_hitbox = PlayerHitbox([cam_p[0], cam_p[1]-1.62, cam_p[2]], cam_r[1], cam_r[0])
+                    print(cam_p, cam_r[1], cam_r[0])
 
         # do the important stuff
         for v in range(0, 10):
@@ -223,7 +224,7 @@ def main():
             dx = cos(yaw + pi/2)*cos(-pitch)
             dy = sin(-pitch)
             dz = sin(yaw + pi/2)*cos(-pitch)
-            while True:
+            for i in range(400):
                 sx = floor(px)+1 if dx > 0 else ceil(px)-1
                 sy = floor(py)+1 if dy > 0 else ceil(py)-1
                 sz = floor(pz)+1 if dz > 0 else ceil(pz)-1
@@ -248,13 +249,14 @@ def main():
                 pz += dz * mintime
                 if distance([px, py, pz], [opx, opy, opz]) >= 20:
                     break
-                print(px, py, pz)
+                print(i, px, py, pz, mintime, xt, yt, zt)
                 if mintime == xt:
-                    BlockFace([floor(px) - 1, floor(py), floor(pz)], FaceDirection.EAST, wireframe=True).queue_draw()
+                    BlockFace([round(px) - 1, floor(py), floor(pz)], FaceDirection.EAST, wireframe=True).queue_draw()
                 if mintime == yt:
-                    BlockFace([floor(px), floor(py) - 1, floor(pz)], FaceDirection.UP, wireframe=True).queue_draw()
+                    BlockFace([floor(px), round(py) - 1, floor(pz)], FaceDirection.UP, wireframe=True).queue_draw()
                 if mintime == zt:
-                    BlockFace([floor(px), floor(py), floor(pz) - 1], FaceDirection.SOUTH, wireframe=True).queue_draw()
+                    BlockFace([floor(px), floor(py), round(pz) - 1], FaceDirection.SOUTH, wireframe=True).queue_draw()
+            __builtins__.print = lambda*a:2
 
 
 

@@ -4,8 +4,6 @@ import name.quasar.autospeedrun.AutoSpeedrunApi;
 import net.minecraft.client.Minecraft;
 import org.lwjgl.glfw.GLFW;
 
-import java.util.HashMap;
-
 public class AutoSpeedrunUserCode {
     public void init() {
         // misc useful
@@ -54,7 +52,7 @@ public class AutoSpeedrunUserCode {
                 F3Information.getTargettedBlockName()
             ));
         }
-        // do movement
+        // do movement and mouse
         boolean navigatorResult = Navigation.perform();
         MovementInputManager.handle();
         if (navigatorResult) {

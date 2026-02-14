@@ -102,25 +102,17 @@ public class AutoSpeedrunApi {
 
     public static String getClipboardText() {
         try {
-            // Get a reference to the system clipboard
             Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-
-            // Get the contents as a Transferable object
             Transferable contents = clipboard.getContents(null);
-
-            // Check if the clipboard contains plain text data
             if (contents != null && contents.isDataFlavorSupported(DataFlavor.stringFlavor)) {
-                // Retrieve the text data as a String
                 return (String) contents.getTransferData(DataFlavor.stringFlavor);
             }
         } catch (UnsupportedFlavorException | IOException e) {
-            // Handle exceptions (e.g., if the data is not text or an I/O error occurs)
             System.err.println("Error reading clipboard: " + e.getMessage());
         } catch (IllegalStateException e) {
-            // Handle if the clipboard is currently unavailable (e.g., accessed by another app)
             System.err.println("Clipboard unavailable: " + e.getMessage());
         }
-        return null; // Return null if no text found or an error occurred
+        return null;
     }
 
     public static void chatMessage(String str) {

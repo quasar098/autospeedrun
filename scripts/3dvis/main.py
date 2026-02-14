@@ -101,6 +101,9 @@ class BlockFace(Polygon3D):
         verts = [v1, v2, v3, v4]
         super().__init__(verts, color=color, wireframe=wireframe)
 
+    def __eq__(self, other):
+        return isinstance(other, BlockFace) and (other.x, other.y, other.z, other.dir) == (self.x, self.y, self.z, self.dir)
+
 
 class Block:
     def __init__(self, xyz: Sequence[int], block_name: str, wireframe: bool = False):
@@ -211,11 +214,15 @@ def main():
                     skip_mouse_move = True
                 if event.button == 3:
                     player_hitbox = PlayerHitbox([cam_p[0], cam_p[1]-1.62, cam_p[2]], cam_r[1], cam_r[0])
-                    print(cam_p, cam_r[1], cam_r[0])
+                    # print(cam_p, cam_r[1], cam_r[0])
 
         # do the important stuff
+        blocks = []
         for v in range(0, 10):
-            Block([v, 0, v], "grass_block", wireframe=False).queue_draw()
+            blocks.append(Block([v, 0, v], "grass_block", wireframe=False))
+        for block in blocks:
+            block.queue_draw()
+
         if player_hitbox is not None:
             player_hitbox.queue_draw()
             yaw, pitch = player_hitbox.yaw, player_hitbox.pitch
@@ -228,9 +235,6 @@ def main():
                 sx = floor(px)+1 if dx > 0 else ceil(px)-1
                 sy = floor(py)+1 if dy > 0 else ceil(py)-1
                 sz = floor(pz)+1 if dz > 0 else ceil(pz)-1
-                # print(dx, dy, dz)
-                # print(sx, sy, sz)
-                # print(px, py, pz)
                 if dx == 0:
                     xt = 99999
                 else:
@@ -249,15 +253,23 @@ def main():
                 pz += dz * mintime
                 if distance([px, py, pz], [opx, opy, opz]) >= 20:
                     break
-                print(i, px, py, pz, mintime, xt, yt, zt)
+                bfs: list[BlockFace] = []
                 if mintime == xt:
-                    BlockFace([round(px) - 1, floor(py), floor(pz)], FaceDirection.EAST, wireframe=True).queue_draw()
+                    bfs.append(BlockFace([round(px) - 1, floor(py), floor(pz)], FaceDirection.EAST, wireframe=True))
                 if mintime == yt:
-                    BlockFace([floor(px), round(py) - 1, floor(pz)], FaceDirection.UP, wireframe=True).queue_draw()
+                    bfs.append(BlockFace([floor(px), round(py) - 1, floor(pz)], FaceDirection.UP, wireframe=True))
                 if mintime == zt:
-                    BlockFace([floor(px), floor(py), round(pz) - 1], FaceDirection.SOUTH, wireframe=True).queue_draw()
-            __builtins__.print = lambda*a:2
-
+                    bfs.append(BlockFace([floor(px), floor(py), round(pz) - 1], FaceDirection.SOUTH, wireframe=True))
+                face_is_block_face = False
+                for bf in bfs:
+                    for block in blocks:
+                        for bf2 in block.get_faces():
+                            if bf == bf2:
+                                face_is_block_face = True
+                    bf.queue_draw()
+                if face_is_block_face:
+                    print(i)
+                    break
 
 
         # draw faces by z order
@@ -278,6 +290,10 @@ def main():
         cam_p[0] -= (fb * sin(cam_r[1]) + lr * cos(cam_r[1])) * FLY_SPEED
         cam_p[1] += (keys[pygame.K_SPACE] - keys[pygame.K_LSHIFT]) / FRAMERATE * FLY_SPEED
         cam_p[2] += (fb * cos(cam_r[1]) - lr * sin(cam_r[1])) * FLY_SPEED
+
+        # crosshair
+        pygame.draw.line(screen, (173, 165, 192), [WIDTH/2-6, HEIGHT/2], [WIDTH/2+7, HEIGHT/2], width=2)
+        pygame.draw.line(screen, (173, 165, 192), [WIDTH/2, HEIGHT/2-6], [WIDTH/2, HEIGHT/2+7], width=2)
 
         # text informations
         screen.blit(font.render(f"XYZ: {cam_p[0]:.4f} / {cam_p[1]:.4f} / {cam_p[2]:.4f}", False, (255, 255, 255)), (4, 4))

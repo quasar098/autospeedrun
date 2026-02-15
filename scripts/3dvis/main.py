@@ -41,7 +41,7 @@ faces_to_draw: list["Polygon3D"] = []
 
 
 class Polygon3D:
-    def __init__(self, verts: list[Sequence[float]], color: Sequence[int] = NO_COLOR, wireframe: bool = False,
+    def __init__(self, verts: list[Sequence[float]], color: Sequence[int] = NO_COLOR, wireframe: int = 0,
                  z_override: int = None):
         self.verts = verts
         self.wireframe = wireframe
@@ -57,13 +57,13 @@ class Polygon3D:
             vert_projected = project(vert, cam_pos, cam_rot)
             if vert_projected is not None:
                 verts.append(vert_projected)
-        if self.wireframe:
+        if self.wireframe > 0:
             if len(verts) < 2:
                 return
             for a, b in zip(verts, verts[1:] + verts[:1]):
                 if distance(a, b) > WIDTH * 10:
                     return
-            pygame.draw.lines(screen, self.color, True, verts, width=2)
+            pygame.draw.lines(screen, self.color, True, verts, width=self.wireframe)
         else:
             if len(verts) < 3:
                 return
@@ -80,7 +80,7 @@ class Polygon3D:
 
 
 class BlockFace(Polygon3D):
-    def __init__(self, xyz: Sequence[int], dir_: FaceDirection, color: Sequence[int] = NO_COLOR, wireframe: bool = False):
+    def __init__(self, xyz: Sequence[int], dir_: FaceDirection, color: Sequence[int] = NO_COLOR, wireframe: int = 0):
         self.dir = dir_
         self.x, self.y, self.z = xyz
         if self.dir == FaceDirection.UP:
@@ -106,7 +106,7 @@ class BlockFace(Polygon3D):
 
 
 class Block:
-    def __init__(self, xyz: Sequence[int], block_name: str, wireframe: bool = False):
+    def __init__(self, xyz: Sequence[int], block_name: str, wireframe: int = 0):
         self.xyz = xyz
         self.block_name = block_name
         self.wireframe = wireframe
@@ -144,42 +144,42 @@ class PlayerHitbox:
             [x-0.3, y, z+0.3],
             [x+0.3, y, z+0.3],
             [x+0.3, y, z-0.3],
-        ], color=(255, 255, 255), wireframe=True)
+        ], color=(255, 255, 255), wireframe=2)
         self.top_face = Polygon3D([
             [x-0.3, y+1.8, z-0.3],
             [x-0.3, y+1.8, z+0.3],
             [x+0.3, y+1.8, z+0.3],
             [x+0.3, y+1.8, z-0.3],
-        ], color=(255, 255, 255), wireframe=True)
+        ], color=(255, 255, 255), wireframe=2)
         self.pos_x_face = Polygon3D([
             [x+0.3, y, z-0.3],
             [x+0.3, y, z+0.3],
             [x+0.3, y+1.8, z+0.3],
             [x+0.3, y+1.8, z-0.3],
-        ], color=(255, 255, 255), wireframe=True)
+        ], color=(255, 255, 255), wireframe=2)
         self.neg_x_face = Polygon3D([
             [x-0.3, y, z-0.3],
             [x-0.3, y, z+0.3],
             [x-0.3, y+1.8, z+0.3],
             [x-0.3, y+1.8, z-0.3],
-        ], color=(255, 255, 255), wireframe=True)
+        ], color=(255, 255, 255), wireframe=2)
         self.eye_level = Polygon3D([
             [x-0.3, y+1.62, z-0.3],
             [x-0.3, y+1.62, z+0.3],
             [x+0.3, y+1.62, z+0.3],
             [x+0.3, y+1.62, z-0.3],
-        ], color=(255, 0, 0), wireframe=True)
+        ], color=(255, 0, 0), wireframe=2)
         dx = cos(yaw + pi/2)*cos(-pitch)
         dy = sin(-pitch)
         dz = sin(yaw + pi/2)*cos(-pitch)
         self.look_ray = Polygon3D([
             [x, y+1.62, z],
             [x+dx*3, y+dy*3+1.62, z+dz*3]
-        ], color=(0, 0, 255), wireframe=True, z_override=-2)
+        ], color=(0, 0, 255), wireframe=2, z_override=-2)
         self.f3_look_ray = Polygon3D([
             [x, y+1.62, z],
             [x+dx*20, y+dy*20+1.62, z+dz*20]
-        ], color=(0, 255, 0), wireframe=True, z_override=-1)
+        ], color=(0, 255, 0), wireframe=2, z_override=-1)
 
     def queue_draw(self):
         self.bottom_face.queue_draw()
@@ -219,7 +219,7 @@ def main():
         # do the important stuff
         blocks = []
         for v in range(0, 10):
-            blocks.append(Block([v, 0, v], "grass_block", wireframe=False))
+            blocks.append(Block([v, 0, v], "grass_block", wireframe=0))
         for block in blocks:
             block.queue_draw()
 
@@ -255,11 +255,11 @@ def main():
                     break
                 bfs: list[BlockFace] = []
                 if mintime == xt:
-                    bfs.append(BlockFace([round(px) - 1, floor(py), floor(pz)], FaceDirection.EAST, wireframe=True))
+                    bfs.append(BlockFace([round(px) - 1, floor(py), floor(pz)], FaceDirection.EAST, wireframe=2))
                 if mintime == yt:
-                    bfs.append(BlockFace([floor(px), round(py) - 1, floor(pz)], FaceDirection.UP, wireframe=True))
+                    bfs.append(BlockFace([floor(px), round(py) - 1, floor(pz)], FaceDirection.UP, wireframe=2))
                 if mintime == zt:
-                    bfs.append(BlockFace([floor(px), floor(py), round(pz) - 1], FaceDirection.SOUTH, wireframe=True))
+                    bfs.append(BlockFace([floor(px), floor(py), round(pz) - 1], FaceDirection.SOUTH, wireframe=2))
                 face_is_block_face = False
                 for bf in bfs:
                     for block in blocks:
@@ -268,7 +268,6 @@ def main():
                                 face_is_block_face = True
                     bf.queue_draw()
                 if face_is_block_face:
-                    print(i)
                     break
 
 

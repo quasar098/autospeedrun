@@ -65,26 +65,6 @@ public class MouseInputManager {
         return true;
     }
 
-    public static int testLLL = 100;
-    public static int testLLLStage = 0;
-
-    public static boolean testLLL() {
-        if (testLLL >= 100) {
-            return false;
-        }
-        if (testLLLStage == 0) {
-            AutoSpeedrunApi.mouseMove(testLLL, 0.0);
-        } else if (testLLLStage == 3) {
-            if (Minecraft.getInstance().player != null) {
-                System.out.printf("%d %f %f\n", testLLL, F3Information.getYaw(), Minecraft.getInstance().player.yRot);
-            }
-            testLLL++;
-        }
-        testLLLStage += 1;
-        testLLLStage %= 4;
-        return true;
-    }
-
     public static void reset() {
         calibrationStage = 0;
         mouseMultiplier = -1.0 / (Math.pow(Util.SENS * 0.6 + 0.2, 3) * 8 * 0.15);

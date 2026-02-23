@@ -51,10 +51,6 @@ public class AutoSpeedrunUserCode {
         if (MouseInputManager.calibrateMouse()) {
             return;
         }
-        // do mouse LLL testing
-        if (MouseInputManager.testLLL()) {
-            return;
-        }
         // collect facing block information
         if (F3Information.getTargettedBlockPosition() != null) {
             WorldBlocks.knownBlocks.put(F3Information.getTargettedBlockPosition(), new Block(
@@ -109,9 +105,6 @@ public class AutoSpeedrunUserCode {
                     Double.parseDouble(xyzStr[0]), Double.parseDouble(xyzStr[1]), Double.parseDouble(xyzStr[2])
                 ));
                 Navigation.setAlignment(Navigation.AxisAlignment.PRIORITY_X);
-                break;
-            case "mouseLLL":
-                MouseInputManager.testLLL = 0;
                 break;
             case "lclick":
                 click = true;

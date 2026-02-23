@@ -25,7 +25,7 @@ public class AutoSpeedrun implements ModInitializer {
 
 		CommandRegistrationCallback.EVENT.register(AutoSpeedrunDebug::register);
 
-		ClientTickEvents.END_CLIENT_TICK.register(new AutoSpeedrunTicker(userCode));
+		ClientTickEvents.START_CLIENT_TICK.register(new AutoSpeedrunTicker(userCode));
 
 		ServerWorldEvents.LOAD.register((minecraftServer, serverWorld) -> {
 			userCode.init();

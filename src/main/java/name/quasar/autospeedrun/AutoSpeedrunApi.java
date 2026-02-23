@@ -1,7 +1,9 @@
 package name.quasar.autospeedrun;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
 import net.minecraft.network.chat.TextComponent;
@@ -47,7 +49,7 @@ public class AutoSpeedrunApi {
         client.execute(() -> client.keyboardHandler.keyPress(window, key, scanCode, GLFW.GLFW_RELEASE, 0));
     }
 
-    public static void moveMouse(double x, double y) {
+    public static void mouseMove(double x, double y) {
         announceAction("Mouse move " + x + "," + y);
         Minecraft client = Minecraft.getInstance();
         long window = client.getWindow().getWindow();
@@ -60,6 +62,25 @@ public class AutoSpeedrunApi {
         } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static void mouseActivate(int button, int action, int mods) {
+        announceAction("Mouse activate " + button + "," + action + "," + mods);
+        KeyMapping.set(InputConstants.Type.MOUSE.getOrCreate(button), action == 1);
+        KeyMapping.click(InputConstants.Type.MOUSE.getOrCreate(button));
+//        Minecraft client = Minecraft.getInstance();
+//        long window = client.getWindow().getWindow();
+//        try {
+//            Method method = client.mouseHandler.getClass().getDeclaredMethod("onPress", long.class, int.class, int.class, int.class);
+//            method.setAccessible(true);
+//            System.out.printf("%b\n", (client.screen == null || client.screen.passEvents) && client.overlay == null);
+//
+//            window, button, action, mods
+////            method.invoke(client.mouseHandler, window, button, action, mods);
+//            method.setAccessible(false);
+//        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+//            throw new RuntimeException(e);
+//        }
     }
 
     private volatile static NativeImage img = null;

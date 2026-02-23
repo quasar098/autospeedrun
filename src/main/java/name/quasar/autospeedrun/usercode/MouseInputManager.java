@@ -2,8 +2,6 @@ package name.quasar.autospeedrun.usercode;
 
 import name.quasar.autospeedrun.AutoSpeedrunApi;
 import net.minecraft.client.Minecraft;
-import org.lwjgl.glfw.GLFW;
-import org.lwjgl.opengl.GL;
 
 public class MouseInputManager {
     private static int calibrationStage = 0;
@@ -22,7 +20,7 @@ public class MouseInputManager {
     }
 
     public static void setPlayerAngle(double yaw, double pitch) {
-        AutoSpeedrunApi.moveMouse(
+        AutoSpeedrunApi.mouseMove(
             calibrationOffsetX + mouseMultiplier * yaw,
             calibrationOffsetY + mouseMultiplier * pitch
         );
@@ -39,7 +37,7 @@ public class MouseInputManager {
                 break;
             case 1:
                 // mc ignores the first move so we do it first thing
-                AutoSpeedrunApi.moveMouse(0, 0);
+                AutoSpeedrunApi.mouseMove(0, 0);
 //                AutoSpeedrunApi.chatMessage("Stage 1:" + F3Information.getYaw() + "," + F3Information.getPitch());
                 calibrationStage++;
                 break;
@@ -54,6 +52,8 @@ public class MouseInputManager {
             case 3:
 //                AutoSpeedrunApi.chatMessage("Stage 3:" + F3Information.getYaw() + "," + F3Information.getPitch());
                 if (F3Information.getPitch() != 0.0 || F3Information.getYaw() != 0.0) {
+                    calibrationStage = 0;
+                    AutoSpeedrunApi.chatMessage("Restarting mouse calibration");
                     break;
                 }
                 calibrationStage++;
@@ -62,6 +62,26 @@ public class MouseInputManager {
 //                lookAtPoint(new Vector3(-100.5, 65.00, 239.5));
                 return false;
         }
+        return true;
+    }
+
+    public static int testLLL = 100;
+    public static int testLLLStage = 0;
+
+    public static boolean testLLL() {
+        if (testLLL >= 100) {
+            return false;
+        }
+        if (testLLLStage == 0) {
+            AutoSpeedrunApi.mouseMove(testLLL, 0.0);
+        } else if (testLLLStage == 3) {
+            if (Minecraft.getInstance().player != null) {
+                System.out.printf("%d %f %f\n", testLLL, F3Information.getYaw(), Minecraft.getInstance().player.yRot);
+            }
+            testLLL++;
+        }
+        testLLLStage += 1;
+        testLLLStage %= 4;
         return true;
     }
 

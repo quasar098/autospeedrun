@@ -1,8 +1,13 @@
 package name.quasar.autospeedrun.usercode;
 
 import name.quasar.autospeedrun.AutoSpeedrunApi;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.client.KeyboardHandler;
 import net.minecraft.client.Minecraft;
 import org.lwjgl.glfw.GLFW;
+
+import java.lang.reflect.Field;
+import java.security.Key;
 
 public class AutoSpeedrunUserCode {
     public void init() {
@@ -46,12 +51,33 @@ public class AutoSpeedrunUserCode {
         if (MouseInputManager.calibrateMouse()) {
             return;
         }
+        // do mouse LLL testing
+        if (MouseInputManager.testLLL()) {
+            return;
+        }
         // collect facing block information
         if (F3Information.getTargettedBlockPosition() != null) {
             WorldBlocks.knownBlocks.put(F3Information.getTargettedBlockPosition(), new Block(
                 F3Information.getTargettedBlockName()
             ));
         }
+        if (click) {
+            click = false;
+            com.mojang.blaze3d.platform.InputConstants.Key key = com.mojang.blaze3d.platform.InputConstants.Type.MOUSE.getOrCreate(0);
+            KeyMapping.set(key, true);
+            KeyMapping.click(key);
+        }
+        // i actually dk what tf is going on with left click
+//        try {
+//            Field f1 = Minecraft.getInstance().options.keyAttack.getClass().getDeclaredField("clickCount");
+//            Field f2 = Minecraft.getInstance().options.keyAttack.getClass().getDeclaredField("isDown");
+//            f1.setAccessible(true);
+//            f2.setAccessible(true);
+//            AutoSpeedrunApi.chatMessage(f1.get(Minecraft.getInstance().options.keyAttack) + ", "
+//                + f2.get(Minecraft.getInstance().options.keyAttack) + Minecraft.getInstance().player.isUsingItem());
+//        } catch (NoSuchFieldException | IllegalAccessException e) {
+//            throw new RuntimeException(e);
+//        }
         // do movement and mouse
         boolean navigatorResult = Navigation.perform();
         MovementInputManager.handle();
@@ -59,6 +85,8 @@ public class AutoSpeedrunUserCode {
             return;
         }
     }
+
+    private boolean click = false;
 
     public void debug(String debugStr) {
         String[] split = debugStr.split(" ");
@@ -72,7 +100,7 @@ public class AutoSpeedrunUserCode {
                 break;
             case "dumpblocks":
                 for (BlockLocation bl : WorldBlocks.knownBlocks.keySet()) {
-                    name.quasar.autospeedrun.Util.LOGGER.info(bl + " - " + WorldBlocks.knownBlocks.get(bl));
+                    System.out.printf("%s\n", bl + " - " + WorldBlocks.knownBlocks.get(bl));
                 }
                 break;
             case "setnav":
@@ -81,6 +109,17 @@ public class AutoSpeedrunUserCode {
                     Double.parseDouble(xyzStr[0]), Double.parseDouble(xyzStr[1]), Double.parseDouble(xyzStr[2])
                 ));
                 Navigation.setAlignment(Navigation.AxisAlignment.PRIORITY_X);
+                break;
+            case "mouseLLL":
+                MouseInputManager.testLLL = 0;
+                break;
+            case "lclick":
+                click = true;
+//                Minecraft.getInstance().options.keyAttack.setDown(true);
+                break;
+            case "rclick":
+                AutoSpeedrunApi.mouseActivate(GLFW.GLFW_MOUSE_BUTTON_RIGHT, GLFW.GLFW_PRESS, 0);
+                AutoSpeedrunApi.mouseActivate(GLFW.GLFW_MOUSE_BUTTON_RIGHT, GLFW.GLFW_RELEASE, 0);
                 break;
         }
     }

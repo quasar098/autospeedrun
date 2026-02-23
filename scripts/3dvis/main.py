@@ -199,7 +199,7 @@ def main():
     cam_p = [0.0, 0.0, 0.0]
     cam_r = [0.0, 0.0, 0.0]
 
-    player_hitbox = PlayerHitbox([0.11425055107308556, 3.4400000000000013-1.62, 0.19886227225051142], 0.008000000000009777, 0.6540000000000001)
+    player_hitbox = None
 
     running = True
     while running:
@@ -269,7 +269,6 @@ def main():
                     bf.queue_draw()
                 if face_is_block_face:
                     break
-
 
         # draw faces by z order
         faces_to_draw.sort(key=lambda f: f.z_override or distance(f.get_center_pos(), cam_p), reverse=True)

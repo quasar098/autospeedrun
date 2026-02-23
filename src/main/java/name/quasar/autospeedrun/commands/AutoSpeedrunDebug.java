@@ -51,8 +51,8 @@ public class AutoSpeedrunDebug {
             debugOptionsWithIntArg.put("tap_key", AutoSpeedrunApi::tapKey);
             debugOptionsWithIntArg.put("press_key", AutoSpeedrunApi::pressKey);
             debugOptionsWithIntArg.put("release_key", AutoSpeedrunApi::releaseKey);
-            debugOptionsWithIntArg.put("mouse_move_x", (x) -> AutoSpeedrunApi.moveMouse(x, 0));
-            debugOptionsWithIntArg.put("mouse_move_y", (y) -> AutoSpeedrunApi.moveMouse(0, y));
+            debugOptionsWithIntArg.put("mouse_move_x", (x) -> AutoSpeedrunApi.mouseMove(x, 0));
+            debugOptionsWithIntArg.put("mouse_move_y", (y) -> AutoSpeedrunApi.mouseMove(0, y));
         }
     }
 

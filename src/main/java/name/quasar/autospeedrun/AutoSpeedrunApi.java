@@ -2,6 +2,7 @@ package name.quasar.autospeedrun;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.NativeImage;
+import name.quasar.autospeedrun.mixin.ScreenMixin;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -31,9 +32,14 @@ public class AutoSpeedrunApi {
         client.execute(() -> client.keyboardHandler.keyPress(window, key, scanCode, GLFW.GLFW_RELEASE, 0));
     }
 
+    public static boolean shifting = false;
+
     public static void pressKey(int key) {
         announceAction("Press key " + key);
         Minecraft client = Minecraft.getInstance();
+        if (key == GLFW.GLFW_KEY_LEFT_SHIFT) {
+            shifting = true;
+        }
         // window, key, scancode, action, mods
         long window = client.getWindow().getWindow();
         int scanCode = GLFW.glfwGetKeyScancode(key);
@@ -43,6 +49,10 @@ public class AutoSpeedrunApi {
     public static void releaseKey(int key) {
         announceAction("Release key " + key);
         Minecraft client = Minecraft.getInstance();
+        System.out.println(key + " " + client.options.keyShift.getDefaultKey().getValue());
+        if (key == GLFW.GLFW_KEY_LEFT_SHIFT) {
+            shifting = false;
+        }
         // window, key, scancode, action, mods
         long window = client.getWindow().getWindow();
         int scanCode = GLFW.glfwGetKeyScancode(key);

@@ -15,6 +15,8 @@ public class Util {
     public static int SCREEN_W = 0;
     public static int SCREEN_H = 0;
 
+    public static RunStage runStage = RunStage.OVERWORLD;
+
     //<editor-fold desc="int[][][] glyphChecks = { ... };">
     static int[][][] glyphChecks = {
         {  // (space)
@@ -983,7 +985,7 @@ public class Util {
         92, 0};
     //</editor-fold>
 
-    public static String readScreenStringForward(int sx, int sy, int separatorColor) {
+    public static String readScreenStringForward(int sx, int sy, int separatorColor, int sizeMult) {
         int sepR = separatorColor & 0xff;
         int sepG = separatorColor & 0xff00;
         int sepB = separatorColor & 0xff0000;
@@ -996,8 +998,11 @@ public class Util {
                 for (int x = 0; x < glyphChecks[i][0].length; x++) {
                     for (int y = 0; y < glyphChecks[i].length; y++) {
                         boolean expected = glyphChecks[i][y][x] == 1;
-                        for (int d = 0; d < 4; d++) {
-                            int rgba = AutoSpeedrunApi.getScreenshotPixelRGBA(sx + x * 2 + (d % 2), sy + y * 2 + (d / 2));
+                        for (int d = 0; d < sizeMult * sizeMult; d++) {
+                            int rgba = AutoSpeedrunApi.getScreenshotPixelRGBA(
+                                sx + x * sizeMult + (d % sizeMult),
+                                sy + y * sizeMult + (d / sizeMult)
+                            );
                             if (rgba == 0) {
                                 return "";
                             }
@@ -1011,7 +1016,7 @@ public class Util {
                     }
                 }
                 decidedChar = c;
-                decidedCharPixelsWidth = c != ' ' ? glyphChecks[i][0].length * 2 : 8;
+                decidedCharPixelsWidth = c != ' ' ? glyphChecks[i][0].length * sizeMult : 4 * sizeMult;
             }
             if (decidedChar == '\0') {
 //                    AutoSpeedrunApi.chatMessage("nothing found");
@@ -1029,11 +1034,11 @@ public class Util {
         return total.toString();
     }
 
-    public static String readScreenStringBackward(int sx, int sy, int separatorColor) {
-        return readScreenStringBackward(sx, sy, separatorColor, glyphIndicesBySize);
+    public static String readScreenStringBackward(int sx, int sy, int separatorColor, int sizeMult) {
+        return readScreenStringBackward(sx, sy, separatorColor, glyphIndicesBySize, sizeMult);
     }
 
-    public static String readScreenStringBackward(int sx, int sy, int separatorColor, int[] glyphIndicies) {
+    public static String readScreenStringBackward(int sx, int sy, int separatorColor, int[] glyphIndicies, int sizeMult) {
         int sepR = separatorColor & 0xff;
         int sepG = separatorColor & 0xff00;
         int sepB = separatorColor & 0xff0000;
@@ -1047,8 +1052,11 @@ public class Util {
                 for (int x = glyphChecks[i][0].length - 1, dx = 0; x >= 0; x--, dx--) {
                     for (int y = 0; y < glyphChecks[i].length; y++) {
                         boolean expected = glyphChecks[i][y][x] == 1;
-                        for (int d = 0; d < 4; d++) {
-                            int rgba = AutoSpeedrunApi.getScreenshotPixelRGBA(sx + dx * 2 + (d % 2), sy + y * 2 + (d / 2));
+                        for (int d = 0; d < sizeMult * sizeMult; d++) {
+                            int rgba = AutoSpeedrunApi.getScreenshotPixelRGBA(
+                                sx + dx * sizeMult + (d % sizeMult),
+                                sy + y * sizeMult + (d / sizeMult)
+                            );
                             if (rgba == 0) {
 //                                AutoSpeedrunApi.chatMessage("nothing");
                                 return "";
@@ -1063,7 +1071,7 @@ public class Util {
                     }
                 }
                 decidedChar = c;
-                decidedCharPixelsWidth = c != ' ' ? glyphChecks[i][0].length * 2 : 8;
+                decidedCharPixelsWidth = c != ' ' ? glyphChecks[i][0].length * sizeMult : 4 * sizeMult;
                 break;
             }
             if (decidedChar == '\0') {

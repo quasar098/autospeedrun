@@ -2,12 +2,7 @@ package name.quasar.autospeedrun.usercode;
 
 import name.quasar.autospeedrun.AutoSpeedrunApi;
 import net.minecraft.client.KeyMapping;
-import net.minecraft.client.KeyboardHandler;
-import net.minecraft.client.Minecraft;
 import org.lwjgl.glfw.GLFW;
-
-import java.lang.reflect.Field;
-import java.security.Key;
 
 public class AutoSpeedrunUserCode {
     public void init() {
@@ -15,6 +10,7 @@ public class AutoSpeedrunUserCode {
         Util.SCREEN_W = 0;
         Util.SCREEN_H = 0;
         Util.tickCount = 0;
+        Util.runStage = RunStage.OVERWORLD;
 
         // other systems
         WorldBlocks.reset();
@@ -74,6 +70,13 @@ public class AutoSpeedrunUserCode {
 //        } catch (NoSuchFieldException | IllegalAccessException e) {
 //            throw new RuntimeException(e);
 //        }
+        // do stuff based on stage of run
+        if (Util.runStage == RunStage.OVERWORLD) {
+            BuriedTreasureOverworld.perform();
+            if (BuriedTreasureOverworld.subsection == BuriedTreasureOverworld.Subsection.DONE) {
+                Util.runStage = RunStage.ENTERED_NETHER;
+            }
+        }
         // do movement and mouse
         boolean navigatorResult = Navigation.perform();
         MovementInputManager.handle();

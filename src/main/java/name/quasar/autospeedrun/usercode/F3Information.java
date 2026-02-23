@@ -6,10 +6,10 @@ public class F3Information {
     public static int f3TextColor = 0xffdddddd;
 
     public static boolean isF3Open() {
-        if (Util.readScreenStringForward(4, 4, 0xffdddddd).startsWith("Minecraft 1.16.1")) {
+        if (Util.readScreenStringForward(4, 4, 0xffdddddd, 2).startsWith("Minecraft 1.16.1")) {
             f3TextColor = 0xffdddddd;
             return true;
-        } else if (Util.readScreenStringForward(4, 4, 0xff3c3c3c).startsWith("Minecraft 1.16.1")) {
+        } else if (Util.readScreenStringForward(4, 4, 0xff3c3c3c, 2).startsWith("Minecraft 1.16.1")) {
             f3TextColor = 0xff3c3c3c;
             return true;
         }
@@ -31,7 +31,7 @@ public class F3Information {
 
     public static Vector3 getPosition() {
         if (cachedPosition == null) {
-            String positionLine = Util.readScreenStringForward(4, 4 + 18*10, f3TextColor);
+            String positionLine = Util.readScreenStringForward(4, 4 + 18*10, f3TextColor, 2);
             assert !positionLine.isEmpty();
             String[] splitPositionText = positionLine.replaceFirst("XYZ: ", "").split(" / ");
             cachedPosition = new Vector3(
@@ -49,7 +49,7 @@ public class F3Information {
 
     public static Double getPitch() {
         if (cachedPitch == null) {
-            String anglesLine = Util.readScreenStringForward(4, 4 + 18*13, f3TextColor);
+            String anglesLine = Util.readScreenStringForward(4, 4 + 18*13, f3TextColor, 2);
             assert !anglesLine.isEmpty();
             String[] splitPositionText = anglesLine
                     .replaceFirst("Facing: [^(]+\\([^)]+\\) \\(", "")
@@ -65,7 +65,7 @@ public class F3Information {
 
     public static Double getYaw() {
         if (cachedYaw == null) {
-            String anglesLine = Util.readScreenStringForward(4, 4 + 18*13, f3TextColor);
+            String anglesLine = Util.readScreenStringForward(4, 4 + 18*13, f3TextColor, 2);
             assert !anglesLine.isEmpty();
             String[] splitPositionText = anglesLine
                     .replaceFirst("Facing: [^(]+\\([^)]+\\) \\(", "")
@@ -83,7 +83,7 @@ public class F3Information {
 
     public static Dimension getDimension() {
         if (cachedDimension == null) {
-            String f3ReadDimension = Util.readScreenStringForward(4, 4 + 18*8, f3TextColor);
+            String f3ReadDimension = Util.readScreenStringForward(4, 4 + 18*8, f3TextColor, 2);
             if (f3ReadDimension.contains("minecraft:overworld")) {
                 cachedDimension = Dimension.OVERWORLD;
             } else if (f3ReadDimension.contains("minecraft:the_nether")) {
@@ -104,7 +104,7 @@ public class F3Information {
 
     public static BlockLocation getTargettedBlockPosition() {
         if (cachedTargettedBlockPosition == null) {
-            String positionLine = Util.readScreenStringBackward(Util.SCREEN_W - 6, 4 + 18*10, f3TextColor);
+            String positionLine = Util.readScreenStringBackward(Util.SCREEN_W - 6, 4 + 18*10, f3TextColor, 2);
             String[] split = positionLine.replaceFirst("Targeted Block: ", "").split(", ");
             if (split.length != 3) {
                 return null;
@@ -132,8 +132,16 @@ public class F3Information {
                     63, 65, 66, 67, 68, 69, 71, 72, 74, 77, 78, 79, 80,
                     81, 82, 83, 85, 86, 87, 88, 89, 90, 70, 75, 84,
                     76, 26, 73
-                });
+                }, 2);
         }
         return cachedTargettedBlockName;
     }
+
+    /* pie chart */
+
+    public static boolean isPieChartShown() {
+        String pieShownText = Util.readScreenStringForward(Util.SCREEN_W - 330, Util.SCREEN_H - 416, 0xfffcfcfc, 1);
+        return pieShownText.startsWith("[0] ");
+    }
+
 }

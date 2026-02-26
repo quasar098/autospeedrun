@@ -2,6 +2,8 @@ package name.quasar.autospeedrun.usercode;
 
 import name.quasar.autospeedrun.AutoSpeedrunApi;
 
+import java.util.function.IntPredicate;
+
 public class Util {
 
     public static final double SENS = 0.40140846371650696;  // from options.txt
@@ -986,9 +988,17 @@ public class Util {
     //</editor-fold>
 
     public static String readScreenStringForward(int sx, int sy, int separatorColor, int sizeMult) {
-        int sepR = separatorColor & 0xff;
-        int sepG = separatorColor & 0xff00;
-        int sepB = separatorColor & 0xff0000;
+        return readScreenStringForward(
+            sx,
+            sy,
+            c -> ((c & 0x0000ff) >= (separatorColor & 0x0000ff)) &&
+                 ((c & 0x00ff00) >= (separatorColor & 0x00ff00)) &&
+                 ((c & 0xff0000) >= (separatorColor & 0xff0000)),
+            sizeMult
+        );
+    }
+
+    public static String readScreenStringForward(int sx, int sy, IntPredicate separatorFn, int sizeMult) {
         char decidedChar = '\0';
         int decidedCharPixelsWidth = 0;
         StringBuilder total = new StringBuilder();
@@ -1006,10 +1016,9 @@ public class Util {
                             if (rgba == 0) {
                                 return "";
                             }
-                            int sampleR = rgba & 0xff;
-                            int sampleG = rgba & 0xff00;
-                            int sampleB = rgba & 0xff0000;
-                            if ((sampleR >= sepR && sampleG >= sepG && sampleB >= sepB) ^ (expected)) {
+                            // 0xAABBGGRR bytes order, remove alpha
+                            int sampleRGB = rgba & 0x00ffffff;
+                            if (separatorFn.test(sampleRGB) ^ expected) {
                                 continue possibleCharsLoop;
                             }
                         }
@@ -1038,10 +1047,25 @@ public class Util {
         return readScreenStringBackward(sx, sy, separatorColor, glyphIndicesBySize, sizeMult);
     }
 
-    public static String readScreenStringBackward(int sx, int sy, int separatorColor, int[] glyphIndicies, int sizeMult) {
-        int sepR = separatorColor & 0xff;
-        int sepG = separatorColor & 0xff00;
-        int sepB = separatorColor & 0xff0000;
+    public static String readScreenStringBackward(int sx, int sy, IntPredicate fn, int sizeMult) {
+        return readScreenStringBackward(sx, sy, fn, glyphIndicesBySize, sizeMult);
+    }
+
+    public static String readScreenStringBackward(int sx, int sy, int separatorColor, int[] glyphIndicies,
+                                                  int sizeMult) {
+        return readScreenStringBackward(
+            sx,
+            sy,
+            c -> ((c & 0x0000ff) >= (separatorColor & 0x0000ff)) &&
+                ((c & 0x00ff00) >= (separatorColor & 0x00ff00)) &&
+                ((c & 0xff0000) >= (separatorColor & 0xff0000)),
+            glyphIndicies,
+            sizeMult
+        );
+    }
+
+    public static String readScreenStringBackward(int sx, int sy, IntPredicate fn,
+                                                  int[] glyphIndicies, int sizeMult) {
         char decidedChar;
         int decidedCharPixelsWidth = 0;
         StringBuilder total = new StringBuilder();
@@ -1061,10 +1085,9 @@ public class Util {
 //                                AutoSpeedrunApi.chatMessage("nothing");
                                 return "";
                             }
-                            int sampleR = rgba & 0xff;
-                            int sampleG = rgba & 0xff00;
-                            int sampleB = rgba & 0xff0000;
-                            if ((sampleR >= sepR && sampleG >= sepG && sampleB >= sepB) ^ (expected)) {
+                            // 0xAABBGGRR bytes order, remove alpha
+                            int sampleRGB = rgba & 0x00ffffff;
+                            if (fn.test(sampleRGB) ^ (expected)) {
                                 continue possibleCharsLoop;
                             }
                         }

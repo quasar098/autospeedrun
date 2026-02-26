@@ -10,9 +10,11 @@ https://www.mcpk.wiki/wiki/Horizontal_Movement_Formulas
 
 https://minecraft.wiki/w/Options.txt
 
-## notes
+## practice seed list
 
-todo -9143385914405374461
+- `-1807904186447035469` easy trees, easy bt
+
+## notes
 
 1. mouse calibration
 2. pie ray for general bt direction
@@ -29,3 +31,17 @@ todo -9143385914405374461
 13. make l shape portal or something
 14. in nether e ray scan for bastion
 15. die in lava or something idfk
+
+## potential strategies
+
+- subpixelless one eye using mouse sens and pixel stepping and LLL
+- f3 left shift vs crouch left shift discrepancy for faster pie charting
+- per biome block assumption heuristics to save mouse scan power
+- double bucket fast 2x1 portal on BTs/shipwrecks with lots of iron
+
+## broad todo list
+
+- change most classes to singleton and private defaults instead of having
+public static everywhere
+- shake mouse with nav enabled and it doesn't go the right way but it should
+- all other seed types than BT

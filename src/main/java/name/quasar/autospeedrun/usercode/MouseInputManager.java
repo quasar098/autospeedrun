@@ -42,8 +42,8 @@ public class MouseInputManager {
                 calibrationStage++;
                 break;
             case 2:
-                calibrationOffsetX = mouseMultiplier * F3Information.getYaw();
-                calibrationOffsetY = mouseMultiplier * F3Information.getPitch();
+                calibrationOffsetX = -mouseMultiplier * F3Information.getYaw();
+                calibrationOffsetY = -mouseMultiplier * F3Information.getPitch();
 //                AutoSpeedrunApi.chatMessage("Stage 2:" + F3Information.getYaw() + "," + F3Information.getPitch());
 //                AutoSpeedrunApi.chatMessage("Stage 2C:" + calibrationOffsetX + "," + calibrationOffsetY);
                 setPlayerAngle(0.0, 0.0);
@@ -67,6 +67,6 @@ public class MouseInputManager {
 
     public static void reset() {
         calibrationStage = 0;
-        mouseMultiplier = -1.0 / (Math.pow(Util.SENS * 0.6 + 0.2, 3) * 8 * 0.15);
+        mouseMultiplier = 1.0 / (Math.pow(Util.SENS * 0.6 + 0.2, 3) * 8 * 0.15);
     }
 }

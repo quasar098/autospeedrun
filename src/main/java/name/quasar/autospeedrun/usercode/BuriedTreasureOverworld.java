@@ -25,38 +25,66 @@ public class BuriedTreasureOverworld {
         subsection = Subsection.SCANNING;
 
         // scanning
-        openingPieChartDelay = 0;
+        performingScan = false;
         scanAngle = 0;
     }
 
-    public static int openingPieChartDelay = 0;
+    /* scanning for bt */
+
+    public static boolean performingScan = false;
     public static double scanAngle = 0;
 
     public static void performScan() {
+        // force pie chart open
         if (!F3Information.isPieChartShown()) {
-            if (openingPieChartDelay == 0) {
-                AutoSpeedrunApi.pressKey(GLFW.GLFW_KEY_LEFT_SHIFT);
-            }
-            if (openingPieChartDelay == 1) {
-                AutoSpeedrunApi.tapKey(GLFW.GLFW_KEY_F3);
-            }
-            if (openingPieChartDelay < 4) {
-                openingPieChartDelay++;
-                return;
-            }
-            if (openingPieChartDelay == 4) {
-                openingPieChartDelay = 0;
-                AutoSpeedrunApi.releaseKey(GLFW.GLFW_KEY_LEFT_SHIFT);
-                return;
-            }
-        }
-
-        if (scanAngle < 360) {
-            AutoSpeedrunApi.chatMessage("Scan angle: " + scanAngle);
-            scanAngle += 10;
+            AutoSpeedrunApi.pressKey(GLFW.GLFW_KEY_LEFT_SHIFT);
+            AutoSpeedrunApi.tapKey(GLFW.GLFW_KEY_F3);
+            performingScan = true;
             return;
         }
+        // force correct path
+        int pathTravNum = F3Information.getRecommendedNumForPiePathTraversal("root.gameRenderer.level.entities");
+        if (pathTravNum != -1) {
+            AutoSpeedrunApi.tapKey(pathTravNum + '0');
+            if (pathTravNum == 2) {  // inventory key :(
+                // todo fix make it next tick or something
+            }
+            if (pathTravNum == 3) {  // f5/perspective key :(
+                AutoSpeedrunApi.tapKey(GLFW.GLFW_KEY_3);
+                AutoSpeedrunApi.tapKey(GLFW.GLFW_KEY_3);
+            }
+            return;
+        }
+        // do scan
+        if (scanAngle < 720) {
+            AutoSpeedrunApi.chatMessage("Scan angle: " + scanAngle);
+            MouseInputManager.setPlayerAngle(scanAngle, 10.0);
+
+            Double globalPerc = F3Information.getPieDirectoryGlobalPercentage("blockentities");
+            Double relPerc = F3Information.getPieDirectoryRelativePercentage("blockentities");
+            if (globalPerc == null) {
+                AutoSpeedrunApi.chatMessage("gloabl percentage of blockentities null on scan");
+                AutoSpeedrunApi.emergencyStopUserCode();
+                return;
+            }
+            if (relPerc == null) {
+                AutoSpeedrunApi.chatMessage("rel percentage of blockentities null on scan");
+                AutoSpeedrunApi.emergencyStopUserCode();
+                return;
+            }
+            System.out.println("gp=" + globalPerc + "/rp=" + relPerc);
+
+            // dw pie chart will reenable because of the beginning of this func
+            AutoSpeedrunApi.tapKey(GLFW.GLFW_KEY_F3);
+            scanAngle += 5;
+            return;
+        }
+        // done with scan
+        AutoSpeedrunApi.releaseKey(GLFW.GLFW_KEY_LEFT_SHIFT);
+        subsection = Subsection.MOVING_TO_9_9;
     }
+
+    /* overall/misc */
 
     public static void perform() {
         if (subsection == Subsection.SCANNING) {
@@ -64,3 +92,4 @@ public class BuriedTreasureOverworld {
         }
     }
 }
+

@@ -2,7 +2,6 @@ package name.quasar.autospeedrun;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.NativeImage;
-import name.quasar.autospeedrun.mixin.ScreenMixin;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -23,7 +22,7 @@ import static name.quasar.autospeedrun.Util.*;
 
 public class AutoSpeedrunApi {
     public static void tapKey(int key) {
-        announceAction("Tap key " + key);
+        announceAction("Tap key " + keyNameFromConstant(key));
         Minecraft client = Minecraft.getInstance();
         // window, key, scancode, action, mods
         long window = client.getWindow().getWindow();
@@ -35,7 +34,7 @@ public class AutoSpeedrunApi {
     public static boolean shifting = false;
 
     public static void pressKey(int key) {
-        announceAction("Press key " + key);
+        announceAction("Press key " + keyNameFromConstant(key));
         Minecraft client = Minecraft.getInstance();
         if (key == GLFW.GLFW_KEY_LEFT_SHIFT) {
             shifting = true;
@@ -47,7 +46,7 @@ public class AutoSpeedrunApi {
     }
 
     public static void releaseKey(int key) {
-        announceAction("Release key " + key);
+        announceAction("Release key " + keyNameFromConstant(key));
         Minecraft client = Minecraft.getInstance();
         System.out.println(key + " " + client.options.keyShift.getDefaultKey().getValue());
         if (key == GLFW.GLFW_KEY_LEFT_SHIFT) {
@@ -158,5 +157,9 @@ public class AutoSpeedrunApi {
             Minecraft.getInstance().player.displayClientMessage(
                     new TextComponent(str).withStyle(ChatFormatting.GREEN), true);
         }
+    }
+
+    public static void emergencyStopUserCode() {
+        Util.togglePaused = true;
     }
 }

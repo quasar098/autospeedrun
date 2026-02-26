@@ -2,6 +2,8 @@ package name.quasar.autospeedrun.usercode;
 
 import name.quasar.autospeedrun.AutoSpeedrunApi;
 
+import java.util.Arrays;
+
 public class F3Information {
     public static int f3TextColor = 0xffdddddd;
 
@@ -23,6 +25,9 @@ public class F3Information {
         cachedDimension = null;
         cachedTargettedBlockPosition = null;
         cachedTargettedBlockName = null;
+        cachedPiePathText = null;
+        cachedPieLabels = null;
+        cachedPieResults = null;
     }
 
     /* xyz position */
@@ -137,11 +142,133 @@ public class F3Information {
         return cachedTargettedBlockName;
     }
 
-    /* pie chart */
+    /* pie charting */
 
-    public static boolean isPieChartShown() {
-        String pieShownText = Util.readScreenStringForward(Util.SCREEN_W - 330, Util.SCREEN_H - 416, 0xfffcfcfc, 1);
-        return pieShownText.startsWith("[0] ");
+    public static String cachedPiePathText = null;
+    public static String[] cachedPieLabels = null;
+    public static String[] cachedPieResults = null;
+
+    public static final int[] pieTextColors = {
+        0xc2ccc2,  // gameRenderer
+        0xca4365,  // tick
+        0xc2cc63,  // level
+        0xc245e1,  // entities
+        0x4d6de9,  // blockentities (gameRenderer.level.entities / pie-ray)
+        0x6dc4c4,  // blockEntities (tick.level.entities / pie-dar)
+        0xcae14d,  // minecraft:mob_spawner
+        0xe16dc4,  // minecraft:chest
+        0x65cc45,  // unspecified
+    };
+
+    /* includes the "[0] " prefix */
+    public static String getPiePathRawText() {
+        if (cachedPiePathText == null) {
+            cachedPiePathText = Util.readScreenStringForward(Util.SCREEN_W - 330, Util.SCREEN_H - 416, 0xfffcfcfc, 1);
+        }
+        return cachedPiePathText;
     }
 
+    public static boolean isPieChartShown() {
+        return getPiePathRawText().startsWith("[0] ");
+    }
+
+    public static int getRecommendedNumForPiePathTraversal(String desiredPath) {
+        String currPiePath = getPiePathRawText().replaceFirst("\\[0] ", "");
+        if (desiredPath.equals(currPiePath)) {
+            return -1;
+        }
+        if (!desiredPath.startsWith(currPiePath) || currPiePath.length() > desiredPath.length()) {
+            return 0;
+        }
+        String clickThisLabelNext = desiredPath.substring(currPiePath.length() + 1).split("\\.")[0];
+        if (cachedPieLabels == null) {
+            cachedPieLabels = new String[9];
+        }
+        for (int i = 0; i < 9; i++) {
+            if (cachedPieLabels[i] == null) {
+                cachedPieLabels[i] = Util.readScreenStringForward(
+                    Util.SCREEN_W - 330,
+                    Util.SCREEN_H - 220 + 8 * i,
+                    c -> Arrays.stream(pieTextColors).anyMatch(x -> x == c),
+                    1
+                ).replaceFirst("\\[\\d+] ", "");
+            }
+            if (cachedPieLabels[i].equals(clickThisLabelNext)) {
+                return i+1;
+            }
+        }
+        return 0;
+    }
+
+    // returns null if the text doesn't exist
+    public static Double getPieDirectoryRelativePercentage(String directory) {
+        if (cachedPieLabels == null) {
+            cachedPieLabels = new String[9];
+        }
+        if (cachedPieResults == null) {
+            cachedPieResults = new String[9];
+        }
+        for (int i = 0; i < 9; i++) {
+            if (cachedPieLabels[i] == null) {
+                cachedPieLabels[i] = Util.readScreenStringForward(
+                    Util.SCREEN_W - 330,
+                    Util.SCREEN_H - 220 + 8 * i,
+                    c -> Arrays.stream(pieTextColors).anyMatch(x -> x == c),
+                    1
+                ).replaceFirst("\\[\\d+] ", "");
+            }
+            if (directory.equals(cachedPieLabels[i])) {
+                if (cachedPieResults[i] == null) {
+                    cachedPieResults[i] = Util.readScreenStringBackward(
+                        Util.SCREEN_W - 61,
+                        Util.SCREEN_H - 220 + 8 * i,
+                        c -> Arrays.stream(pieTextColors).anyMatch(x -> x == c),
+                        1
+                    );
+                }
+                try {
+                    return Double.parseDouble(cachedPieResults[i].replaceFirst("%", ""));
+                } catch (NumberFormatException ignored) {
+                    return null;
+                }
+            }
+        }
+        return null;
+    }
+
+    // returns null if the text doesn't exist
+    public static Double getPieDirectoryGlobalPercentage(String directory) {
+        if (cachedPieLabels == null) {
+            cachedPieLabels = new String[9];
+        }
+        if (cachedPieResults == null) {
+            cachedPieResults = new String[9];
+        }
+        for (int i = 0; i < 9; i++) {
+            if (cachedPieLabels[i] == null) {
+                cachedPieLabels[i] = Util.readScreenStringForward(
+                    Util.SCREEN_W - 330,
+                    Util.SCREEN_H - 220 + 8 * i,
+                    c -> Arrays.stream(pieTextColors).anyMatch(x -> x == c),
+                    1
+                ).replaceFirst("\\[\\d+] ", "");
+            }
+            if (directory.equals(cachedPieLabels[i])) {
+                if (cachedPieResults[i] == null) {
+                    cachedPieResults[i] = Util.readScreenStringBackward(
+                        Util.SCREEN_W - 11,
+                        Util.SCREEN_H - 220 + 8 * i,
+                        c -> Arrays.stream(pieTextColors).anyMatch(x -> x == c),
+                        1
+                    );
+                }
+                try {
+                    return Double.parseDouble(cachedPieResults[i].replaceFirst("%", ""));
+                } catch (NumberFormatException ignored) {
+                    return null;
+                }
+            }
+        }
+        return null;
+    }
 }

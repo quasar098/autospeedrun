@@ -45,3 +45,20 @@ https://minecraft.wiki/w/Options.txt
 public static everywhere
 - shake mouse with nav enabled and it doesn't go the right way but it should
 - all other seed types than BT
+- recalibrate mouse upon inaccuracy above 0.1 degrees.
+
+## licensing
+
+there are two licenses present in this codebase.
+
+everything by default is under GNU Affero Public License (AGPL).
+a copy of the GNU Affero Public License (AGPL) license is present in `./LICENSE`.
+
+all "user code"/"bot code" (everything in `./src/main/java/name/quasar/autospeedrun/usercode`) is licensed under the
+MIT license. a copy of the MIT license is present in `./src/main/java/name/quasar/autospeedrun/usercode/LICENSE`.
+
+the reasoning for this licensing setup is that I want to prevent people from profiting financially or socially
+off of a codebase that took me a nonneglible amount of time to write and plan. simultaneously, i would like to see great
+innovation when it comes to developing MCSR bots, so my sample "user code" is open for any modifications.
+
+tl;dr: this API for making MCSR bots is strong copyleft, but for the actual bot code do whatever you want with it

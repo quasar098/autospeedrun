@@ -1,7 +1,6 @@
 package name.quasar.autospeedrun.usercode;
 
 import name.quasar.autospeedrun.AutoSpeedrunApi;
-import net.minecraft.client.Minecraft;
 
 public class MouseInputManager {
     private static int calibrationStage = 0;
@@ -67,6 +66,6 @@ public class MouseInputManager {
 
     public static void reset() {
         calibrationStage = 0;
-        mouseMultiplier = 1.0 / (Math.pow(Util.SENS * 0.6 + 0.2, 3) * 8 * 0.15);
+        mouseMultiplier = 1.0 / (Math.pow(Util.OPTIONS_TXT_SENS * 0.6 + 0.2, 3) * 8 * 0.15);
     }
 }

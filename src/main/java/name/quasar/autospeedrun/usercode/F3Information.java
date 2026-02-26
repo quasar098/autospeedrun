@@ -6,13 +6,16 @@ import java.util.Arrays;
 
 public class F3Information {
     public static int f3TextColor = 0xffdddddd;
+    public static boolean f3HasBackgroundDim = false;
 
     public static boolean isF3Open() {
         if (Util.readScreenStringForward(4, 4, 0xffdddddd, 2).startsWith("Minecraft 1.16.1")) {
             f3TextColor = 0xffdddddd;
+            f3HasBackgroundDim = false;
             return true;
         } else if (Util.readScreenStringForward(4, 4, 0xff3c3c3c, 2).startsWith("Minecraft 1.16.1")) {
             f3TextColor = 0xff3c3c3c;
+            f3HasBackgroundDim = true;
             return true;
         }
         return false;
@@ -27,7 +30,8 @@ public class F3Information {
         cachedTargettedBlockName = null;
         cachedPiePathText = null;
         cachedPieLabels = null;
-        cachedPieResults = null;
+        cachedPieRelativeResults = null;
+        cachedPieGlobalResults = null;
     }
 
     /* xyz position */
@@ -146,7 +150,8 @@ public class F3Information {
 
     public static String cachedPiePathText = null;
     public static String[] cachedPieLabels = null;
-    public static String[] cachedPieResults = null;
+    public static String[] cachedPieRelativeResults = null;
+    public static String[] cachedPieGlobalResults = null;
 
     public static final int[] pieTextColors = {
         0xc2ccc2,  // gameRenderer
@@ -205,8 +210,8 @@ public class F3Information {
         if (cachedPieLabels == null) {
             cachedPieLabels = new String[9];
         }
-        if (cachedPieResults == null) {
-            cachedPieResults = new String[9];
+        if (cachedPieRelativeResults == null) {
+            cachedPieRelativeResults = new String[9];
         }
         for (int i = 0; i < 9; i++) {
             if (cachedPieLabels[i] == null) {
@@ -218,8 +223,8 @@ public class F3Information {
                 ).replaceFirst("\\[\\d+] ", "");
             }
             if (directory.equals(cachedPieLabels[i])) {
-                if (cachedPieResults[i] == null) {
-                    cachedPieResults[i] = Util.readScreenStringBackward(
+                if (cachedPieRelativeResults[i] == null) {
+                    cachedPieRelativeResults[i] = Util.readScreenStringBackward(
                         Util.SCREEN_W - 61,
                         Util.SCREEN_H - 220 + 8 * i,
                         c -> Arrays.stream(pieTextColors).anyMatch(x -> x == c),
@@ -227,7 +232,7 @@ public class F3Information {
                     );
                 }
                 try {
-                    return Double.parseDouble(cachedPieResults[i].replaceFirst("%", ""));
+                    return Double.parseDouble(cachedPieRelativeResults[i].replaceFirst("%", ""));
                 } catch (NumberFormatException ignored) {
                     return null;
                 }
@@ -241,8 +246,8 @@ public class F3Information {
         if (cachedPieLabels == null) {
             cachedPieLabels = new String[9];
         }
-        if (cachedPieResults == null) {
-            cachedPieResults = new String[9];
+        if (cachedPieGlobalResults == null) {
+            cachedPieGlobalResults = new String[9];
         }
         for (int i = 0; i < 9; i++) {
             if (cachedPieLabels[i] == null) {
@@ -254,8 +259,8 @@ public class F3Information {
                 ).replaceFirst("\\[\\d+] ", "");
             }
             if (directory.equals(cachedPieLabels[i])) {
-                if (cachedPieResults[i] == null) {
-                    cachedPieResults[i] = Util.readScreenStringBackward(
+                if (cachedPieGlobalResults[i] == null) {
+                    cachedPieGlobalResults[i] = Util.readScreenStringBackward(
                         Util.SCREEN_W - 11,
                         Util.SCREEN_H - 220 + 8 * i,
                         c -> Arrays.stream(pieTextColors).anyMatch(x -> x == c),
@@ -263,7 +268,7 @@ public class F3Information {
                     );
                 }
                 try {
-                    return Double.parseDouble(cachedPieResults[i].replaceFirst("%", ""));
+                    return Double.parseDouble(cachedPieGlobalResults[i].replaceFirst("%", ""));
                 } catch (NumberFormatException ignored) {
                     return null;
                 }

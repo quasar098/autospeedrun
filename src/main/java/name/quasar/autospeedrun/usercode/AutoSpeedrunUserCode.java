@@ -2,15 +2,21 @@ package name.quasar.autospeedrun.usercode;
 
 import name.quasar.autospeedrun.AutoSpeedrunApi;
 import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
+import net.minecraft.world.phys.Vec3;
 import org.lwjgl.glfw.GLFW;
 
 public class AutoSpeedrunUserCode {
+
+    int testStartTick = -1;
+
     public void init() {
         // misc useful
         Util.SCREEN_W = 0;
         Util.SCREEN_H = 0;
         Util.tickCount = 0;
         Util.runStage = RunStage.OVERWORLD;
+        testStartTick = -1;
 
         // other systems
         WorldBlocks.reset();
@@ -54,13 +60,14 @@ public class AutoSpeedrunUserCode {
                 F3Information.getTargettedBlockName()
             ));
         }
-        if (click) {
-            click = false;
-            com.mojang.blaze3d.platform.InputConstants.Key key = com.mojang.blaze3d.platform.InputConstants.Type.MOUSE.getOrCreate(0);
-            KeyMapping.set(key, true);
-            KeyMapping.click(key);
-        }
+
         // i actually dk what tf is going on with left click
+//        if (click) {
+//            click = false;
+//            com.mojang.blaze3d.platform.InputConstants.Key key = com.mojang.blaze3d.platform.InputConstants.Type.MOUSE.getOrCreate(0);
+//            KeyMapping.set(key, true);
+//            KeyMapping.click(key);
+//        }
 //        try {
 //            Field f1 = Minecraft.getInstance().options.keyAttack.getClass().getDeclaredField("clickCount");
 //            Field f2 = Minecraft.getInstance().options.keyAttack.getClass().getDeclaredField("isDown");
@@ -71,13 +78,40 @@ public class AutoSpeedrunUserCode {
 //        } catch (NoSuchFieldException | IllegalAccessException e) {
 //            throw new RuntimeException(e);
 //        }
+
         // do stuff based on stage of run
-        if (Util.runStage == RunStage.OVERWORLD) {
-            BuriedTreasureOverworld.getInstance().perform();
-            if (BuriedTreasureOverworld.getInstance().subsection == BuriedTreasureOverworld.Subsection.DONE) {
-                Util.runStage = RunStage.ENTERED_NETHER;
-            }
+//        if (Util.runStage == RunStage.OVERWORLD) {
+//            BuriedTreasureOverworld.getInstance().perform();
+//            if (BuriedTreasureOverworld.getInstance().subsection == BuriedTreasureOverworld.Subsection.DONE) {
+//                Util.runStage = RunStage.ENTERED_NETHER;
+//            }
+//        }
+
+        // movement test
+        if (testStartTick == -1) {
+            testStartTick = Util.tickCount;
         }
+        Vector3 pos = F3Information.getPosition();
+        Vec3 real = Minecraft.getInstance().player.position();
+        System.out.printf("%d %d %f %f %f %f %f %f\n", Util.tickCount, testStartTick, pos.getX(), pos.getY(), pos.getZ(),
+            real.x, real.y, real.z);
+        if (Util.tickCount < testStartTick + 40) {
+            if (Math.random() > 0.5) {
+                System.out.println("Pressing W");
+                MovementInputManager.planPressKeyW();
+            } else {
+                System.out.println("Releasing W");
+            }
+            if (Math.random() > 0.5) {
+                System.out.println("Pressing Crouch");
+                MovementInputManager.planPressKeyCrouch();
+            } else {
+                System.out.println("Releasing Crouch");
+            }
+            MovementInputManager.setSprinting(Math.random() > 0.5);
+            System.out.println("Sprinting: " + MovementInputManager.isSprinting());
+        }
+
         // do movement and mouse
         boolean navigatorResult = Navigation.perform();
         MovementInputManager.handle();

@@ -54,7 +54,6 @@ public class AutoSpeedrunApi {
     public static void releaseKey(int key) {
         announceAction("Release key " + keyNameFromConstant(key));
         Minecraft client = Minecraft.getInstance();
-        System.out.println(key + " " + client.options.keyShift.getDefaultKey().getValue());
         if (key == GLFW.GLFW_KEY_LEFT_SHIFT) {
             leftShifting = false;
         }

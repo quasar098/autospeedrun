@@ -8,11 +8,23 @@ public class MovementInputManager {
     private static boolean prevA = false;
     private static boolean prevS = false;
     private static boolean prevD = false;
+    private static boolean prevCrouch = false;
+    private static boolean prevSprint = false;
 
     private static boolean currW = false;
     private static boolean currA = false;
     private static boolean currS = false;
     private static boolean currD = false;
+    private static boolean currCrouch = false;
+    private static boolean currSprint = false;
+
+    public static boolean isSprinting() {
+        return currSprint;
+    }
+
+    public static void setSprinting(boolean sprint) {
+        currSprint = sprint;
+    }
 
     public static void handle() {
         if (prevW != currW) {
@@ -43,18 +55,32 @@ public class MovementInputManager {
                 AutoSpeedrunApi.releaseKey(GLFW.GLFW_KEY_D);
             }
         }
+        if (prevCrouch != currCrouch) {
+            if (currCrouch) {
+                AutoSpeedrunApi.pressKey(GLFW.GLFW_KEY_LEFT_SHIFT);
+            } else {
+                AutoSpeedrunApi.releaseKey(GLFW.GLFW_KEY_LEFT_SHIFT);
+            }
+        }
+        if (prevSprint != currSprint) {
+            AutoSpeedrunApi.pressKey(GLFW.GLFW_KEY_P);  // todo fix potential sync issues
+        }
         prevW = currW;
         prevA = currA;
         prevS = currS;
         prevD = currD;
+        prevCrouch = currCrouch;
+        prevSprint = currSprint;
         currW = false;
         currA = false;
         currS = false;
         currD = false;
+        currCrouch = false;
     }
 
     public static void planPressKeyW() { currW = true; }
     public static void planPressKeyA() { currA = true; }
     public static void planPressKeyS() { currS = true; }
     public static void planPressKeyD() { currD = true; }
+    public static void planPressKeyCrouch() { currCrouch = true; }
 }

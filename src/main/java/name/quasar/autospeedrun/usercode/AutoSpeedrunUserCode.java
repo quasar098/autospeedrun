@@ -93,23 +93,13 @@ public class AutoSpeedrunUserCode {
         }
         Vector3 pos = F3Information.getPosition();
         Vec3 real = Minecraft.getInstance().player.position();
-        System.out.printf("%d %d %f %f %f %f %f %f\n", Util.tickCount, testStartTick, pos.getX(), pos.getY(), pos.getZ(),
-            real.x, real.y, real.z);
+        System.out.printf("%d %d %f %f %f\n", Util.tickCount, testStartTick, real.x, real.y, real.z);
         if (Util.tickCount < testStartTick + 40) {
-            if (Math.random() > 0.5) {
-                System.out.println("Pressing W");
-                MovementInputManager.planPressKeyW();
-            } else {
-                System.out.println("Releasing W");
-            }
-            if (Math.random() > 0.5) {
-                System.out.println("Pressing Crouch");
+            if (Util.tickCount > 10 && Util.tickCount < 40) {
+                System.out.println("Crouching");
                 MovementInputManager.planPressKeyCrouch();
-            } else {
-                System.out.println("Releasing Crouch");
             }
-            MovementInputManager.setSprinting(Math.random() > 0.5);
-            System.out.println("Sprinting: " + MovementInputManager.isSprinting());
+            MovementInputManager.planPressKeyW();
         }
 
         // do movement and mouse

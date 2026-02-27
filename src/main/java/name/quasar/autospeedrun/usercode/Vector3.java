@@ -37,6 +37,15 @@ public class Vector3 {
             + (other.getX() - getX()) * (other.getX() - getX());
     }
 
+    public Double distanceTo2dSquared(Vector3 other) {
+        return (other.getZ() - getZ()) * (other.getZ() - getZ())
+            + (other.getX() - getX()) * (other.getX() - getX());
+    }
+
+    public Double distanceTo2d(Vector3 other) {
+        return Math.sqrt(distanceTo2dSquared(other));
+    }
+
     public Double distanceTo(Vector3 other) {
         return Math.sqrt(distanceToSquared(other));
     }

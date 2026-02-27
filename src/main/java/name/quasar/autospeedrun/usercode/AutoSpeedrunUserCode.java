@@ -15,6 +15,7 @@ public class AutoSpeedrunUserCode {
         // other systems
         WorldBlocks.reset();
         MouseInputManager.reset();
+        BuriedTreasureOverworld.reset();
     }
 
     public void tick() {
@@ -72,8 +73,8 @@ public class AutoSpeedrunUserCode {
 //        }
         // do stuff based on stage of run
         if (Util.runStage == RunStage.OVERWORLD) {
-            BuriedTreasureOverworld.perform();
-            if (BuriedTreasureOverworld.subsection == BuriedTreasureOverworld.Subsection.DONE) {
+            BuriedTreasureOverworld.getInstance().perform();
+            if (BuriedTreasureOverworld.getInstance().subsection == BuriedTreasureOverworld.Subsection.DONE) {
                 Util.runStage = RunStage.ENTERED_NETHER;
             }
         }

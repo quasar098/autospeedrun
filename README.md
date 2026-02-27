@@ -38,6 +38,7 @@ https://minecraft.wiki/w/Options.txt
 - f3 left shift vs crouch left shift discrepancy for faster pie charting
 - per biome block assumption heuristics to save mouse scan power
 - double bucket fast 2x1 portal on BTs/shipwrecks with lots of iron
+- cinematic camera for scanning / more tolerable camera
 
 ## broad todo list
 
@@ -45,7 +46,6 @@ https://minecraft.wiki/w/Options.txt
 public static everywhere
 - shake mouse with nav enabled and it doesn't go the right way but it should
 - all other seed types than BT
-- recalibrate mouse upon inaccuracy above 0.1 degrees.
 
 ## licensing
 

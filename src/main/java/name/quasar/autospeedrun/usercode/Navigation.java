@@ -42,6 +42,14 @@ public class Navigation {
         Navigation.goalPosition = goalPosition;
     }
 
+    public static void setGoalPosition(double x, double y, double z) {
+        Navigation.goalPosition = new Vector3(x, y, z);
+    }
+
+    public static void setGoalPosition(double x, double z) {
+        Navigation.goalPosition = new Vector3(x, -1, z);
+    }
+
     public static int[][] movementPWMTable = {
         {-18000, 10},
         {-16252, 20, 10, 10},
@@ -101,7 +109,11 @@ public class Navigation {
             F3Information.getPosition().getX() - desired.getX(),
             desired.getZ() - F3Information.getPosition().getZ()
         ) * 180 / Math.PI;
-        if (Navigation.goalPosition.distanceTo(F3Information.getPosition()) < ARRIVED_AT_DEST_POSITION_BOUND) {
+        double distance = Navigation.goalPosition.distanceTo(F3Information.getPosition());
+        if (Navigation.goalPosition.getY() <= 0) {
+            distance = Navigation.goalPosition.distanceTo2d(F3Information.getPosition());
+        }
+        if (distance < ARRIVED_AT_DEST_POSITION_BOUND) {
             // this means we have arrived
             AutoSpeedrunApi.chatMessage("Arrived at your destination");
             goalPosition = null;

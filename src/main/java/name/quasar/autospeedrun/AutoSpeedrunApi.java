@@ -32,13 +32,19 @@ public class AutoSpeedrunApi {
     }
 
     public static boolean shifting = false;
+    public static boolean leftShifting = false;
+    public static boolean rightShifting = false;
 
     public static void pressKey(int key) {
         announceAction("Press key " + keyNameFromConstant(key));
         Minecraft client = Minecraft.getInstance();
         if (key == GLFW.GLFW_KEY_LEFT_SHIFT) {
-            shifting = true;
+            leftShifting = true;
         }
+        if (key == GLFW.GLFW_KEY_RIGHT_SHIFT) {
+            rightShifting = true;
+        }
+        shifting = leftShifting || rightShifting;
         // window, key, scancode, action, mods
         long window = client.getWindow().getWindow();
         int scanCode = GLFW.glfwGetKeyScancode(key);
@@ -50,8 +56,12 @@ public class AutoSpeedrunApi {
         Minecraft client = Minecraft.getInstance();
         System.out.println(key + " " + client.options.keyShift.getDefaultKey().getValue());
         if (key == GLFW.GLFW_KEY_LEFT_SHIFT) {
-            shifting = false;
+            leftShifting = false;
         }
+        if (key == GLFW.GLFW_KEY_RIGHT_SHIFT) {
+            rightShifting = false;
+        }
+        shifting = leftShifting || rightShifting;
         // window, key, scancode, action, mods
         long window = client.getWindow().getWindow();
         int scanCode = GLFW.glfwGetKeyScancode(key);

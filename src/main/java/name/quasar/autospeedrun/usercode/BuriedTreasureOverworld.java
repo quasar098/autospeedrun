@@ -19,40 +19,37 @@ public class BuriedTreasureOverworld {
         DONE
     }
 
-    public static Subsection subsection = Subsection.SCANNING;
+    /* singleton design */
 
-    public static void init() {
-        subsection = Subsection.SCANNING;
+    private static BuriedTreasureOverworld instance = null;
 
-        // scanning
-        performingScan = false;
-        scanAngle = 0;
-        scanCurrentType = 0;
-        scanLeftScreenEdgeMin = null;
-        scanLeftScreenEdgeMax = null;
-        scanRightScreenEdgeMin = null;
-        scanRightScreenEdgeMax = null;
+    public static void reset() {
+        instance = null;
+    }
+
+    public static BuriedTreasureOverworld getInstance() {
+        if (instance == null) {
+            instance = new BuriedTreasureOverworld();
+        }
+        return instance;
     }
 
     /* scanning for bt */
 
-    public static boolean performingScan = false;
-    public static int scanPause = 3;  // 0=no pause, positive=pause for that many ticks
-    public static double scanAngle = 0;
-    public static double scanCurrentType = 0;  // 0=360 coverage w/ scanAngle | 1=deduce l/r
-    // the left screen edge angle is the angle that if i turn epsilon to the left then it shows up
-    public static Double scanLeftScreenEdgeMin = null;
-    public static Double scanLeftScreenEdgeMax = null;
-    // the right screen edge angle is the angle that if i turn epsilon to the right then it shows up
-    public static Double scanRightScreenEdgeMin = null;
-    public static Double scanRightScreenEdgeMax = null;
+    private int scanPause = 3;  // 0=no pause, positive=pause for that many ticks
+    private double scanAngle = 0;
+    private int scanTicks = 0;
+    private double scanPrecision = 0;  // exponential
+    private double scanDirection = 1;
+    private Double scanPrevGlobalPerc = null;
+    private double scanRightScreenEdgeAngle = 0;
+    private double scanLeftScreenEdgeAngle = 0;
 
-    public static void performScan() {
+    private void performScan() {
         // force pie chart open
         if (!F3Information.isPieChartShown()) {
-            AutoSpeedrunApi.pressKey(GLFW.GLFW_KEY_LEFT_SHIFT);
+            AutoSpeedrunApi.pressKey(GLFW.GLFW_KEY_RIGHT_SHIFT);
             AutoSpeedrunApi.tapKey(GLFW.GLFW_KEY_F3);
-            performingScan = true;
             return;
         }
         // force close inventory/whatever other bullshit
@@ -74,71 +71,87 @@ public class BuriedTreasureOverworld {
         double vfov = Math.toRadians(Util.OPTIONS_TXT_FOV * 40 + 70);
         double hfov = 2*Math.atan(Math.tan(vfov/2)*screen_ratio);
         // do scan
+        scanTicks++;
         if (scanPause > 0) {
-            if (--scanPause == 0) {
-                AutoSpeedrunApi.chatMessage("Scan angle: " + (((scanAngle + 180) % 360) - 180));
-                Double globalPerc = F3Information.getPieDirectoryGlobalPercentage("blockentities");
-                Double relPerc = F3Information.getPieDirectoryRelativePercentage("blockentities");
-                if (globalPerc == null) {
-                    AutoSpeedrunApi.chatMessage("gloabl percentage of blockentities null on scan");
-                    AutoSpeedrunApi.emergencyStopUserCode();
-                    return;
-                }
-                if (relPerc == null) {
-                    AutoSpeedrunApi.chatMessage("rel percentage of blockentities null on scan");
-                    AutoSpeedrunApi.emergencyStopUserCode();
-                    return;
-                }
-                System.out.println("gp=" + globalPerc + "/rp=" + relPerc);
-                double leftScreenEdge = (scanAngle - hfov / 2 + 360) % 360;
-                double rightScreenEdge = (scanAngle + hfov / 2 + 360) % 360;
-                // todo fix to be ranges that handle periodicness of angles or whatever
-                // https://stackoverflow.com/questions/55270058/calculate-overlap-of-two-angle-intervals
-                if (globalPerc > 1.3) {  // present in (h)fov
-                    if (scanLeftScreenEdgeMin == null || scanLeftScreenEdgeMin < rightScreenEdge) {
-                        scanLeftScreenEdgeMin = rightScreenEdge;
-                    }
-                    if (scanRightScreenEdgeMax == null || scanRightScreenEdgeMax > leftScreenEdge) {
-                        scanRightScreenEdgeMax = leftScreenEdge;
-                    }
-                } else {  // not present in (h)fov
-                    if (scanLeftScreenEdgeMax == null || scanLeftScreenEdgeMax > leftScreenEdge) {
-                        scanLeftScreenEdgeMax = leftScreenEdge;
-                    }
-                    if (scanRightScreenEdgeMin == null || scanRightScreenEdgeMin < rightScreenEdge) {
-                        scanRightScreenEdgeMin = rightScreenEdge;
-                    }
-                }
-                AutoSpeedrunApi.tapKey(GLFW.GLFW_KEY_F3);
-                scanAngle += Math.toDegrees(hfov) / 3;
-            }
+            scanPause--;
             return;
         }
-        if (scanCurrentType == 0) {
-            if (scanAngle < 720) {
-                MouseInputManager.setPlayerAngle(scanAngle, 0.0);
-
-                // dw pie chart will reenable because of the beginning of this func
-                scanPause = 3;
+        // todo handle case where player spawns inside of a bt chunk already
+        if (scanDirection != 0) {
+            Double globalPerc = F3Information.getPieDirectoryGlobalPercentage("blockentities");
+            if (globalPerc == null) {
+                AutoSpeedrunApi.chatMessage("gloabl percentage of blockentities null on scan");
+                AutoSpeedrunApi.emergencyStopUserCode();
                 return;
             }
-        } else if (scanCurrentType == 1) {
-            // todo
-        } else {
-            AutoSpeedrunApi.chatMessage("invalid scanCurrentType");
-            AutoSpeedrunApi.emergencyStopUserCode();
+            double scanAngleBetter = (((scanAngle + 180) % 360) - 180);
+            AutoSpeedrunApi.chatMessage(String.format("(%f, %f)", scanAngleBetter, globalPerc));
+
+            if (scanPrevGlobalPerc == null) {
+                AutoSpeedrunApi.tapKey(GLFW.GLFW_KEY_F3);
+                scanAngle += scanDirection * Math.toDegrees(hfov) / (2 * Math.pow(2, scanPrecision));
+                scanPause = 3;
+            } else if (scanPrevGlobalPerc > 0.6) {
+                scanAngle += scanDirection * Math.toDegrees(hfov) / (2 * Math.pow(2, scanPrecision));
+                AutoSpeedrunApi.tapKey(GLFW.GLFW_KEY_F3);
+                scanPause = 3;
+            } else if (globalPerc > 0.6) {  // implied: prevGlobalPerc <= 1 already
+                double prevScanAngle = scanAngle;
+                scanAngle -= 1.5 * scanDirection * Math.toDegrees(hfov) / (2 * Math.pow(2, scanPrecision));
+                if (Math.toDegrees(hfov) / (3 * Math.pow(2, scanPrecision)) < 2.5) {
+                    scanPrevGlobalPerc = null;
+                    scanPrecision = 0;
+                    if (scanDirection == 1) {
+                        scanRightScreenEdgeAngle = (prevScanAngle + Math.toDegrees(hfov) / 2 + 3600) % 360;
+                        AutoSpeedrunApi.chatMessage("Found right edge: " + scanRightScreenEdgeAngle);
+                        scanDirection = -1;
+                    } else {
+                        scanLeftScreenEdgeAngle = (prevScanAngle - Math.toDegrees(hfov) / 2 + 3600) % 360;
+                        AutoSpeedrunApi.chatMessage("Found left edge: " + scanLeftScreenEdgeAngle);
+                        scanDirection = 0;
+                    }
+                }
+                scanPrecision += 1;
+                AutoSpeedrunApi.tapKey(GLFW.GLFW_KEY_F3);
+                scanPause = 3;
+            } else {
+                scanAngle += scanDirection * Math.toDegrees(hfov) / (2 * Math.pow(2, scanPrecision) * 2);
+                AutoSpeedrunApi.tapKey(GLFW.GLFW_KEY_F3);
+                scanPause = 1;
+            }
+
+            MouseInputManager.setPlayerAngle(scanAngle, 0.0);
+            scanPrevGlobalPerc = globalPerc;
+            return;
         }
-        // done with scan
-        System.out.printf("scanLeftScreenEdgeMin=%f\nscanLeftScreenEdgeMax=%f\n" +
-            "scanRightScreenEdgeMin=%f\nscanRightScreenEdgeMax=%f\n", scanLeftScreenEdgeMin, scanLeftScreenEdgeMax,
-            scanRightScreenEdgeMin, scanRightScreenEdgeMax);
-        AutoSpeedrunApi.releaseKey(GLFW.GLFW_KEY_LEFT_SHIFT);
+        // done with scan, chunk position computation
+        System.out.println("done with scan");
+        double leftScreenEdgeRad = Math.toRadians(scanLeftScreenEdgeAngle);
+        double rightScreenEdgeRad = Math.toRadians(scanRightScreenEdgeAngle);
+        double w = Math.sqrt(Math.pow(Math.cos(leftScreenEdgeRad) - Math.cos(rightScreenEdgeRad), 2)
+            + Math.pow(Math.sin(leftScreenEdgeRad) - Math.sin(rightScreenEdgeRad), 2));
+        double lx = F3Information.getPosition().getX() - 20/w * Math.sin(leftScreenEdgeRad);
+        double lz = F3Information.getPosition().getZ() + 20/w * Math.cos(leftScreenEdgeRad);
+        System.out.printf("%f %f\n", lx, lz);
+        double rx = F3Information.getPosition().getX() - 20/w * Math.sin(rightScreenEdgeRad);
+        double rz = F3Information.getPosition().getZ() + 20/w * Math.cos(rightScreenEdgeRad);
+        System.out.printf("%f %f\n", rx, rz);
+        double cx = Math.floor((lx + rx) / 32) * 16;
+        double cz = Math.floor((lz + rz) / 32) * 16;
+        System.out.printf("%f %f\n", cx, cz);
+        double btx = cx + 9.5;
+        double btz = cx + 9.5;
+        AutoSpeedrunApi.chatMessage("Found BT at " + btx + "," + btz);
+        AutoSpeedrunApi.releaseKey(GLFW.GLFW_KEY_RIGHT_SHIFT);
+        Navigation.setGoalPosition(btx, btz);
         subsection = Subsection.MOVING_TO_9_9;
     }
 
     /* overall/misc */
 
-    public static void perform() {
+    public Subsection subsection = Subsection.SCANNING;
+
+    public void perform() {
         if (subsection == Subsection.SCANNING) {
             performScan();
         }

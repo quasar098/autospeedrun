@@ -18,11 +18,16 @@ public class MouseInputManager {
         setPlayerAngle(goalYaw, goalPitch);
     }
 
+    public static Double lastPlayerYaw = null;
+    public static Double lastPlayerPitch = null;
+
     public static void setPlayerAngle(double yaw, double pitch) {
         AutoSpeedrunApi.mouseMove(
             calibrationOffsetX + mouseMultiplier * yaw,
             calibrationOffsetY + mouseMultiplier * pitch
         );
+        lastPlayerYaw = yaw;
+        lastPlayerPitch = pitch;
     }
 
     /**
@@ -30,6 +35,19 @@ public class MouseInputManager {
      * @return true if unfinished, false if finished (can move onto next steps)
      */
     public static boolean calibrateMouse() {
+        if (lastPlayerYaw != null && lastPlayerPitch != null) {
+            double lastPlayerYawCorrected = ((lastPlayerYaw % 360) + 540) % 360 - 180;
+            if (Math.abs(lastPlayerPitch - F3Information.getPitch()) > 0.1 ||
+                Math.abs(lastPlayerYawCorrected - F3Information.getYaw()) > 0.1) {
+                calibrationStage = 0;
+                AutoSpeedrunApi.chatMessage(String.format(
+                    "Restarting mouse calibration (%f vs %f)", lastPlayerYawCorrected, F3Information.getYaw()
+                ));
+            }
+            lastPlayerPitch = null;
+            lastPlayerYaw = null;
+            return true;
+        }
         switch (calibrationStage) {
             case 0:
                 calibrationStage++;
@@ -52,7 +70,7 @@ public class MouseInputManager {
 //                AutoSpeedrunApi.chatMessage("Stage 3:" + F3Information.getYaw() + "," + F3Information.getPitch());
                 if (F3Information.getPitch() != 0.0 || F3Information.getYaw() != 0.0) {
                     calibrationStage = 0;
-                    AutoSpeedrunApi.chatMessage("Restarting mouse calibration");
+                    AutoSpeedrunApi.chatMessage("Retrying mouse calibration");
                     break;
                 }
                 calibrationStage++;

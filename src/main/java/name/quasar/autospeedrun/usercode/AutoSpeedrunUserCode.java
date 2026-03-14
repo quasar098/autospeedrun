@@ -93,9 +93,9 @@ public class AutoSpeedrunUserCode {
         }
         Vector3 pos = F3Information.getPosition();
         Vec3 real = Minecraft.getInstance().player.position();
-        System.out.printf("%d %d %f %f %f\n", Util.tickCount, testStartTick, real.x, real.y, real.z);
-        if (Util.tickCount < testStartTick + 40) {
-            if (Util.tickCount > 10 && Util.tickCount < 40) {
+        System.out.printf("%d %f %f %f\n", Util.tickCount-testStartTick, real.x, real.y, real.z);
+        if (testStartTick + 10 < Util.tickCount && Util.tickCount < testStartTick + 70) {
+            if ((Util.tickCount-testStartTick) % 4 == 3) {
                 System.out.println("Crouching");
                 MovementInputManager.planPressKeyCrouch();
             }

@@ -35,7 +35,7 @@ public class AutoSpeedrun implements ModInitializer {
 			"key.autospeedrun.toggle",
 			InputConstants.Type.KEYSYM,
 			GLFW.GLFW_KEY_EQUAL,
-		"category.autospeedrun"
+			"category.autospeedrun"
 		));
 
 		AtomicBoolean prevWasToggleKeyDown = new AtomicBoolean(false);

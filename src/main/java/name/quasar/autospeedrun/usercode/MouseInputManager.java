@@ -35,7 +35,7 @@ public class MouseInputManager {
      * @return true if unfinished, false if finished (can move onto next steps)
      */
     public static boolean calibrateMouse() {
-        if (lastPlayerYaw != null && lastPlayerPitch != null) {
+        if (lastPlayerYaw != null && lastPlayerPitch != null && calibrationStage >= 4) {
             double lastPlayerYawCorrected = ((lastPlayerYaw % 360) + 540) % 360 - 180;
             if (Math.abs(lastPlayerPitch - F3Information.getPitch()) > 0.1 ||
                 Math.abs(lastPlayerYawCorrected - F3Information.getYaw()) > 0.1) {
@@ -43,10 +43,10 @@ public class MouseInputManager {
                 AutoSpeedrunApi.chatMessage(String.format(
                     "Restarting mouse calibration (%f vs %f)", lastPlayerYawCorrected, F3Information.getYaw()
                 ));
+                return true;
             }
             lastPlayerPitch = null;
             lastPlayerYaw = null;
-            return true;
         }
         switch (calibrationStage) {
             case 0:
@@ -74,6 +74,7 @@ public class MouseInputManager {
                     break;
                 }
                 calibrationStage++;
+                AutoSpeedrunApi.chatMessage("Mouse calibration successful");
                 return false;
             default:
 //                lookAtPoint(new Vector3(-100.5, 65.00, 239.5));

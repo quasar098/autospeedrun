@@ -48,5 +48,6 @@ public class AutoSpeedrun implements ModInitializer {
 			}
 			prevWasToggleKeyDown.set(toggleRun.isDown());
 		});
+
 	}
 }

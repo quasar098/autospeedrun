@@ -1,5 +1,7 @@
 package name.quasar.autospeedrun.usercode;
 
+import com.mojang.math.Vector3f;
+
 public class Vector3 {
     private final double x;
     private final double y;
@@ -49,4 +51,14 @@ public class Vector3 {
     public Double distanceTo(Vector3 other) {
         return Math.sqrt(distanceToSquared(other));
     }
+
+    public Vector3f toVector3f() {
+        return new Vector3f((float) getX(), (float) getY(), (float) getZ());
+    }
+
+    public Vector3 withX(double x) { return new Vector3(x, getY(), getZ()); }
+
+    public Vector3 withY(double y) { return new Vector3(getX(), y, getZ()); }
+
+    public Vector3 withZ(double z) { return new Vector3(getX(), getY(), z); }
 }

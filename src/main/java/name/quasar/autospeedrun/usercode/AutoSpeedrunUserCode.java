@@ -26,6 +26,7 @@ public class AutoSpeedrunUserCode {
 
     public void tick() {
         Util.tickCount++;
+        AutoSpeedrunApi.clearRenderLines();
         AutoSpeedrunApi.screenshotAsync(1920, 1080);
         // screen resolution not yet resolved, resolve it before doing anything else
         if (Util.SCREEN_W == 0 || Util.SCREEN_H == 0) {
@@ -52,6 +53,7 @@ public class AutoSpeedrunUserCode {
         ));
         // do mouse calibration on world join
         if (MouseInputManager.calibrateMouse()) {
+            System.out.println("ddd");
             return;
         }
         // collect facing block information
@@ -88,19 +90,23 @@ public class AutoSpeedrunUserCode {
 //        }
 
         // movement test
-        if (testStartTick == -1) {
-            testStartTick = Util.tickCount;
-        }
-        Vector3 pos = F3Information.getPosition();
-        Vec3 real = Minecraft.getInstance().player.position();
-        System.out.printf("%d %f %f %f\n", Util.tickCount-testStartTick, real.x, real.y, real.z);
-        if (testStartTick + 10 < Util.tickCount && Util.tickCount < testStartTick + 70) {
-            if ((Util.tickCount-testStartTick) % 4 == 3) {
-                System.out.println("Crouching");
-                MovementInputManager.planPressKeyCrouch();
-            }
-            MovementInputManager.planPressKeyW();
-        }
+//        if (testStartTick == -1) {
+//            testStartTick = Util.tickCount;
+//        }
+//        Vector3 pos = F3Information.getPosition();
+//        Vec3 real = Minecraft.getInstance().player.position();
+//        System.out.printf("%d %f %f %f\n", Util.tickCount-testStartTick, real.x, real.y, real.z);
+//        if (testStartTick + 10 <= Util.tickCount && Util.tickCount < testStartTick + 70) {
+//            MovementInputManager.planPressKeyW();
+//            if ((Util.tickCount) % 2 == 1) {
+//                System.out.println("a");
+//                MovementInputManager.planPressKeyA();
+//                MouseInputManager.setPlayerAngle(45.0, 0.0);
+//            } else {
+//                System.out.println("b");
+//                MouseInputManager.setPlayerAngle(0.0, 0.0);
+//            }
+//        }
 
         // do movement and mouse
         boolean navigatorResult = Navigation.perform();
@@ -132,7 +138,7 @@ public class AutoSpeedrunUserCode {
                 Navigation.setGoalPosition(new Vector3(
                     Double.parseDouble(xyzStr[0]), Double.parseDouble(xyzStr[1]), Double.parseDouble(xyzStr[2])
                 ));
-                Navigation.setAlignment(Navigation.AxisAlignment.PRIORITY_X);
+//                Navigation.setAlignment(Navigation.AxisAlignment.PRIORITY_X);
                 break;
             case "lclick":
                 click = true;

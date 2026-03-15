@@ -91,11 +91,11 @@ public class BuriedTreasureOverworld {
                 AutoSpeedrunApi.tapKey(GLFW.GLFW_KEY_F3);
                 scanAngle += scanDirection * Math.toDegrees(hfov) / (2 * Math.pow(2, scanPrecision));
                 scanPause = 3;
-            } else if (scanPrevGlobalPerc > 0.6) {
+            } else if (scanPrevGlobalPerc > 1.3) {
                 scanAngle += scanDirection * Math.toDegrees(hfov) / (2 * Math.pow(2, scanPrecision));
                 AutoSpeedrunApi.tapKey(GLFW.GLFW_KEY_F3);
                 scanPause = 3;
-            } else if (globalPerc > 0.6) {  // implied: prevGlobalPerc <= 1 already
+            } else if (globalPerc > 1.3) {  // implied: prevGlobalPerc <= 1 already
                 double prevScanAngle = scanAngle;
                 scanAngle -= 1.5 * scanDirection * Math.toDegrees(hfov) / (2 * Math.pow(2, scanPrecision));
                 if (Math.toDegrees(hfov) / (3 * Math.pow(2, scanPrecision)) < 2.5) {

@@ -17,6 +17,7 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 
 import static name.quasar.autospeedrun.Util.*;
 
@@ -34,6 +35,20 @@ public class AutoSpeedrunApi {
     public static boolean shifting = false;
     public static boolean leftShifting = false;
     public static boolean rightShifting = false;
+
+    private static final ArrayList<DebugRenderLine> lines = new ArrayList<>();
+
+    public static ArrayList<DebugRenderLine> getRenderLines() {
+        return lines;
+    }
+
+    public static void renderLine(DebugRenderLine line) {
+        lines.add(line);
+    }
+
+    public static void clearRenderLines() {
+        lines.clear();
+    }
 
     public static void pressKey(int key) {
         announceAction("Press key " + keyNameFromConstant(key));

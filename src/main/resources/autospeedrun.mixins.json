@@ -3,7 +3,8 @@
 	"package": "name.quasar.autospeedrun.mixin",
 	"compatibilityLevel": "JAVA_8",
 	"mixins": [
-		"ScreenMixin"
+		"ScreenMixin",
+		"DebugRendererMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

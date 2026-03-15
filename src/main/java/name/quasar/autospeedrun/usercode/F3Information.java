@@ -111,7 +111,7 @@ public class F3Information {
 
     public static BlockLocation cachedTargettedBlockPosition = null;
 
-    public static BlockLocation getTargettedBlockPosition() {
+    public static BlockLocation getTargettedBlockLocation() {
         if (cachedTargettedBlockPosition == null) {
             String positionLine = Util.readScreenStringBackward(Util.SCREEN_W - 6, 4 + 18*10, f3TextColor, 2);
             String[] split = positionLine.replaceFirst("Targeted Block: ", "").split(", ");

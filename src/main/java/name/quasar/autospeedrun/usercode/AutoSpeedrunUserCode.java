@@ -1,9 +1,6 @@
 package name.quasar.autospeedrun.usercode;
 
 import name.quasar.autospeedrun.AutoSpeedrunApi;
-import net.minecraft.client.KeyMapping;
-import net.minecraft.client.Minecraft;
-import net.minecraft.world.phys.Vec3;
 import org.lwjgl.glfw.GLFW;
 
 public class AutoSpeedrunUserCode {
@@ -44,7 +41,7 @@ public class AutoSpeedrunUserCode {
         }
         F3Information.clearCache();
         // live debug information
-        BlockLocation targettedBL = F3Information.getTargettedBlockPosition();
+        BlockLocation targettedBL = F3Information.getTargettedBlockLocation();
         String targettedBlockPositionFormatted = targettedBL == null ? "(not targetting)" : targettedBL.toString();
         AutoSpeedrunApi.subtitleMessage(String.format(
             "%.2fs Y:%.1f,P:%.1f %s %s", Util.tickCount / 20.0,
@@ -53,15 +50,12 @@ public class AutoSpeedrunUserCode {
         ));
         // do mouse calibration on world join
         if (MouseInputManager.calibrateMouse()) {
-            System.out.println("ddd");
             return;
         }
         // collect facing block information
-        if (F3Information.getTargettedBlockPosition() != null) {
-            WorldBlocks.knownBlocks.put(F3Information.getTargettedBlockPosition(), new Block(
-                F3Information.getTargettedBlockName()
-            ));
-        }
+        WorldBlocks.getInstance().collectFacingBlockInformation();
+        // debug draw world blocks information
+        WorldBlocks.getInstance().debugDraw();
 
         // i actually dk what tf is going on with left click
 //        if (click) {
@@ -127,11 +121,6 @@ public class AutoSpeedrunUserCode {
             case "clearcache":
                 F3Information.clearCache();
                 AutoSpeedrunApi.chatMessage("Cache cleared");
-                break;
-            case "dumpblocks":
-                for (BlockLocation bl : WorldBlocks.knownBlocks.keySet()) {
-                    System.out.printf("%s\n", bl + " - " + WorldBlocks.knownBlocks.get(bl));
-                }
                 break;
             case "setnav":
                 String[] xyzStr = split[1].split(",");

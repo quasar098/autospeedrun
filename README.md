@@ -35,8 +35,8 @@ https://minecraft.wiki/w/Options.txt
 ## potential strategies
 
 - subpixelless one eye using mouse sens and pixel stepping and LLL
-- f3 left shift vs crouch left shift discrepancy for faster pie charting
-- per biome block assumption heuristics to save mouse scan power
+- f3 right shift vs crouch left shift discrepancy for faster pie charting
+- per biome blockType assumption heuristics to save mouse scan power
 - double bucket fast 2x1 portal on BTs/shipwrecks with lots of iron
 - cinematic camera for scanning / more tolerable camera
 
@@ -44,8 +44,9 @@ https://minecraft.wiki/w/Options.txt
 
 - change most classes to singleton and private defaults instead of having
 public static everywhere
-- shake mouse with nav enabled and it doesn't go the right way but it should
 - all other seed types than BT
+- dead bush/door/whatever overrides because weird block hitbox
+- pie ray use relative instead of global percentages
 
 ## licensing
 

@@ -71,7 +71,7 @@ public class Navigation {
 //
 //        }
         double yaw = F3Information.getYaw();
-        Double goalYaw = Math.atan2(
+        double goalYaw = Math.atan2(
             F3Information.getPosition().getX() - goal.getX(),
             goal.getZ() - F3Information.getPosition().getZ()
         ) * 180 / Math.PI;
@@ -85,7 +85,7 @@ public class Navigation {
             goalPosition = null;
             return false;
         }
-        MouseInputManager.setPlayerAngle(goalYaw, F3Information.getPitch());  // todo better
+        MouseInputManager.setPlayerAngle(goalYaw, F3Information.getPitch());
         return false;
     }
 }

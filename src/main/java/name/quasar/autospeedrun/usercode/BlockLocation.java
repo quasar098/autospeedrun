@@ -13,6 +13,13 @@ public class BlockLocation {
         this.z = z;
     }
 
+    public BlockLocation(Dimension dimension, Vector3 vec) {
+        this.dimension = dimension;
+        this.x = (long) Math.floor(vec.getX());
+        this.y = (long) Math.floor(vec.getY());
+        this.z = (long) Math.floor(vec.getZ());
+    }
+
     @Override
     public int hashCode() {
         long h = 2203L * Long.hashCode(x);
@@ -46,7 +53,28 @@ public class BlockLocation {
         return String.format("BL<%d, %d, %d>", getX(), getY(), getZ());
     }
 
-    public Dimension getWorld() {
+    public Dimension getDimension() {
         return dimension;
+    }
+
+    public Vector3 getCenter() {
+        return new Vector3(getX()+0.5, getY()+0.5, getZ()+0.5);
+    }
+
+    public BlockLocation offsetX(long x) { return new BlockLocation(getDimension(), x+getX(), getY(), getZ()); }
+
+    public BlockLocation offsetY(long y) { return new BlockLocation(getDimension(), getX(), y+getY(), getZ()); }
+
+    public BlockLocation offsetZ(long z) { return new BlockLocation(getDimension(), getX(), getY(), z+getZ()); }
+
+    public BlockLocation[] getNeighbors() {
+        return new BlockLocation[]{
+                offsetX(1),
+                offsetX(-1),
+                offsetY(1),
+                offsetY(-1),
+                offsetZ(1),
+                offsetZ(-1)
+        };
     }
 }

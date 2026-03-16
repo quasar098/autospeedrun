@@ -51,13 +51,11 @@ public abstract class DebugRendererMixin {
         BufferBuilder buffer = tesselator.getBuilder();
 
         buffer.begin(1, DefaultVertexFormat.POSITION_COLOR);
-        if (!Util.togglePaused) {
-            for (DebugRenderLine drl : AutoSpeedrunApi.getRenderLines()) {
-                buffer.vertex(poseStack.last().pose(), drl.getPa().x(), drl.getPa().y(), drl.getPa().z())
-                        .color(drl.getR(), drl.getG(), drl.getB(), 1f).endVertex();
-                buffer.vertex(poseStack.last().pose(), drl.getPb().x(), drl.getPb().y(), drl.getPb().z())
-                        .color(drl.getR(), drl.getG(), drl.getB(), 1f).endVertex();
-            }
+        for (DebugRenderLine drl : AutoSpeedrunApi.getRenderLines()) {
+            buffer.vertex(poseStack.last().pose(), drl.getPa().x(), drl.getPa().y(), drl.getPa().z())
+                    .color(drl.getR(), drl.getG(), drl.getB(), 1f).endVertex();
+            buffer.vertex(poseStack.last().pose(), drl.getPb().x(), drl.getPb().y(), drl.getPb().z())
+                    .color(drl.getR(), drl.getG(), drl.getB(), 1f).endVertex();
         }
 
         tesselator.end();

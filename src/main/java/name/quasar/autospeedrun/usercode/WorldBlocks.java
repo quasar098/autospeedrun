@@ -98,7 +98,6 @@ public class WorldBlocks {
                     break;
                 }
                 bfsTotal.add(bf);
-                bf.debugDraw();
             }
             if (hit) {
                 break;
@@ -115,9 +114,9 @@ public class WorldBlocks {
         if (iterations == maxIterations) {
             AutoSpeedrunApi.chatMessage("Max iterations reached for eye ray air detection");
         }
-        if (targetted != null) {
-            AutoSpeedrunApi.chatMessage(targetted.toString());
-        }
+//        if (targetted != null) {
+//            AutoSpeedrunApi.chatMessage(targetted.toString());
+//        }
     }
 
     public void debugDraw() {

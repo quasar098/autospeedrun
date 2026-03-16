@@ -61,4 +61,10 @@ public class Vector3 {
     public Vector3 withY(double y) { return new Vector3(getX(), y, getZ()); }
 
     public Vector3 withZ(double z) { return new Vector3(getX(), getY(), z); }
+
+    public Vector3 offsetX(double x) { return new Vector3(x+getX(), getY(), getZ()); }
+
+    public Vector3 offsetY(double y) { return new Vector3(getX(), y+getY(), getZ()); }
+
+    public Vector3 offsetZ(double z) { return new Vector3(getX(), getY(), z+getZ()); }
 }

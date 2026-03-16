@@ -14,8 +14,7 @@ public class MouseInputManager {
         double distanceXZ = Math.sqrt(Math.pow(cur.getX() - point.getX(), 2) + Math.pow(cur.getZ() - point.getZ(), 2));
         double eyeHeight = Util.PLAYER_STANDING_EYE_HEIGHT;  // todo: crouching stuff
         double goalPitch = Math.atan2((point.getY() - eyeHeight) - cur.getY(), distanceXZ) * 180 / Math.PI;
-        AutoSpeedrunApi.chatMessage("y,p:" + goalYaw + "," + goalPitch);
-        setPlayerAngle(goalYaw, goalPitch);
+        setPlayerAngle(-goalYaw, -goalPitch);
     }
 
     public static Double lastPlayerYaw = null;

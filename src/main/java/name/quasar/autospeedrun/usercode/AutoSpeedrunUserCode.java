@@ -17,6 +17,7 @@ public class AutoSpeedrunUserCode {
 
         // other systems
         WorldBlocks.reset();
+        Navigation.reset();
         MouseInputManager.reset();
         BuriedTreasureOverworld.reset();
     }
@@ -103,7 +104,7 @@ public class AutoSpeedrunUserCode {
 //        }
 
         // do movement and mouse
-        boolean navigatorResult = Navigation.perform();
+        boolean navigatorResult = Navigation.getInstance().perform();
         MovementInputManager.handle();
         if (navigatorResult) {
             return;
@@ -124,7 +125,7 @@ public class AutoSpeedrunUserCode {
                 break;
             case "setnav":
                 String[] xyzStr = split[1].split(",");
-                Navigation.setGoalPosition(new Vector3(
+                Navigation.getInstance().setGoalPosition(new Vector3(
                     Double.parseDouble(xyzStr[0]), Double.parseDouble(xyzStr[1]), Double.parseDouble(xyzStr[2])
                 ));
 //                Navigation.setAlignment(Navigation.AxisAlignment.PRIORITY_X);
@@ -136,6 +137,9 @@ public class AutoSpeedrunUserCode {
             case "rclick":
                 AutoSpeedrunApi.mouseActivate(GLFW.GLFW_MOUSE_BUTTON_RIGHT, GLFW.GLFW_PRESS, 0);
                 AutoSpeedrunApi.mouseActivate(GLFW.GLFW_MOUSE_BUTTON_RIGHT, GLFW.GLFW_RELEASE, 0);
+                break;
+            case "toggleair":
+                Util.toggleDebugAir = !Util.toggleDebugAir;
                 break;
         }
     }

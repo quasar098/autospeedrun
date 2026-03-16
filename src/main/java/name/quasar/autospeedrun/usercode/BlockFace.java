@@ -12,6 +12,7 @@ public class BlockFace {
         POS_Z  // south
     }
 
+    // todo change these to longs
     private int x;
     private int y;
     private int z;

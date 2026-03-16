@@ -18,6 +18,8 @@ public class Util {
     public static int SCREEN_W = 0;
     public static int SCREEN_H = 0;
 
+    public static boolean toggleDebugAir = false;
+
     public static RunStage runStage = RunStage.OVERWORLD;
 
     //<editor-fold desc="int[][][] glyphChecks = { ... };">

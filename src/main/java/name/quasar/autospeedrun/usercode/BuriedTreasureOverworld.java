@@ -143,7 +143,7 @@ public class BuriedTreasureOverworld {
         double btz = cx + 9.5;
         AutoSpeedrunApi.chatMessage("Found BT at " + btx + "," + btz);
         AutoSpeedrunApi.releaseKey(GLFW.GLFW_KEY_RIGHT_SHIFT);
-        Navigation.setGoalPosition(btx, btz);
+        Navigation.getInstance().setGoalPosition(btx, btz);
         subsection = Subsection.MOVING_TO_9_9;
     }
 

@@ -67,4 +67,32 @@ public class Vector3 {
     public Vector3 offsetY(double y) { return new Vector3(getX(), y+getY(), getZ()); }
 
     public Vector3 offsetZ(double z) { return new Vector3(getX(), getY(), z+getZ()); }
+
+    public Vector3 sub(Vector3 other) {
+        return new Vector3(getX() - other.getX(), getY() - other.getY(), getZ() - other.getZ());
+    }
+
+    public Vector3 add(Vector3 other) {
+        return new Vector3(getX() + other.getX(), getY() + other.getY(), getZ() + other.getZ());
+    }
+
+    public double dot(Vector3 other) {
+        return getX() * other.getX() + getY() * other.getY() + getZ() * other.getZ();
+    }
+
+    public double length() {
+        return getX() * getX() + getY() * getY() + getZ() * getZ();
+    }
+
+    public Vector3 normalized() {
+        if (length() == 0) {
+            return new Vector3(0, 0, 0);
+        }
+        return new Vector3(getX() / length(), getY() / length(), getZ() / length());
+    }
+
+    public static boolean inStraightLine(Vector3 a, Vector3 b, Vector3 c) {
+        return b.sub(a).normalized().dot(c.sub(b).normalized()) > 0.9999;
+    }
+
 }

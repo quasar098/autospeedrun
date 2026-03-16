@@ -125,16 +125,18 @@ public class WorldBlocks {
             BlockType blockType = entry.getValue();
             if (blockType.getValue().equals("air")) {
                 // draw black X through air blocks
-//                AutoSpeedrunApi.renderLine(new DebugRenderLine(
-//                        new Vector3f(loc.getX() + 0.4f, loc.getY() + 0.5f, loc.getZ() + 0.4f),
-//                        new Vector3f(loc.getX() + 0.6f, loc.getY() + 0.5f, loc.getZ() + 0.6f),
-//                        0f, 0f, 0f
-//                ));
-//                AutoSpeedrunApi.renderLine(new DebugRenderLine(
-//                        new Vector3f(loc.getX() + 0.6f, loc.getY() + 0.5f, loc.getZ() + 0.4f),
-//                        new Vector3f(loc.getX() + 0.4f, loc.getY() + 0.5f, loc.getZ() + 0.6f),
-//                        0f, 0f, 0f
-//                ));
+                if (Util.toggleDebugAir) {
+                    AutoSpeedrunApi.renderLine(new DebugRenderLine(
+                            new Vector3f(loc.getX() + 0.4f, loc.getY() + 0.5f, loc.getZ() + 0.4f),
+                            new Vector3f(loc.getX() + 0.6f, loc.getY() + 0.5f, loc.getZ() + 0.6f),
+                            0f, 0f, 0f
+                    ));
+                    AutoSpeedrunApi.renderLine(new DebugRenderLine(
+                            new Vector3f(loc.getX() + 0.6f, loc.getY() + 0.5f, loc.getZ() + 0.4f),
+                            new Vector3f(loc.getX() + 0.4f, loc.getY() + 0.5f, loc.getZ() + 0.6f),
+                            0f, 0f, 0f
+                    ));
+                }
             } else {
                 // draw green / on top of all known blocks
                 AutoSpeedrunApi.renderLine(new DebugRenderLine(

@@ -71,10 +71,10 @@ public class BlockLocation {
         return new BlockLocation[]{
                 offsetX(1),
                 offsetX(-1),
+                offsetZ(1),
+                offsetZ(-1),
                 offsetY(1),
                 offsetY(-1),
-                offsetZ(1),
-                offsetZ(-1)
         };
     }
 }

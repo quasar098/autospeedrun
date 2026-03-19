@@ -151,11 +151,11 @@ public class Navigation {
 
     private double h(BlockLocation bl) {
         if (goalPosition.getY() == -1) {
-            return Math.pow(bl.getX() - goalPosition.getX(), 2) + Math.pow(bl.getZ() - goalPosition.getZ(), 2);
+            return Math.sqrt(Math.pow(bl.getX() - goalPosition.getX(), 2) + Math.pow(bl.getZ() - goalPosition.getZ(), 2));
         }
-        return Math.pow(bl.getX() - goalPosition.getX(), 2) +
-                Math.pow(bl.getY() - goalPosition.getY(), 2) * 4 +
-                Math.pow(bl.getZ() - goalPosition.getZ(), 2);
+        return Math.sqrt(Math.pow(bl.getX() - goalPosition.getX(), 2) +
+                Math.pow(bl.getY() - goalPosition.getY(), 2) +
+                Math.pow(bl.getZ() - goalPosition.getZ(), 2));
     }
 
     private ArrayList<BlockLocation> reconstructPath(HashMap<BlockLocation, BlockLocation> cameFrom, BlockLocation current) {

@@ -77,12 +77,12 @@ public class AutoSpeedrunUserCode {
 //        }
 
         // do stuff based on stage of run
-//        if (Util.runStage == RunStage.OVERWORLD) {
-//            BuriedTreasureOverworld.getInstance().perform();
-//            if (BuriedTreasureOverworld.getInstance().subsection == BuriedTreasureOverworld.Subsection.DONE) {
-//                Util.runStage = RunStage.ENTERED_NETHER;
-//            }
-//        }
+        if (Util.runStage == RunStage.OVERWORLD) {
+            BuriedTreasureOverworld.getInstance().perform();
+            if (BuriedTreasureOverworld.getInstance().subsection == BuriedTreasureOverworld.Subsection.DONE) {
+                Util.runStage = RunStage.ENTERED_NETHER;
+            }
+        }
 
         // movement test
 //        if (testStartTick == -1) {

@@ -39,7 +39,7 @@ def render_text(text: str, color=(247, 247, 255), **kwargs):
 def main():
     # === important stuff ===
 
-    options_txt_sens = 0.40140846371650696
+    options_txt_sens = 0.530869756935
     minecraft_mouse_sens = options_txt_sens * 200
     deg_per_pix = ((options_txt_sens * 0.6 + 0.2)**3 * 8 * 0.15)
 
@@ -65,6 +65,8 @@ def main():
     while running:
         scale = 2**view_zoom
         if pygame.mouse.get_pressed(3)[0]:
+            left_accept = 0
+            right_accept = 1
             original_real_angle = view_angle - (CX - pygame.mouse.get_pos()[0]) / scale
         real_angle = view_pix_offset * deg_per_pix + original_real_angle
         screen.fill((39, 45, 45))
@@ -85,25 +87,25 @@ def main():
                     # do a step of binary search
                     best_i = None
                     mid = (right_accept + left_accept) / 2
-                    for i in range(-300, 300):
+                    for i in range(-2000, 2000):
+                        if i == 0:
+                            continue
                         if best_i is None:
                             best_i = i
                             continue
-                        angle_offset = (i * deg_per_pix) % 0.1- mid/10
-                        best_angle_offset = (best_i * deg_per_pix) % 0.1 - mid/10
+                        angle_offset = (i * deg_per_pix) % 0.1 - (1-mid)/10
+                        best_angle_offset = (best_i * deg_per_pix) % 0.1 - (1-mid)/10
                         if abs(angle_offset) <= abs(best_angle_offset):
                             best_i = i
-                    print('pix to move from orig:', best_i)
+                    # print('pix to move from orig:', best_i)
                     view_pix_offset = best_i
                     real_angle = view_pix_offset * deg_per_pix + original_real_angle
                     lower = round(round(original_real_angle, 1)-0.05, 2)
                     upper = round(round(original_real_angle, 1)-0.05, 2)+0.1
-                    print(lower + deg_per_pix * view_pix_offset, upper + deg_per_pix * view_pix_offset)
-                    # TODO
-                    # if round(real_angle, 1) >= round(lower + deg_per_pix * view_pix_offset, 1):
-                    #     left_accept = lower + deg_per_pix * view_pix_offset
-                    # else:
-                    #     right_accept = upper + deg_per_pix * view_pix_offset
+                    if round(real_angle, 1) > round(lower + deg_per_pix * view_pix_offset, 1):
+                        left_accept = (upper - lower - (deg_per_pix * view_pix_offset) % 0.1)*10
+                    else:
+                        right_accept = (upper - lower - (deg_per_pix * view_pix_offset) % 0.1)*10
 
         # code here
         smoothing_factor = 1.0 - exp(-100.0 / FRAMERATE)
@@ -173,6 +175,8 @@ def main():
             rotated_rightangle_text,
             rotated_rightangle_text.get_rect(bottomright=(WIDTH - 10, HEIGHT - 28))
         )
+        render_text(f"minimum: {left_accept/10+round(round(original_real_angle, 1)-0.05, 2)}", color=color_b_2, midbottom=(CX, HEIGHT-65))
+        render_text(f"maximum: {right_accept/10+round(round(original_real_angle, 1)-0.05, 2)}", color=color_b_2, midbottom=(CX, HEIGHT-40))
         pygame.display.flip()
         clock.tick(FRAMERATE)
     pygame.quit()

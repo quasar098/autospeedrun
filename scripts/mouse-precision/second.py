@@ -39,17 +39,17 @@ def render_text(text: str, color=(247, 247, 255), **kwargs):
 def main():
     # === important stuff ===
 
-    options_txt_sens = 0.530869756935
+    options_txt_sens = 0.40140846371650696
     minecraft_mouse_sens = options_txt_sens * 200
     deg_per_pix = ((options_txt_sens * 0.6 + 0.2)**3 * 8 * 0.15)
 
-    original_real_angle = random() * 360 - 180
+    original_real_angle = 198.08148-360# random() * 360 - 180
 
     print(f"{minecraft_mouse_sens = }")
     print(f"{deg_per_pix = }")
     print(f"{original_real_angle = }")
 
-    assert len(str(deg_per_pix % 0.1)) > 6, "your sensitivity is lacking specificity (make it have a bunch of decimals)"
+    assert len(str(deg_per_pix % 0.1)) > 6, "your sensitivity leads to deg_per_pix that is approximately commensurable with 0.1 (bad)"
 
     left_accept = 0
     right_accept = 1
@@ -95,17 +95,20 @@ def main():
                             continue
                         angle_offset = (i * deg_per_pix) % 0.1 - (1-mid)/10
                         best_angle_offset = (best_i * deg_per_pix) % 0.1 - (1-mid)/10
+                        if i == 1867:
+                            print(angle_offset, best_angle_offset)
                         if abs(angle_offset) <= abs(best_angle_offset):
                             best_i = i
-                    # print('pix to move from orig:', best_i)
+                    print('pix to move from orig:', best_i)
                     view_pix_offset = best_i
                     real_angle = view_pix_offset * deg_per_pix + original_real_angle
                     lower = round(round(original_real_angle, 1)-0.05, 2)
-                    upper = round(round(original_real_angle, 1)-0.05, 2)+0.1
                     if round(real_angle, 1) > round(lower + deg_per_pix * view_pix_offset, 1):
-                        left_accept = (upper - lower - (deg_per_pix * view_pix_offset) % 0.1)*10
+                        left_accept = (0.1 - (deg_per_pix * view_pix_offset) % 0.1)*10
+                        print("modify left accept:", left_accept)
                     else:
-                        right_accept = (upper - lower - (deg_per_pix * view_pix_offset) % 0.1)*10
+                        right_accept = (0.1 - (deg_per_pix * view_pix_offset) % 0.1)*10
+                        print("modify right accept:", right_accept)
 
         # code here
         smoothing_factor = 1.0 - exp(-100.0 / FRAMERATE)

@@ -47,6 +47,8 @@ public static everywhere
 - all other seed types than BT
 - dead bush/door/whatever overrides because weird block hitbox
 - pie ray use relative instead of global percentages
+- Nef surfaces sphere mapping sort of thing to figure out optimal block angle looking location for partially hidden blocks
+- switch to awaitables something something instead of having booleans and waiting for the next tick in a weird way
 
 ## licensing
 

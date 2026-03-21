@@ -82,7 +82,7 @@ public class AutoSpeedrunApi {
         client.execute(() -> client.keyboardHandler.keyPress(window, key, scanCode, GLFW.GLFW_RELEASE, 0));
     }
 
-    public static void mouseMove(double x, double y) {
+    public static void mouseMove(int x, int y) {
         announceAction("Mouse move " + x + "," + y);
         Minecraft client = Minecraft.getInstance();
         long window = client.getWindow().getWindow();

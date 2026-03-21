@@ -22,6 +22,14 @@ public class Util {
 
     public static RunStage runStage = RunStage.OVERWORLD;
 
+    public static double mod(double a, double b) { return ((a % b) + b) % b; }
+
+    public static double round(double value, int ndigits) {
+        double factor = Math.pow(10, ndigits);
+        return Math.round(value * factor) / factor;
+    }
+
+
     //<editor-fold desc="int[][][] glyphChecks = { ... };">
     static int[][][] glyphChecks = {
         {  // (space)

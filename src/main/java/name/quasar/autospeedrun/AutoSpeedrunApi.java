@@ -82,6 +82,9 @@ public class AutoSpeedrunApi {
         client.execute(() -> client.keyboardHandler.keyPress(window, key, scanCode, GLFW.GLFW_RELEASE, 0));
     }
 
+    /**
+    set the mouse position
+     */
     public static void mouseMove(int x, int y) {
         announceAction("Mouse move " + x + "," + y);
         Minecraft client = Minecraft.getInstance();
@@ -152,21 +155,6 @@ public class AutoSpeedrunApi {
             return 0;
         }
         return img.getWidth();
-    }
-
-    public static String getClipboardText() {
-        try {
-            Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-            Transferable contents = clipboard.getContents(null);
-            if (contents != null && contents.isDataFlavorSupported(DataFlavor.stringFlavor)) {
-                return (String) contents.getTransferData(DataFlavor.stringFlavor);
-            }
-        } catch (UnsupportedFlavorException | IOException e) {
-            System.err.println("Error reading clipboard: " + e.getMessage());
-        } catch (IllegalStateException e) {
-            System.err.println("Clipboard unavailable: " + e.getMessage());
-        }
-        return null;
     }
 
     public static void chatMessage(String str) {

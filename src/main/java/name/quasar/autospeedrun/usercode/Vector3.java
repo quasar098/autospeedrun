@@ -81,7 +81,7 @@ public class Vector3 {
     }
 
     public double length() {
-        return getX() * getX() + getY() * getY() + getZ() * getZ();
+        return Math.sqrt(getX() * getX() + getY() * getY() + getZ() * getZ());
     }
 
     public Vector3 normalized() {
@@ -89,6 +89,10 @@ public class Vector3 {
             return new Vector3(0, 0, 0);
         }
         return new Vector3(getX() / length(), getY() / length(), getZ() / length());
+    }
+
+    public Vector3 mult(double scale) {
+        return new Vector3(getX() * scale, getY() * scale, getZ() * scale);
     }
 
     public static boolean inStraightLine(Vector3 a, Vector3 b, Vector3 c) {

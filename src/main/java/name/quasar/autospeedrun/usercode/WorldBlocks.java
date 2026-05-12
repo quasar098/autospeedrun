@@ -29,20 +29,8 @@ public class WorldBlocks {
         instance = null;
     }
 
-    public void collectFacingBlockInformation() {
-        // targetted block
-        BlockLocation targetted = F3Information.getTargettedBlockLocation();
-        if (targetted != null) {
-            knownBlocks.put(targetted, new BlockType(
-                    F3Information.getTargettedBlockName()
-            ));
-        }
-        // use angles to find all air in the way, 3D DDA algorithm that finds all intersected faces
-        double yaw = Math.toRadians(F3Information.getYaw());
-        double pitch = Math.toRadians(F3Information.getPitch());
-        double px = F3Information.getPosition().getX();
-        double py = F3Information.getPosition().getY() + Util.PLAYER_STANDING_EYE_HEIGHT;  // todo crouching stuff
-        double pz = F3Information.getPosition().getZ();
+    public ArrayList<BlockFace> rayCollisionDetection(double yaw, double pitch, double px, double py, double pz,
+                                                      BlockLocation targetted) {
         double opx = px;
         double opy = py;
         double opz = pz;
@@ -103,20 +91,78 @@ public class WorldBlocks {
                 break;
             }
         }
-        if (!hit && targetted != null) {
-            // unlucky angle on eye ray air detection or something
-            return;
-        }
-        for (BlockFace bf : bfsTotal) {
-            knownBlocks.put(bf.getAdjacentA(F3Information.getDimension()), BlockType.AIR);
-            knownBlocks.put(bf.getAdjacentB(F3Information.getDimension()), BlockType.AIR);
-        }
         if (iterations == maxIterations) {
-            AutoSpeedrunApi.chatMessage("Max iterations reached for eye ray air detection");
+            AutoSpeedrunApi.chatMessage("Max iterations reached for eye ray collision detection");
+            AutoSpeedrunApi.emergencyStopUserCode();
+            return null;
         }
-//        if (targetted != null) {
-//            AutoSpeedrunApi.chatMessage(targetted.toString());
-//        }
+        return bfsTotal;
+    }
+
+    private Double prevTickYaw = null;
+    private Double prevTickPitch = null;
+
+    public void collectFacingBlockInformation() {
+        // targetted block
+        BlockLocation targetted = F3Information.getTargettedBlockLocation();
+        if (targetted != null) {
+            knownBlocks.put(targetted, new BlockType(
+                    F3Information.getTargettedBlockName()
+            ));
+        }
+        if (prevTickYaw == null || prevTickPitch == null) {
+            prevTickYaw = F3Information.getYaw();
+            prevTickPitch = F3Information.getPitch();
+        }
+        // use angles to find all air in the way, 3D DDA algorithm that finds all intersected faces
+        // todo change 0.05 for more precision. idk what to do about manual mouse movement during debugging tho
+        double yawTL = Math.toRadians(F3Information.getYaw()-0.05);
+        double pitchTL = Math.toRadians(F3Information.getPitch()-0.05);
+        double yawBR = Math.toRadians(F3Information.getYaw()+0.05);
+        double pitchBR = Math.toRadians(F3Information.getPitch()+0.05);
+        Vector3 prevTickPlayerPos = MovementPredictor.getInstance().prevPosition();
+        double px = prevTickPlayerPos.getX();
+        double py = prevTickPlayerPos.getY() + Util.PLAYER_STANDING_EYE_HEIGHT;  // todo crouching stuff
+        double pz = prevTickPlayerPos.getZ();
+        ArrayList<BlockFace> bfsMaxTL = rayCollisionDetection(yawTL, pitchTL, px, py, pz, targetted);
+        ArrayList<BlockFace> bfsMaxBR = rayCollisionDetection(yawBR, pitchBR, px, py, pz, targetted);
+        // check for discrepancies to make sure we don't make errors due to slightly bad angles
+        for (int i = 0; i < Math.min(bfsMaxTL.size(), bfsMaxBR.size()); i++) {
+            BlockFace faceTL = bfsMaxTL.get(i);
+            BlockFace faceBR = bfsMaxBR.get(i);
+            if (!faceTL.equals(faceBR)) {
+                System.out.println("BAD " + faceTL.toString() + "," + faceBR.toString());
+                return;
+            }
+            BlockFace mutualFace = bfsMaxTL.get(i);
+            BlockLocation blockA = mutualFace.getAdjacentA(F3Information.getDimension());
+            BlockLocation blockB = mutualFace.getAdjacentB(F3Information.getDimension());
+            if (knownBlocks.containsKey(blockA) && !knownBlocks.get(blockA).getValue().equals("air")) {
+                double dx1 = Math.cos(yawTL + Math.PI/2)*Math.cos(-pitchTL);
+                double dy1 = Math.sin(-pitchTL);
+                double dz1 = Math.sin(yawTL + Math.PI/2)*Math.cos(-pitchTL);
+                double dx2 = Math.cos(yawBR + Math.PI/2)*Math.cos(-pitchBR);
+                double dy2 = Math.sin(-pitchBR);
+                double dz2 = Math.sin(yawBR + Math.PI/2)*Math.cos(-pitchBR);
+                AutoSpeedrunApi.renderLine(new DebugRenderLine(
+                        new Vector3(px, py, pz).toVector3f(),
+                        new Vector3(px, py, pz).add(new Vector3(dx1, dy1, dz1).mult(20.0)).toVector3f(),
+                        1.0f, 1.0f, 0.0f
+                ));
+                AutoSpeedrunApi.renderLine(new DebugRenderLine(
+                        new Vector3(px, py, pz).toVector3f(),
+                        new Vector3(px, py, pz).add(new Vector3(dx2, dy2, dz2).mult(20.0)).toVector3f(),
+                        1.0f, 1.0f, 0.2f
+                ));
+                AutoSpeedrunApi.emergencyStopUserCode();
+                AutoSpeedrunApi.chatMessage("WTF " + targetted);
+                return;
+            }
+            knownBlocks.put(blockA, BlockType.AIR);
+            knownBlocks.put(blockB, BlockType.AIR);
+        }
+        prevTickYaw = F3Information.getYaw();
+        prevTickPitch = F3Information.getPitch();
     }
 
     public void debugDraw() {

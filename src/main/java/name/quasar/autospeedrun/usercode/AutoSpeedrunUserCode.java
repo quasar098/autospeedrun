@@ -3,6 +3,8 @@ package name.quasar.autospeedrun.usercode;
 import name.quasar.autospeedrun.AutoSpeedrunApi;
 import org.lwjgl.glfw.GLFW;
 
+import java.util.ArrayList;
+
 public class AutoSpeedrunUserCode {
 
     int testStartTick = -1;
@@ -20,6 +22,7 @@ public class AutoSpeedrunUserCode {
         Navigation.reset();
         MouseInputManager.reset();
         BuriedTreasureOverworld.reset();
+        MovementPredictor.reset();
     }
 
     public void tick() {
@@ -41,6 +44,8 @@ public class AutoSpeedrunUserCode {
             return;
         }
         F3Information.clearCache();
+        // log position for movement prediction
+        MovementPredictor.getInstance().logCurrentPosition(F3Information.getPosition());
         // live debug information
         BlockLocation targettedBL = F3Information.getTargettedBlockLocation();
         String targettedBlockPositionFormatted = targettedBL == null ? "(not targetting)" : targettedBL.toString();
@@ -49,6 +54,8 @@ public class AutoSpeedrunUserCode {
             F3Information.getYaw(), F3Information.getPitch(),
             targettedBlockPositionFormatted, F3Information.getTargettedBlockName()
         ));
+        MovementPredictor.getInstance().drawVelocityVector();
+        MovementPredictor.getInstance().drawPredictedStablePositionBox();
         // do mouse calibration on world join
         if (MouseInputManager.calibrateMouse()) {
             return;
@@ -94,11 +101,9 @@ public class AutoSpeedrunUserCode {
 //        if (testStartTick + 10 <= Util.tickCount && Util.tickCount < testStartTick + 70) {
 //            MovementInputManager.planPressKeyW();
 //            if ((Util.tickCount) % 2 == 1) {
-//                System.out.println("a");
 //                MovementInputManager.planPressKeyA();
 //                MouseInputManager.setPlayerAngle(45.0, 0.0);
 //            } else {
-//                System.out.println("b");
 //                MouseInputManager.setPlayerAngle(0.0, 0.0);
 //            }
 //        }
@@ -119,9 +124,17 @@ public class AutoSpeedrunUserCode {
             case "dimension":
                 AutoSpeedrunApi.chatMessage("Dimension: " + F3Information.getDimension());
                 break;
-            case "clearcache":
+            case "clearf3cache":
                 F3Information.clearCache();
-                AutoSpeedrunApi.chatMessage("Cache cleared");
+                AutoSpeedrunApi.chatMessage("F3 Cache cleared");
+                break;
+            case "clearworldblocks":
+                WorldBlocks.reset();
+                AutoSpeedrunApi.chatMessage("World blocks cleared");
+                break;
+            case "mousemove":
+                String[] xyStr = split[1].split(",");
+                AutoSpeedrunApi.mouseMove(Integer.parseInt(xyStr[0]), Integer.parseInt(xyStr[1]));
                 break;
             case "setnav":
                 String[] xyzStr = split[1].split(",");
@@ -129,6 +142,9 @@ public class AutoSpeedrunUserCode {
                     Double.parseDouble(xyzStr[0]), Double.parseDouble(xyzStr[1]), Double.parseDouble(xyzStr[2])
                 ));
 //                Navigation.setAlignment(Navigation.AxisAlignment.PRIORITY_X);
+                break;
+            case "clearnav":
+                Navigation.getInstance().setGoalPosition(null);
                 break;
             case "lclick":
                 click = true;

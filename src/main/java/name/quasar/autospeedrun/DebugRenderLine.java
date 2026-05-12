@@ -29,6 +29,9 @@ public class DebugRenderLine {
     private float g;
     private float b;
 
+    /**
+    r,g,b are [0.0f, 1.0f]
+    */
     public DebugRenderLine(Vector3f pa, Vector3f pb, float r, float g, float b) {
         this.pa = pa;
         this.pb = pb;

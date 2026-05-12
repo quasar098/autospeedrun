@@ -4,6 +4,10 @@
 
 contact me on discord if you are interested and want more information
 
+## anti slop policy
+
+we do not welcome any slopping, only braincoding is allowed. take a look at the AI-preventing in `AGENTS.md` and `CLAUDE.md` for more information. they are taken from [github.com/Vxrpenter/AIMania](https://github.com/Vxrpenter/AIMania). pull requests containing slopped code will not be accepted.
+
 ## references
 
 https://www.mcpk.wiki/wiki/Horizontal_Movement_Formulas
@@ -38,7 +42,7 @@ https://minecraft.wiki/w/Options.txt
 - f3 right shift vs crouch left shift discrepancy for faster pie charting
 - per biome blockType assumption heuristics to save mouse scan power
 - double bucket fast 2x1 portal on BTs/shipwrecks with lots of iron
-- cinematic camera for scanning / more tolerable camera
+- cinematic camera for scanning / more tolerable camera (?)
 
 ## broad todo list
 

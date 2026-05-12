@@ -106,9 +106,22 @@ public class Navigation {
         ArrayList<BlockLocation> path = navigate();
         if (path == null) { return false; }
         ArrayList<Vector3> pathVectors = optimizePath(path);
+        Vector3 correctedGoal = goalPosition;
+        if (goalPosition.getY() == -1) {
+            correctedGoal = new Vector3(correctedGoal.getX(), F3Information.getPosition().getY(), correctedGoal.getZ());
+        }
+        pathVectors.set(0, correctedGoal);
         debugDrawPath(pathVectors);
         if (pathVectors.isEmpty()) { return false; }
-        Vector3 nextNode = pathVectors.get(pathVectors.size()-1);
+        Vector3 nextNode = pathVectors.get(pathVectors.size() - 1);
+        if (pathVectors.size() >= 2) {
+            nextNode = pathVectors.get(pathVectors.size() - 2);
+        }
+        AutoSpeedrunApi.renderLine(new DebugRenderLine(
+            nextNode.toVector3f(), nextNode.offsetY(1.0).toVector3f(), 1.0f, 0.0f, 0.0f
+        ));
+        Vector3 vecToNextNode = nextNode.sub(F3Information.getPosition());
+        MovementPredictor.getInstance().doBestMovementInDirection(vecToNextNode);
         return false;
     }
 
@@ -133,12 +146,12 @@ public class Navigation {
             }
             newPath1.add(vec0);
         }
+        // straight line middle node removal
         ArrayList<Vector3> newPath2 = new ArrayList<>(inputPath.size());
         for (Vector3 vec0 : newPath1) {
             if (newPath1.size() >= 2) {
                 Vector3 vec1 = newPath1.get(newPath1.size()-1);
                 Vector3 vec2 = newPath1.get(newPath1.size()-2);
-                // straight line middle node removal
                 if (Vector3.inStraightLine(vec0, vec1, vec2)) {
                     newPath1.set(newPath1.size()-1, vec0);
                     continue;
@@ -221,8 +234,8 @@ public class Navigation {
                 break;
             }
             BlockLocation current = openSet.peek();
-            if (current.getX() == goal.getX() && current.getZ() == goal.getZ() &&
-                    (goal.getY() == -1 || current.getY() == goal.getY())) {
+            if (current.getX() == Math.floor(goal.getX()) && current.getZ() == Math.floor(goal.getZ()) &&
+                    (goal.getY() == -1 || current.getY() == Math.floor(goal.getY()))) {
                 return reconstructPath(cameFrom, current);
             }
             openSet.remove(current);
@@ -281,6 +294,7 @@ public class Navigation {
             AutoSpeedrunApi.renderLine(new DebugRenderLine(
                     lookAt.offsetY(-0.1).toVector3f(), lookAt.offsetY(0.1).toVector3f(), 1.0f, 0.0f, 0.0f
             ));
+            AutoSpeedrunApi.chatMessage("Look at point: " + lookAt.toString(4));
             MouseInputManager.lookAtPoint(lookAt);
         }
         return path;

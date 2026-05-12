@@ -41,6 +41,10 @@ public class BlockFace {
         return dir;
     }
 
+    public String toString() {
+        return String.format("BF<%d, %d, %d, %s>", getX(), getY(), getZ(), dir.toString());
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj == this) {

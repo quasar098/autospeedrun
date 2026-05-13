@@ -14,7 +14,9 @@ public class AutoSpeedrunTicker implements ClientTickEvents.StartTick {
     @Override
     public void onStartTick(Minecraft client) {
         if (Minecraft.getInstance().player != null && !Util.togglePaused) {
-            userCode.tick();
+            if (Minecraft.getInstance().screen == null || !Minecraft.getInstance().screen.getTitle().getString().equals("Game paused")) {
+                userCode.tick();
+            }
         }
     }
 }

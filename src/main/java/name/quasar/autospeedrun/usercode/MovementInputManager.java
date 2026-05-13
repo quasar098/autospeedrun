@@ -89,6 +89,13 @@ public class MovementInputManager {
         currCrouch = false;
     }
 
+    public static void cancelWASD() {
+        currW = false;
+        currA = false;
+        currS = false;
+        currD = false;
+    }
+
     public static void planPressKeyW() { currW = true; }
     public static void planPressKeyA() { currA = true; }
     public static void planPressKeyS() { currS = true; }

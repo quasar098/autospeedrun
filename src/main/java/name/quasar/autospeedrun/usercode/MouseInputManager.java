@@ -12,11 +12,10 @@ public class MouseInputManager {
     private static double degPerPix = 0;
 
     public static void lookAtPoint(Vector3 point) {
-        Vector3 cur = F3Information.getPosition();
-        double goalYaw = Math.atan2(point.getX() - cur.getX(), point.getZ() - cur.getZ()) * 180 / Math.PI;
-        double distanceXZ = Math.sqrt(Math.pow(cur.getX() - point.getX(), 2) + Math.pow(cur.getZ() - point.getZ(), 2));
-        double eyeHeight = Util.PLAYER_STANDING_EYE_HEIGHT;  // todo: crouching stuff
-        double goalPitch = Math.atan2((point.getY() - eyeHeight) - cur.getY(), distanceXZ) * 180 / Math.PI;
+        Vector3 pos = F3Information.getPosition();
+        double goalYaw = Math.atan2(point.getX() - pos.getX(), point.getZ() - pos.getZ()) * 180 / Math.PI;
+        double distanceXZ = Math.sqrt(Math.pow(pos.getX() - point.getX(), 2) + Math.pow(pos.getZ() - point.getZ(), 2));
+        double goalPitch = Math.atan2(point.getY() - Util.getEyePosition().getY(), distanceXZ) * 180 / Math.PI;
         setPlayerAngle(-goalYaw, -goalPitch);
     }
 

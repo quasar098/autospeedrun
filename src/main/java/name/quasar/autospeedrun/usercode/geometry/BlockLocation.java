@@ -1,6 +1,12 @@
 package name.quasar.autospeedrun.usercode.geometry;
 
+import name.quasar.autospeedrun.AutoSpeedrunApi;
+import name.quasar.autospeedrun.DebugRenderLine;
 import name.quasar.autospeedrun.usercode.Dimension;
+import name.quasar.autospeedrun.usercode.F3Information;
+import name.quasar.autospeedrun.usercode.Util;
+
+import java.util.ArrayList;
 
 public class BlockLocation {
     private final Dimension dimension;
@@ -78,5 +84,49 @@ public class BlockLocation {
                 offsetY(1),
                 offsetY(-1),
         };
+    }
+
+    public BlockFace[] getFaces() {
+        return new BlockFace[]{
+            new BlockFace((int) x, (int) y, (int) z, BlockFace.Direction.POS_X),
+            new BlockFace((int) x, (int) y, (int) z, BlockFace.Direction.POS_Y),
+            new BlockFace((int) x, (int) y, (int) z, BlockFace.Direction.POS_Z),
+            new BlockFace((int) x-1, (int) y, (int) z, BlockFace.Direction.POS_X),
+            new BlockFace((int) x, (int) y-1, (int) z, BlockFace.Direction.POS_Y),
+            new BlockFace((int) x, (int) y, (int) z-1, BlockFace.Direction.POS_Z),
+        };
+    }
+
+    public DirectedBlockFace[] getDirectedFaces() {
+        return new DirectedBlockFace[]{
+            new DirectedBlockFace((int) x, (int) y, (int) z, DirectedBlockFace.Direction.POS_X),
+            new DirectedBlockFace((int) x, (int) y, (int) z, DirectedBlockFace.Direction.POS_Y),
+            new DirectedBlockFace((int) x, (int) y, (int) z, DirectedBlockFace.Direction.POS_Z),
+            new DirectedBlockFace((int) x, (int) y, (int) z, DirectedBlockFace.Direction.NEG_X),
+            new DirectedBlockFace((int) x, (int) y, (int) z, DirectedBlockFace.Direction.NEG_Y),
+            new DirectedBlockFace((int) x, (int) y, (int) z, DirectedBlockFace.Direction.NEG_Z),
+        };
+    }
+
+    public void debugDrawGreatCircles(Vector3 camera) {
+        AutoSpeedrunApi.chatMessage("great circles");
+        ArrayList<GreatCircle> gcs = new ArrayList<>();
+        for (Vector3 gcPosition : new Vector3[] { new Vector3(x, y, z),     new Vector3(x+1, y+1, z),
+                                                  new Vector3(x+1, y, z+1), new Vector3(x, y+1, z+1) }) {
+            double[] ypRadians = gcPosition.sub(camera).toYawAndPitchRadians();
+            double gcYaw = ypRadians[0];
+            double gcPitch = ypRadians[1];
+            Vector3 lookingVector = Vector3.fromRadians(gcYaw, gcPitch).normalized();
+            gcs.add(new GreatCircle(Vector3.fromRadians(gcYaw + Math.PI / 2, 0)));
+            if (Math.abs(lookingVector.dot(Vector3.POS_X)) > 0.000001) {
+                gcs.add(new GreatCircle(lookingVector.cross(Vector3.POS_X).normalized()));
+            }
+            if (Math.abs(lookingVector.dot(Vector3.POS_Z)) > 0.000001) {
+                gcs.add(new GreatCircle(lookingVector.cross(Vector3.POS_Z).normalized()));
+            }
+        }
+        for (GreatCircle gc : gcs) {
+            gc.debugDraw(camera);
+        }
     }
 }

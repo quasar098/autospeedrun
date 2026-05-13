@@ -7,6 +7,7 @@ import name.quasar.autospeedrun.usercode.geometry.BlockFace;
 import name.quasar.autospeedrun.usercode.geometry.BlockLocation;
 import name.quasar.autospeedrun.usercode.geometry.BlockType;
 import name.quasar.autospeedrun.usercode.geometry.Vector3;
+import name.quasar.autospeedrun.usercode.pathing.Navigation;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -124,9 +125,9 @@ public class WorldBlocks {
         double pitchTL = Math.toRadians(F3Information.getPitch()-0.05);
         double yawBR = Math.toRadians(F3Information.getYaw()+0.05);
         double pitchBR = Math.toRadians(F3Information.getPitch()+0.05);
-        Vector3 prevTickPlayerPos = MovementPredictor.getInstance().prevPosition();
+        Vector3 prevTickPlayerPos = Navigation.getInstance().prevPosition();
         double px = prevTickPlayerPos.getX();
-        double py = prevTickPlayerPos.getY() + Util.PLAYER_STANDING_EYE_HEIGHT;  // todo crouching stuff
+        double py = prevTickPlayerPos.getY() + Util.getEyeOffset();
         double pz = prevTickPlayerPos.getZ();
         ArrayList<BlockFace> bfsMaxTL = rayCollisionDetection(yawTL, pitchTL, px, py, pz, targetted);
         ArrayList<BlockFace> bfsMaxBR = rayCollisionDetection(yawBR, pitchBR, px, py, pz, targetted);
@@ -135,7 +136,9 @@ public class WorldBlocks {
             BlockFace faceTL = bfsMaxTL.get(i);
             BlockFace faceBR = bfsMaxBR.get(i);
             if (!faceTL.equals(faceBR)) {
-//                System.out.println("BAD " + faceTL.toString() + "," + faceBR.toString());
+                AutoSpeedrunApi.chatMessage(String.format("BAD %.2fs %d", Util.tickCount / 20.0, i));
+                faceTL.debugDraw();
+                faceBR.debugDraw();
                 return;
             }
             BlockFace mutualFace = bfsMaxTL.get(i);
@@ -165,6 +168,7 @@ public class WorldBlocks {
             knownBlocks.put(blockA, BlockType.AIR);
             knownBlocks.put(blockB, BlockType.AIR);
         }
+        AutoSpeedrunApi.chatMessage("Success writing " + Math.min(bfsMaxTL.size(), bfsMaxBR.size()));
         prevTickYaw = F3Information.getYaw();
         prevTickPitch = F3Information.getPitch();
     }

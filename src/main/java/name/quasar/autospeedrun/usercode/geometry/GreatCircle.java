@@ -6,6 +6,7 @@ import name.quasar.autospeedrun.DebugRenderLine;
 public class GreatCircle {
     private final Vector3 orthog1;
     private final Vector3 orthog2;
+    private final Vector3 normal;
 
     /**
      * normalVec is the normal vector to the great circle orthogonal vectors. must be normalized.
@@ -13,7 +14,8 @@ public class GreatCircle {
     public GreatCircle(Vector3 normalVec) {
         this.orthog1 = normalVec.anyOrthogonalVector();
         Vector3 orthog2 = normalVec.cross(orthog1);
-        if (orthog2.dot(normalVec) < 0) {
+        this.normal = orthog1.cross(orthog2);
+        if (normal.dot(normalVec) < 0) {
             this.orthog2 = orthog2.mult(-1);
         } else {
             this.orthog2 = orthog2;

@@ -4,6 +4,10 @@ import name.quasar.autospeedrun.AutoSpeedrunApi;
 import name.quasar.autospeedrun.usercode.geometry.BlockLocation;
 import name.quasar.autospeedrun.usercode.geometry.Vector3;
 import name.quasar.autospeedrun.usercode.geometry.GreatCircle;
+import name.quasar.autospeedrun.usercode.pathing.Exploration;
+import name.quasar.autospeedrun.usercode.pathing.Navigation;
+import name.quasar.autospeedrun.usercode.pathing.PathPlanning;
+import name.quasar.autospeedrun.usercode.pathing.PathPlanningResult;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
@@ -22,10 +26,10 @@ public class AutoSpeedrunUserCode {
 
         // other systems
         WorldBlocks.reset();
+        PathPlanning.reset();
         Navigation.reset();
         MouseInputManager.reset();
         BuriedTreasureOverworld.reset();
-        MovementPredictor.reset();
     }
 
     public void tick() {
@@ -47,8 +51,9 @@ public class AutoSpeedrunUserCode {
             return;
         }
         F3Information.clearCache();
-        // log position for movement prediction
-        MovementPredictor.getInstance().logCurrentPosition(F3Information.getPosition());
+        // movement prediction debug info
+        Navigation.getInstance().logCurrentPosition(F3Information.getPosition());
+        Navigation.getInstance().drawPredictedPlayerBox();
         // live debug information
         BlockLocation targettedBL = F3Information.getTargettedBlockLocation();
         String targettedBlockPositionFormatted = targettedBL == null ? "(not targetting)" : targettedBL.toString();
@@ -57,11 +62,9 @@ public class AutoSpeedrunUserCode {
             F3Information.getYaw(), F3Information.getPitch(),
             targettedBlockPositionFormatted, F3Information.getTargettedBlockName()
         ));
-        MovementPredictor.getInstance().drawVelocityVector();
-        MovementPredictor.getInstance().drawPredictedStablePositionBox();
         if (gc != null) {
             for (GreatCircle gc2 : gc) {
-                gc2.debugDraw(F3Information.getPosition().offsetY(Util.PLAYER_STANDING_EYE_HEIGHT));
+                gc2.debugDraw(Util.getEyePosition());
             }
         }
         // do mouse calibration on world join
@@ -99,29 +102,12 @@ public class AutoSpeedrunUserCode {
 //            }
 //        }
 
-        // movement test
-//        if (testStartTick == -1) {
-//            testStartTick = Util.tickCount;
-//        }
-//        Vector3 pos = F3Information.getPosition();
-//        Vec3 real = Minecraft.getInstance().player.position();
-//        System.out.printf("%d %f %f %f\n", Util.tickCount-testStartTick, real.x, real.y, real.z);
-//        if (testStartTick + 10 <= Util.tickCount && Util.tickCount < testStartTick + 70) {
-//            MovementInputManager.planPressKeyW();
-//            if ((Util.tickCount) % 2 == 1) {
-//                MovementInputManager.planPressKeyA();
-//                MouseInputManager.setPlayerAngle(45.0, 0.0);
-//            } else {
-//                MouseInputManager.setPlayerAngle(0.0, 0.0);
-//            }
-//        }
-
-        // do movement and mouse
-        boolean navigatorResult = Navigation.getInstance().perform();
+        // path planning, navigation, exploration
+        PathPlanningResult pathPlanningResult = PathPlanning.getInstance().perform();
         MovementInputManager.handle();
-        if (navigatorResult) {
-            return;
-        }
+        if (pathPlanningResult != PathPlanningResult.SUCCESS) { return; }
+        Exploration.getInstance().perform();
+        Navigation.getInstance().perform();
     }
 
     private boolean click = false;
@@ -147,13 +133,13 @@ public class AutoSpeedrunUserCode {
                 break;
             case "setnav":
                 String[] xyzStr = split[1].split(",");
-                Navigation.getInstance().setGoalPosition(new Vector3(
+                PathPlanning.getInstance().setGoalPosition(new Vector3(
                     Double.parseDouble(xyzStr[0]), Double.parseDouble(xyzStr[1]), Double.parseDouble(xyzStr[2])
                 ));
 //                Navigation.setAlignment(Navigation.AxisAlignment.PRIORITY_X);
                 break;
             case "clearnav":
-                Navigation.getInstance().setGoalPosition(null);
+                PathPlanning.getInstance().setGoalPosition(null);
                 break;
             case "lclick":
                 click = true;
@@ -180,10 +166,7 @@ public class AutoSpeedrunUserCode {
                     Vector3 gcPosition = new Vector3(
                         Double.parseDouble(xyzStr2[0]), Double.parseDouble(xyzStr2[1]), Double.parseDouble(xyzStr2[2])
                     );
-                    // todo support crouching
-                    Vector3 vecToGCPos = gcPosition.sub(F3Information.getPosition().offsetY(
-                        Util.PLAYER_STANDING_EYE_HEIGHT
-                    ));
+                    Vector3 vecToGCPos = gcPosition.sub(Util.getEyePosition());
                     double[] ypRadians = vecToGCPos.toYawAndPitchRadians();
                     gcYaw = ypRadians[0];
                     gcPitch = ypRadians[1];
@@ -193,10 +176,10 @@ public class AutoSpeedrunUserCode {
                     gcYaw + Math.PI / 2,
                     0
                 )));
-                if (Math.abs(lookingVector.dot(Vector3.POS_X)) > 0.0001) {
+                if (Math.abs(lookingVector.dot(Vector3.POS_X)) > 0.000001) {
                     gc.add(new GreatCircle(lookingVector.cross(Vector3.POS_X).normalized()));
                 }
-                if (Math.abs(lookingVector.dot(Vector3.POS_Z)) > 0.0001) {
+                if (Math.abs(lookingVector.dot(Vector3.POS_Z)) > 0.000001) {
                     gc.add(new GreatCircle(lookingVector.cross(Vector3.POS_Z).normalized()));
                 }
                 break;

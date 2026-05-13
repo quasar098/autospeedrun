@@ -3,6 +3,7 @@ package name.quasar.autospeedrun.usercode.geometry;
 public class BlockType {
 
     public static final BlockType AIR = new BlockType("minecraft:air");
+    public static final BlockType BEDROCK = new BlockType("minecraft:bedrock");
 
     private String value = null;
 

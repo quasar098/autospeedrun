@@ -14,10 +14,10 @@ public class BlockFace {
     }
 
     // todo change these to longs
-    private int x;
-    private int y;
-    private int z;
-    private Direction dir;
+    private final int x;
+    private final int y;
+    private final int z;
+    private final Direction dir;
 
     public BlockFace(int x, int y, int z, Direction dir) {
         this.x = x;
@@ -66,6 +66,26 @@ public class BlockFace {
         if (dir == Direction.POS_X) { return new BlockLocation(dim, x+1, y, z); }
         else if (dir == Direction.POS_Y) { return new BlockLocation(dim, x, y+1, z); }
         else { return new BlockLocation(dim, x, y, z+1); }
+    }
+
+    public DirectedBlockFace toDirectedBlockFace(boolean negative) {
+        if (negative) {
+            if (getDir() == Direction.POS_X) {
+                return new DirectedBlockFace(x+1, y, z, DirectedBlockFace.Direction.NEG_X);
+            } else if (getDir() == Direction.POS_Y) {
+                return new DirectedBlockFace(x, y+1, z, DirectedBlockFace.Direction.NEG_Y);
+            } else {
+                return new DirectedBlockFace(x, y, z+1, DirectedBlockFace.Direction.NEG_Z);
+            }
+        } else {
+            if (getDir() == Direction.POS_X) {
+                return new DirectedBlockFace(x, y, z, DirectedBlockFace.Direction.POS_X);
+            } else if (getDir() == Direction.POS_Y) {
+                return new DirectedBlockFace(x, y, z, DirectedBlockFace.Direction.POS_Y);
+            } else {
+                return new DirectedBlockFace(x, y, z, DirectedBlockFace.Direction.POS_Z);
+            }
+        }
     }
 
     public void debugDraw() {

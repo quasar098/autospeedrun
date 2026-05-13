@@ -1,6 +1,7 @@
 package name.quasar.autospeedrun.usercode;
 
 import name.quasar.autospeedrun.AutoSpeedrunApi;
+import name.quasar.autospeedrun.usercode.pathing.PathPlanning;
 import org.lwjgl.glfw.GLFW;
 
 public class BuriedTreasureOverworld {
@@ -143,7 +144,7 @@ public class BuriedTreasureOverworld {
         double btz = cx + 9.5;
         AutoSpeedrunApi.chatMessage("Found BT at " + btx + "," + btz);
         AutoSpeedrunApi.releaseKey(GLFW.GLFW_KEY_RIGHT_SHIFT);
-        Navigation.getInstance().setGoalPosition(btx, btz);
+        PathPlanning.getInstance().setGoalPosition(btx, btz);
         subsection = Subsection.MOVING_TO_9_9;
     }
 

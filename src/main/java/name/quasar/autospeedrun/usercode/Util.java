@@ -1,8 +1,11 @@
 package name.quasar.autospeedrun.usercode;
 
 import name.quasar.autospeedrun.AutoSpeedrunApi;
+import name.quasar.autospeedrun.usercode.geometry.Vector3;
 
 import java.util.function.IntPredicate;
+
+import static name.quasar.autospeedrun.usercode.F3Information.getPosition;
 
 public class Util {
 
@@ -29,6 +32,13 @@ public class Util {
         return Math.round(value * factor) / factor;
     }
 
+    public static double getEyeOffset() {
+        return Util.PLAYER_STANDING_EYE_HEIGHT;  // todo support crouching
+    }
+
+    public static Vector3 getEyePosition() {
+        return getPosition().offsetY(getEyeOffset());
+    }
 
     //<editor-fold desc="int[][][] glyphChecks = { ... };">
     static int[][][] glyphChecks = {

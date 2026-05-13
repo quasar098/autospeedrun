@@ -1,6 +1,7 @@
 package name.quasar.autospeedrun.usercode;
 
 import name.quasar.autospeedrun.AutoSpeedrunApi;
+import name.quasar.autospeedrun.usercode.geometry.Vector3;
 
 import static name.quasar.autospeedrun.usercode.Util.*;
 

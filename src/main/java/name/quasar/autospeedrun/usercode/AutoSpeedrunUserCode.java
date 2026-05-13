@@ -1,6 +1,9 @@
 package name.quasar.autospeedrun.usercode;
 
 import name.quasar.autospeedrun.AutoSpeedrunApi;
+import name.quasar.autospeedrun.usercode.geometry.BlockLocation;
+import name.quasar.autospeedrun.usercode.geometry.Vector3;
+import name.quasar.autospeedrun.usercode.geometry.GreatCircle;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
@@ -56,6 +59,11 @@ public class AutoSpeedrunUserCode {
         ));
         MovementPredictor.getInstance().drawVelocityVector();
         MovementPredictor.getInstance().drawPredictedStablePositionBox();
+        if (gc != null) {
+            for (GreatCircle gc2 : gc) {
+                gc2.debugDraw(F3Information.getPosition().offsetY(Util.PLAYER_STANDING_EYE_HEIGHT));
+            }
+        }
         // do mouse calibration on world join
         if (MouseInputManager.calibrateMouse()) {
             return;
@@ -117,6 +125,7 @@ public class AutoSpeedrunUserCode {
     }
 
     private boolean click = false;
+    private ArrayList<GreatCircle> gc = null;
 
     public void debug(String debugStr) {
         String[] split = debugStr.split(" ");
@@ -156,6 +165,43 @@ public class AutoSpeedrunUserCode {
                 break;
             case "toggleair":
                 Util.toggleDebugAir = !Util.toggleDebugAir;
+                break;
+            case "greatcircles":
+                AutoSpeedrunApi.chatMessage("great circles");
+                String[] xyzStr2 = new String[]{};
+                if (split.length >= 2) {
+                    xyzStr2 = split[1].split(",");
+                }
+                gc = new ArrayList<>();
+                double gcYaw = Math.toRadians(F3Information.getYaw());
+                double gcPitch = Math.toRadians(F3Information.getPitch());
+
+                if (xyzStr2.length == 3) {
+                    Vector3 gcPosition = new Vector3(
+                        Double.parseDouble(xyzStr2[0]), Double.parseDouble(xyzStr2[1]), Double.parseDouble(xyzStr2[2])
+                    );
+                    // todo support crouching
+                    Vector3 vecToGCPos = gcPosition.sub(F3Information.getPosition().offsetY(
+                        Util.PLAYER_STANDING_EYE_HEIGHT
+                    ));
+                    double[] ypRadians = vecToGCPos.toYawAndPitchRadians();
+                    gcYaw = ypRadians[0];
+                    gcPitch = ypRadians[1];
+                }
+                Vector3 lookingVector = Vector3.fromRadians(gcYaw, gcPitch).normalized();
+                gc.add(new GreatCircle(Vector3.fromRadians(
+                    gcYaw + Math.PI / 2,
+                    0
+                )));
+                if (Math.abs(lookingVector.dot(Vector3.POS_X)) > 0.0001) {
+                    gc.add(new GreatCircle(lookingVector.cross(Vector3.POS_X).normalized()));
+                }
+                if (Math.abs(lookingVector.dot(Vector3.POS_Z)) > 0.0001) {
+                    gc.add(new GreatCircle(lookingVector.cross(Vector3.POS_Z).normalized()));
+                }
+                break;
+            default:
+                AutoSpeedrunApi.chatMessage("there is no such thing");
                 break;
         }
     }

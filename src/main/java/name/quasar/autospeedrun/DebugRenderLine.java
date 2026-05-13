@@ -23,11 +23,11 @@ public class DebugRenderLine {
         return b;
     }
 
-    private Vector3f pa;
-    private Vector3f pb;
-    private float r;
-    private float g;
-    private float b;
+    private final Vector3f pa;
+    private final Vector3f pb;
+    private final float r;
+    private final float g;
+    private final float b;
 
     /**
     r,g,b are [0.0f, 1.0f]

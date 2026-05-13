@@ -3,6 +3,10 @@ package name.quasar.autospeedrun.usercode;
 import com.mojang.math.Vector3f;
 import name.quasar.autospeedrun.AutoSpeedrunApi;
 import name.quasar.autospeedrun.DebugRenderLine;
+import name.quasar.autospeedrun.usercode.geometry.BlockFace;
+import name.quasar.autospeedrun.usercode.geometry.BlockLocation;
+import name.quasar.autospeedrun.usercode.geometry.BlockType;
+import name.quasar.autospeedrun.usercode.geometry.Vector3;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -131,33 +135,33 @@ public class WorldBlocks {
             BlockFace faceTL = bfsMaxTL.get(i);
             BlockFace faceBR = bfsMaxBR.get(i);
             if (!faceTL.equals(faceBR)) {
-                System.out.println("BAD " + faceTL.toString() + "," + faceBR.toString());
+//                System.out.println("BAD " + faceTL.toString() + "," + faceBR.toString());
                 return;
             }
             BlockFace mutualFace = bfsMaxTL.get(i);
             BlockLocation blockA = mutualFace.getAdjacentA(F3Information.getDimension());
             BlockLocation blockB = mutualFace.getAdjacentB(F3Information.getDimension());
-            if (knownBlocks.containsKey(blockA) && !knownBlocks.get(blockA).getValue().equals("air")) {
-                double dx1 = Math.cos(yawTL + Math.PI/2)*Math.cos(-pitchTL);
-                double dy1 = Math.sin(-pitchTL);
-                double dz1 = Math.sin(yawTL + Math.PI/2)*Math.cos(-pitchTL);
-                double dx2 = Math.cos(yawBR + Math.PI/2)*Math.cos(-pitchBR);
-                double dy2 = Math.sin(-pitchBR);
-                double dz2 = Math.sin(yawBR + Math.PI/2)*Math.cos(-pitchBR);
-                AutoSpeedrunApi.renderLine(new DebugRenderLine(
-                        new Vector3(px, py, pz).toVector3f(),
-                        new Vector3(px, py, pz).add(new Vector3(dx1, dy1, dz1).mult(20.0)).toVector3f(),
-                        1.0f, 1.0f, 0.0f
-                ));
-                AutoSpeedrunApi.renderLine(new DebugRenderLine(
-                        new Vector3(px, py, pz).toVector3f(),
-                        new Vector3(px, py, pz).add(new Vector3(dx2, dy2, dz2).mult(20.0)).toVector3f(),
-                        1.0f, 1.0f, 0.2f
-                ));
-                AutoSpeedrunApi.emergencyStopUserCode();
-                AutoSpeedrunApi.chatMessage("WTF " + targetted);
-                return;
-            }
+//            if (knownBlocks.containsKey(blockA) && !knownBlocks.get(blockA).getValue().equals("air")) {
+//                double dx1 = Math.cos(yawTL + Math.PI/2)*Math.cos(-pitchTL);
+//                double dy1 = Math.sin(-pitchTL);
+//                double dz1 = Math.sin(yawTL + Math.PI/2)*Math.cos(-pitchTL);
+//                double dx2 = Math.cos(yawBR + Math.PI/2)*Math.cos(-pitchBR);
+//                double dy2 = Math.sin(-pitchBR);
+//                double dz2 = Math.sin(yawBR + Math.PI/2)*Math.cos(-pitchBR);
+//                AutoSpeedrunApi.renderLine(new DebugRenderLine(
+//                        new Vector3(px, py, pz).toVector3f(),
+//                        new Vector3(px, py, pz).add(new Vector3(dx1, dy1, dz1).mult(20.0)).toVector3f(),
+//                        1.0f, 1.0f, 0.0f
+//                ));
+//                AutoSpeedrunApi.renderLine(new DebugRenderLine(
+//                        new Vector3(px, py, pz).toVector3f(),
+//                        new Vector3(px, py, pz).add(new Vector3(dx2, dy2, dz2).mult(20.0)).toVector3f(),
+//                        1.0f, 1.0f, 0.2f
+//                ));
+//                AutoSpeedrunApi.emergencyStopUserCode();
+//                AutoSpeedrunApi.chatMessage("WTF " + targetted);
+//                return;
+//            }
             knownBlocks.put(blockA, BlockType.AIR);
             knownBlocks.put(blockB, BlockType.AIR);
         }

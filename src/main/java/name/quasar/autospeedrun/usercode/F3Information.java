@@ -1,6 +1,8 @@
 package name.quasar.autospeedrun.usercode;
 
 import name.quasar.autospeedrun.AutoSpeedrunApi;
+import name.quasar.autospeedrun.usercode.geometry.BlockLocation;
+import name.quasar.autospeedrun.usercode.geometry.Vector3;
 
 import java.util.Arrays;
 

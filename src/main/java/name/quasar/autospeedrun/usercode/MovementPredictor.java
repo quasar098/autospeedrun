@@ -2,8 +2,7 @@ package name.quasar.autospeedrun.usercode;
 
 import name.quasar.autospeedrun.AutoSpeedrunApi;
 import name.quasar.autospeedrun.DebugRenderLine;
-import net.fabricmc.loader.impl.lib.sat4j.core.Vec;
-import net.minecraft.util.Tuple;
+import name.quasar.autospeedrun.usercode.geometry.Vector3;
 
 import java.util.*;
 
@@ -126,6 +125,10 @@ public class MovementPredictor {
         } else if (bestVec.equals(dwVec)) {
             MovementInputManager.planPressKeyD();
             MovementInputManager.planPressKeyW();
+        }
+        // maybe change to preemptively jump
+        if (vecToDirec.getY() > 0.25 && vecToDirec.normalized().getY() > 0.5) {
+            MovementInputManager.planPressKeySpace();
         }
     }
 

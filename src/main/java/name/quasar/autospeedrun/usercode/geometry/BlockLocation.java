@@ -1,4 +1,6 @@
-package name.quasar.autospeedrun.usercode;
+package name.quasar.autospeedrun.usercode.geometry;
+
+import name.quasar.autospeedrun.usercode.Dimension;
 
 public class BlockLocation {
     private final Dimension dimension;

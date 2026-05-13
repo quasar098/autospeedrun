@@ -1,4 +1,4 @@
-package name.quasar.autospeedrun.usercode;
+package name.quasar.autospeedrun.usercode.geometry;
 
 public class BlockType {
 

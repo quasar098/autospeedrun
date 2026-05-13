@@ -1,8 +1,14 @@
-package name.quasar.autospeedrun.usercode;
+package name.quasar.autospeedrun.usercode.geometry;
 
 import com.mojang.math.Vector3f;
+import net.fabricmc.loader.impl.lib.sat4j.core.Vec;
 
 public class Vector3 {
+    public static Vector3 ZERO = new Vector3(0, 0, 0);
+    public static Vector3 POS_X = new Vector3(1, 0, 0);
+    public static Vector3 POS_Y = new Vector3(0, 1, 0);
+    public static Vector3 POS_Z = new Vector3(0, 0, 1);
+
     private final double x;
     private final double y;
     private final double z;
@@ -84,6 +90,29 @@ public class Vector3 {
         return Math.sqrt(getX() * getX() + getY() * getY() + getZ() * getZ());
     }
 
+    public Vector3 cross(Vector3 b) {
+        Vector3 a = this;
+        return new Vector3(
+            a.getY()*b.getZ()-a.getZ()*b.getY(),
+            a.getZ()*b.getX()-a.getX()*b.getZ(),
+            a.getX()*b.getY()-a.getY()*b.getX()
+        );
+    }
+
+    /**
+     * get some normalized vector A such that this.dot(A) is the zero vector (i.e. orthogonal).
+     * <a href="https://math.stackexchange.com/a/3123136">reference</a>
+     */
+    public Vector3 anyOrthogonalVector() {
+        Vector3 va = new Vector3(0, getZ(), -getY());
+        Vector3 vb = new Vector3(-getZ(), 0, getX());
+        Vector3 vc = new Vector3(getY(), -getX(), 0);
+        Vector3 best = va;
+        if (vb.length() > best.length()) { best = vb; }
+        if (vc.length() > best.length()) { best = vc; }
+        return best.normalized();
+    }
+
     public Vector3 normalized() {
         if (length() == 0) {
             return new Vector3(0, 0, 0);
@@ -99,4 +128,25 @@ public class Vector3 {
         return b.sub(a).normalized().dot(c.sub(b).normalized()) > 0.9999;
     }
 
+    /**
+     * returned vector has length 1 (normalized)
+     */
+    public static Vector3 fromRadians(double yaw, double pitch) {
+        return new Vector3(-Math.sin(yaw)*Math.cos(-pitch), Math.sin(-pitch), Math.cos(yaw)*Math.cos(-pitch));
+    }
+
+    public double[] toYawAndPitchRadians() {
+        // X = -Math.sin(yaw)*Math.cos(-pitch)
+        // Y = Math.sin(-pitch)
+        // Z = Math.cos(yaw)*Math.cos(-pitch)
+        // pitch = -arcsin(Y)
+        // yaw = arccos(Z/Math.cos(-pitch))
+        Vector3 v = normalized();
+        double pitch = -Math.asin(v.getY());
+        double yaw = Math.acos(v.getZ()/Math.cos(-pitch));
+        if (v.getX() > 0.0) {
+            yaw = Math.PI * 2 - yaw;
+        }
+        return new double[] { yaw, pitch };
+    }
 }

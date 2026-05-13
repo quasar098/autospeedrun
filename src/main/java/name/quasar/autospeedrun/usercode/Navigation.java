@@ -2,6 +2,9 @@ package name.quasar.autospeedrun.usercode;
 
 import name.quasar.autospeedrun.AutoSpeedrunApi;
 import name.quasar.autospeedrun.DebugRenderLine;
+import name.quasar.autospeedrun.usercode.geometry.BlockLocation;
+import name.quasar.autospeedrun.usercode.geometry.BlockType;
+import name.quasar.autospeedrun.usercode.geometry.Vector3;
 
 import java.util.*;
 
@@ -110,7 +113,9 @@ public class Navigation {
         if (goalPosition.getY() == -1) {
             correctedGoal = new Vector3(correctedGoal.getX(), F3Information.getPosition().getY(), correctedGoal.getZ());
         }
-        pathVectors.set(0, correctedGoal);
+        if (navCanReachGoalPosition) {
+            pathVectors.set(0, correctedGoal);
+        }
         debugDrawPath(pathVectors);
         if (pathVectors.isEmpty()) { return false; }
         Vector3 nextNode = pathVectors.get(pathVectors.size() - 1);
@@ -205,7 +210,13 @@ public class Navigation {
         return lookAt;
     }
 
+    public boolean navCanReachGoalPosition = false;
+
+    /**
+     * sets navCanReachGoalPosition
+     */
     private ArrayList<BlockLocation> navigate() {
+        navCanReachGoalPosition = false;
         Vector3 goal = goalPosition;
         assert(goal != null);
         Vector3 playerPos = F3Information.getPosition();
@@ -224,7 +235,7 @@ public class Navigation {
         );
         openSet.add(start);
         HashMap<BlockLocation, Boolean> canJumpFrom = new HashMap<>();
-        canJumpFrom.put(start, true);
+        canJumpFrom.put(start, !kb.containsKey(start) || !kb.get(start).getValue().equals("air"));
         int iterations = 0;
         int maxIterations = 2000;
         ArrayList<BlockLocation> path = null;
@@ -236,6 +247,7 @@ public class Navigation {
             BlockLocation current = openSet.peek();
             if (current.getX() == Math.floor(goal.getX()) && current.getZ() == Math.floor(goal.getZ()) &&
                     (goal.getY() == -1 || current.getY() == Math.floor(goal.getY()))) {
+                navCanReachGoalPosition = true;
                 return reconstructPath(cameFrom, current);
             }
             openSet.remove(current);

@@ -8,6 +8,7 @@ public class MovementInputManager {
     private static boolean prevA = false;
     private static boolean prevS = false;
     private static boolean prevD = false;
+    private static boolean prevSpace = false;
     private static boolean prevCrouch = false;
     private static boolean prevSprint = false;
 
@@ -15,6 +16,7 @@ public class MovementInputManager {
     private static boolean currA = false;
     private static boolean currS = false;
     private static boolean currD = false;
+    private static boolean currSpace = false;
     private static boolean currCrouch = false;
     private static boolean currSprint = false;
 
@@ -55,6 +57,13 @@ public class MovementInputManager {
                 AutoSpeedrunApi.releaseKey(GLFW.GLFW_KEY_D);
             }
         }
+        if (prevSpace != currSpace) {
+            if (currSpace) {
+                AutoSpeedrunApi.pressKey(GLFW.GLFW_KEY_SPACE);
+            } else {
+                AutoSpeedrunApi.releaseKey(GLFW.GLFW_KEY_SPACE);
+            }
+        }
         if (prevCrouch != currCrouch) {
             if (currCrouch) {
                 AutoSpeedrunApi.pressKey(GLFW.GLFW_KEY_LEFT_SHIFT);
@@ -69,12 +78,14 @@ public class MovementInputManager {
         prevA = currA;
         prevS = currS;
         prevD = currD;
+        prevSpace = currSpace;
         prevCrouch = currCrouch;
         prevSprint = currSprint;
         currW = false;
         currA = false;
         currS = false;
         currD = false;
+        currSpace = false;
         currCrouch = false;
     }
 
@@ -82,5 +93,6 @@ public class MovementInputManager {
     public static void planPressKeyA() { currA = true; }
     public static void planPressKeyS() { currS = true; }
     public static void planPressKeyD() { currD = true; }
+    public static void planPressKeySpace() { currSpace = true; }
     public static void planPressKeyCrouch() { currCrouch = true; }
 }

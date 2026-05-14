@@ -4,10 +4,8 @@ import name.quasar.autospeedrun.AutoSpeedrunApi;
 import name.quasar.autospeedrun.usercode.geometry.BlockLocation;
 import name.quasar.autospeedrun.usercode.geometry.Vector3;
 import name.quasar.autospeedrun.usercode.geometry.GreatCircle;
-import name.quasar.autospeedrun.usercode.pathing.Exploration;
 import name.quasar.autospeedrun.usercode.pathing.Navigation;
 import name.quasar.autospeedrun.usercode.pathing.PathPlanning;
-import name.quasar.autospeedrun.usercode.pathing.PathPlanningResult;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
@@ -76,24 +74,6 @@ public class AutoSpeedrunUserCode {
         // debug draw world blocks information
         WorldBlocks.getInstance().debugDraw();
 
-        // i actually dk what tf is going on with left click
-//        if (click) {
-//            click = false;
-//            com.mojang.blaze3d.platform.InputConstants.Key key = com.mojang.blaze3d.platform.InputConstants.Type.MOUSE.getOrCreate(0);
-//            KeyMapping.set(key, true);
-//            KeyMapping.click(key);
-//        }
-//        try {
-//            Field f1 = Minecraft.getInstance().options.keyAttack.getClass().getDeclaredField("clickCount");
-//            Field f2 = Minecraft.getInstance().options.keyAttack.getClass().getDeclaredField("isDown");
-//            f1.setAccessible(true);
-//            f2.setAccessible(true);
-//            AutoSpeedrunApi.chatMessage(f1.get(Minecraft.getInstance().options.keyAttack) + ", "
-//                + f2.get(Minecraft.getInstance().options.keyAttack) + Minecraft.getInstance().player.isUsingItem());
-//        } catch (NoSuchFieldException | IllegalAccessException e) {
-//            throw new RuntimeException(e);
-//        }
-
         // do stuff based on stage of run
 //        if (Util.runStage == RunStage.OVERWORLD) {
 //            BuriedTreasureOverworld.getInstance().perform();
@@ -103,14 +83,13 @@ public class AutoSpeedrunUserCode {
 //        }
 
         // path planning, navigation, exploration
-        PathPlanningResult pathPlanningResult = PathPlanning.getInstance().perform();
-        MovementInputManager.handle();
-        if (pathPlanningResult != PathPlanningResult.SUCCESS) { return; }
-        Exploration.getInstance().perform();
-        Navigation.getInstance().perform();
+//        PathPlanningResult pathPlanningResult = PathPlanning.getInstance().perform();
+//        MovementInputManager.handle();
+//        if (pathPlanningResult != PathPlanningResult.SUCCESS) { return; }
+//        Exploration.getInstance().perform();
+//        Navigation.getInstance().perform();
     }
 
-    private boolean click = false;
     private ArrayList<GreatCircle> gc = null;
 
     public void debug(String debugStr) {
@@ -141,9 +120,14 @@ public class AutoSpeedrunUserCode {
             case "clearnav":
                 PathPlanning.getInstance().setGoalPosition(null);
                 break;
-            case "lclick":
-                click = true;
-//                Minecraft.getInstance().options.keyAttack.setDown(true);
+            case "lclicktap":
+                AutoSpeedrunApi.tapLeftClick();
+                break;
+            case "lclickpress":
+                AutoSpeedrunApi.pressLeftClick();
+                break;
+            case "lclickrelease":
+                AutoSpeedrunApi.releaseLeftClick();
                 break;
             case "rclick":
                 AutoSpeedrunApi.mouseActivate(GLFW.GLFW_MOUSE_BUTTON_RIGHT, GLFW.GLFW_PRESS, 0);

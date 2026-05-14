@@ -9,12 +9,6 @@ import net.minecraft.client.Screenshot;
 import net.minecraft.network.chat.TextComponent;
 import org.lwjgl.glfw.GLFW;
 
-import java.awt.*;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -22,19 +16,6 @@ import java.util.ArrayList;
 import static name.quasar.autospeedrun.Util.*;
 
 public class AutoSpeedrunApi {
-    public static void tapKey(int key) {
-        announceAction("Tap key " + keyNameFromConstant(key));
-        Minecraft client = Minecraft.getInstance();
-        // window, key, scancode, action, mods
-        long window = client.getWindow().getWindow();
-        int scanCode = GLFW.glfwGetKeyScancode(key);
-        client.execute(() -> client.keyboardHandler.keyPress(window, key, scanCode, GLFW.GLFW_PRESS, 0));
-        client.execute(() -> client.keyboardHandler.keyPress(window, key, scanCode, GLFW.GLFW_RELEASE, 0));
-    }
-
-    public static boolean shifting = false;
-    public static boolean leftShifting = false;
-    public static boolean rightShifting = false;
 
     private static final ArrayList<DebugRenderLine> lines = new ArrayList<>();
 
@@ -48,6 +29,37 @@ public class AutoSpeedrunApi {
 
     public static void clearRenderLines() {
         lines.clear();
+    }
+
+    static boolean tappingLeftClick = false;
+    static boolean holdingLeftClick = false;
+
+    public static void tapLeftClick() {
+        tappingLeftClick = true;
+    }
+
+    public static void pressLeftClick() {
+        tappingLeftClick = true;
+        holdingLeftClick = true;
+    }
+
+    public static void releaseLeftClick() {
+        tappingLeftClick = false;
+        holdingLeftClick = false;
+    }
+
+    public static boolean shifting = false;
+    public static boolean leftShifting = false;
+    public static boolean rightShifting = false;
+
+    public static void tapKey(int key) {
+        announceAction("Tap key " + keyNameFromConstant(key));
+        Minecraft client = Minecraft.getInstance();
+        // window, key, scancode, action, mods
+        long window = client.getWindow().getWindow();
+        int scanCode = GLFW.glfwGetKeyScancode(key);
+        client.execute(() -> client.keyboardHandler.keyPress(window, key, scanCode, GLFW.GLFW_PRESS, 0));
+        client.execute(() -> client.keyboardHandler.keyPress(window, key, scanCode, GLFW.GLFW_RELEASE, 0));
     }
 
     public static void pressKey(int key) {

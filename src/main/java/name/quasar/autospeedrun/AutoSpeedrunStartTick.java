@@ -4,10 +4,10 @@ import name.quasar.autospeedrun.usercode.AutoSpeedrunUserCode;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.Minecraft;
 
-public class AutoSpeedrunTicker implements ClientTickEvents.StartTick {
+public class AutoSpeedrunStartTick implements ClientTickEvents.StartTick {
     public AutoSpeedrunUserCode userCode;
 
-    public AutoSpeedrunTicker(AutoSpeedrunUserCode userCode) {
+    public AutoSpeedrunStartTick(AutoSpeedrunUserCode userCode) {
         this.userCode = userCode;
     }
 

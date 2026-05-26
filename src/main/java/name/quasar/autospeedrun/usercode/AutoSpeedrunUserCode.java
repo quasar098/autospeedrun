@@ -4,8 +4,11 @@ import name.quasar.autospeedrun.AutoSpeedrunApi;
 import name.quasar.autospeedrun.usercode.geometry.BlockLocation;
 import name.quasar.autospeedrun.usercode.geometry.Vector3;
 import name.quasar.autospeedrun.usercode.geometry.GreatCircle;
+import name.quasar.autospeedrun.usercode.inventory.InventoryManagement;
+import name.quasar.autospeedrun.usercode.pathing.Exploration;
 import name.quasar.autospeedrun.usercode.pathing.Navigation;
 import name.quasar.autospeedrun.usercode.pathing.PathPlanning;
+import name.quasar.autospeedrun.usercode.pathing.PathPlanningResult;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
@@ -65,6 +68,11 @@ public class AutoSpeedrunUserCode {
                 gc2.debugDraw(Util.getEyePosition());
             }
         }
+        // inventory management
+        if (InventoryManagement.getInstance().perform()) {
+            AutoSpeedrunApi.chatMessage("bruh");
+            return;
+        }
         // do mouse calibration on world join
         if (MouseInputManager.calibrateMouse()) {
             return;
@@ -106,6 +114,11 @@ public class AutoSpeedrunUserCode {
                 WorldBlocks.reset();
                 AutoSpeedrunApi.chatMessage("World blocks cleared");
                 break;
+            case "blockproperties":
+                for (String s : F3Information.getBlockProperties()) {
+                    AutoSpeedrunApi.chatMessage(s);
+                }
+                break;
             case "mousemove":
                 String[] xyStr = split[1].split(",");
                 AutoSpeedrunApi.mouseMove(Integer.parseInt(xyStr[0]), Integer.parseInt(xyStr[1]));
@@ -115,7 +128,6 @@ public class AutoSpeedrunUserCode {
                 PathPlanning.getInstance().setGoalPosition(new Vector3(
                     Double.parseDouble(xyzStr[0]), Double.parseDouble(xyzStr[1]), Double.parseDouble(xyzStr[2])
                 ));
-//                Navigation.setAlignment(Navigation.AxisAlignment.PRIORITY_X);
                 break;
             case "clearnav":
                 PathPlanning.getInstance().setGoalPosition(null);
@@ -129,9 +141,17 @@ public class AutoSpeedrunUserCode {
             case "lclickrelease":
                 AutoSpeedrunApi.releaseLeftClick();
                 break;
-            case "rclick":
-                AutoSpeedrunApi.mouseActivate(GLFW.GLFW_MOUSE_BUTTON_RIGHT, GLFW.GLFW_PRESS, 0);
-                AutoSpeedrunApi.mouseActivate(GLFW.GLFW_MOUSE_BUTTON_RIGHT, GLFW.GLFW_RELEASE, 0);
+            case "rclicktap":
+                AutoSpeedrunApi.tapRightClick();
+                break;
+            case "rclickpress":
+                AutoSpeedrunApi.pressRightClick();
+                break;
+            case "rclickrelease":
+                AutoSpeedrunApi.releaseRightClick();
+                break;
+            case "inventorytest":
+                InventoryManagement.getInstance().testTime = 0;
                 break;
             case "toggleair":
                 Util.toggleDebugAir = !Util.toggleDebugAir;

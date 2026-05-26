@@ -13,6 +13,7 @@ public class Util {
     public static String debugPathJoin(String... path) { return String.join("\u001e", path); }
 
     public static boolean togglePaused = false;
+    public static boolean isDebuggingMousePosition = false;
 
     private static boolean announcerEnabled = false;
     public static void enableAnnouncer() { announcerEnabled = true; }

@@ -48,6 +48,38 @@ public class AutoSpeedrunApi {
         holdingLeftClick = false;
     }
 
+    public static void tapRightClick() {
+        KeyMapping.set(InputConstants.Type.MOUSE.getOrCreate(GLFW.GLFW_MOUSE_BUTTON_RIGHT), true);
+        KeyMapping.click(InputConstants.Type.MOUSE.getOrCreate(GLFW.GLFW_MOUSE_BUTTON_RIGHT));
+        KeyMapping.set(InputConstants.Type.MOUSE.getOrCreate(GLFW.GLFW_MOUSE_BUTTON_RIGHT), false);
+        KeyMapping.click(InputConstants.Type.MOUSE.getOrCreate(GLFW.GLFW_MOUSE_BUTTON_RIGHT));
+    }
+
+    public static void pressRightClick() {
+        KeyMapping.set(InputConstants.Type.MOUSE.getOrCreate(GLFW.GLFW_MOUSE_BUTTON_RIGHT), true);
+        KeyMapping.click(InputConstants.Type.MOUSE.getOrCreate(GLFW.GLFW_MOUSE_BUTTON_RIGHT));
+    }
+
+    public static void releaseRightClick() {
+        KeyMapping.set(InputConstants.Type.MOUSE.getOrCreate(GLFW.GLFW_MOUSE_BUTTON_RIGHT), false);
+        KeyMapping.click(InputConstants.Type.MOUSE.getOrCreate(GLFW.GLFW_MOUSE_BUTTON_RIGHT));
+    }
+
+    public static boolean screenClickedThisTick = false;
+
+    public static void screenClick(int x, int y, int button) {
+        if (Minecraft.getInstance() != null) {
+            if (Minecraft.getInstance().screen != null) {
+                if (!screenClickedThisTick) {
+                    screenClickedThisTick = true;
+                    AutoSpeedrunApi.chatMessage(Minecraft.getInstance().screen + " <--");
+                    Minecraft.getInstance().screen.mouseClicked(x, y, button);
+                    Minecraft.getInstance().screen.mouseReleased(x, y, button);
+                }
+            }
+        }
+    }
+
     public static boolean shifting = false;
     public static boolean leftShifting = false;
     public static boolean rightShifting = false;
@@ -110,25 +142,6 @@ public class AutoSpeedrunApi {
         } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public static void mouseActivate(int button, int action, int mods) {
-        announceAction("Mouse activate " + button + "," + action + "," + mods);
-        KeyMapping.set(InputConstants.Type.MOUSE.getOrCreate(button), action == 1);
-        KeyMapping.click(InputConstants.Type.MOUSE.getOrCreate(button));
-//        Minecraft client = Minecraft.getInstance();
-//        long window = client.getWindow().getWindow();
-//        try {
-//            Method method = client.mouseHandler.getClass().getDeclaredMethod("onPress", long.class, int.class, int.class, int.class);
-//            method.setAccessible(true);
-//            System.out.printf("%b\n", (client.screen == null || client.screen.passEvents) && client.overlay == null);
-//
-//            window, button, action, mods
-////            method.invoke(client.mouseHandler, window, button, action, mods);
-//            method.setAccessible(false);
-//        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
-//            throw new RuntimeException(e);
-//        }
     }
 
     private volatile static NativeImage img = null;

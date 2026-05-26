@@ -117,8 +117,12 @@ public class Navigation {
         ));
 
         // go to next node
-        Vector3 vecToNextNode = nextNode.sub(F3Information.getPosition());
+        Vector3 vecToNextNode = nextNode.sub(getPredictedStablePosition());
         moveInBestDirection(vecToNextNode);
+        AutoSpeedrunApi.renderLine(new DebugRenderLine(
+            getPredictedStablePosition().offsetY(0.1).toVector3f(), nextNode.offsetY(0.1).toVector3f(),
+            0.3f, 0.3f, 0.3f
+        ));
 
         // check for arrival at destination
         Vector3 goalPosition = PathPlanning.getInstance().getGoalPosition();

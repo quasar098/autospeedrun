@@ -4,6 +4,7 @@ import name.quasar.autospeedrun.AutoSpeedrunApi;
 import name.quasar.autospeedrun.usercode.geometry.BlockLocation;
 import name.quasar.autospeedrun.usercode.geometry.Vector3;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class F3Information {
@@ -11,11 +12,14 @@ public class F3Information {
     public static boolean f3HasBackgroundDim = false;
 
     public static boolean isF3Open() {
-        if (Util.readScreenStringForward(4, 4, 0xffdddddd, 2).startsWith("Minecraft 1.16.1")) {
+        if (Util.readScreenStringForward(4, 4, c -> c == 0xdddddd, 2).startsWith("Minecraft 1.16.1")) {
             f3TextColor = 0xffdddddd;
             f3HasBackgroundDim = false;
             return true;
         } else if (Util.readScreenStringForward(4, 4, 0xff3c3c3c, 2).startsWith("Minecraft 1.16.1")) {
+            // Screen.java
+            // this.fillGradient(poseStack, 0, 0, this.width, this.height, -1072689136, -804253680);
+            // wtf
             f3TextColor = 0xff3c3c3c;
             f3HasBackgroundDim = true;
             return true;
@@ -28,6 +32,7 @@ public class F3Information {
         cachedYaw = null;
         cachedPitch = null;
         cachedDimension = null;
+        cachedBlockProperties = null;
         cachedTargettedBlockPosition = null;
         cachedTargettedBlockName = null;
         cachedPiePathText = null;
@@ -146,6 +151,28 @@ public class F3Information {
                 }, 2);
         }
         return cachedTargettedBlockName;
+    }
+
+    public static ArrayList<String> cachedBlockProperties = null;
+
+    public static ArrayList<String> getBlockProperties() {
+        if (cachedBlockProperties == null) {
+            cachedBlockProperties = new ArrayList<>();
+            int i = 0;
+            while (true) {
+                String prop = Util.readScreenStringBackward(
+                    Util.SCREEN_W - 6, 4 + 18 * (12 + i), f3TextColor, new int[]{
+                        63, 65, 66, 67, 68, 69, 71, 72, 74, 77, 78, 79, 80, 81, 82, 83, 85, 86, 87, 88, 89, 90,
+                        16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 3, 70, 75, 84, 76, 73, 26, 0
+                    }, 2);
+                if (prop.isEmpty()) {
+                    break;
+                }
+                cachedBlockProperties.add(prop);
+                i++;
+            }
+        }
+        return cachedBlockProperties;
     }
 
     /* pie charting */

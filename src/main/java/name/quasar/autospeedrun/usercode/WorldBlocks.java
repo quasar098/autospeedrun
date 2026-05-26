@@ -168,7 +168,7 @@ public class WorldBlocks {
             knownBlocks.put(blockA, BlockType.AIR);
             knownBlocks.put(blockB, BlockType.AIR);
         }
-        AutoSpeedrunApi.chatMessage("Success writing " + Math.min(bfsMaxTL.size(), bfsMaxBR.size()));
+//        AutoSpeedrunApi.chatMessage("Success writing " + Math.min(bfsMaxTL.size(), bfsMaxBR.size()));
         prevTickYaw = F3Information.getYaw();
         prevTickPitch = F3Information.getPitch();
     }

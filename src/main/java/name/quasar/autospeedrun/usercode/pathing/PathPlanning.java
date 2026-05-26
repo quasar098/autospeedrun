@@ -52,6 +52,7 @@ public class PathPlanning {
         return nextBlockToExplore;
     }
 
+    /** also sets nextBlockToExplore and cachedPath */
     public PathPlanningResult perform() {
         cachedPath = null;
         nextBlockToExplore = null;

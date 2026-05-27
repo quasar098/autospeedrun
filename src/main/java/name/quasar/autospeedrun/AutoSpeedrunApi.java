@@ -72,9 +72,12 @@ public class AutoSpeedrunApi {
             if (Minecraft.getInstance().screen != null) {
                 if (!screenClickedThisTick) {
                     screenClickedThisTick = true;
-                    AutoSpeedrunApi.chatMessage(Minecraft.getInstance().screen + " <--");
-                    Minecraft.getInstance().screen.mouseClicked(x, y, button);
-                    Minecraft.getInstance().screen.mouseReleased(x, y, button);
+                    int scale = Minecraft.getInstance().options.guiScale;
+                    Minecraft.getInstance().screen.mouseClicked((double) x / scale, (double) y / scale, button);
+                    Minecraft.getInstance().screen.mouseReleased((double) x / scale, (double) y / scale, button);
+                    // todo fix 0 scale
+                    long handle = Minecraft.getInstance().getWindow().getWindow();
+                    GLFW.glfwSetCursorPos(handle, x, y);
                 }
             }
         }

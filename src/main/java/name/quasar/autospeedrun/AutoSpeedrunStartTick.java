@@ -19,9 +19,9 @@ public class AutoSpeedrunStartTick implements ClientTickEvents.StartTick {
             double[] xBuffer = new double[1];
             double[] yBuffer = new double[1];
             GLFW.glfwGetCursorPos(handle, xBuffer, yBuffer);
-            double mouseX = xBuffer[0];
-            double mouseY = yBuffer[0];
-            AutoSpeedrunApi.chatMessage(mouseX + "," + mouseY);
+            double x = xBuffer[0];
+            double y = yBuffer[0];
+            AutoSpeedrunApi.chatMessage(x + "," + y);
         }
         if (Minecraft.getInstance().player != null && !Util.togglePaused) {
             if (Minecraft.getInstance().screen == null || !Minecraft.getInstance().screen.getTitle().getString().equals("Game paused")) {

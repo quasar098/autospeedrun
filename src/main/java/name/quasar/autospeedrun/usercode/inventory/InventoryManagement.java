@@ -1,6 +1,9 @@
 package name.quasar.autospeedrun.usercode.inventory;
 
 import name.quasar.autospeedrun.AutoSpeedrunApi;
+import name.quasar.autospeedrun.usercode.Util;
+import name.quasar.autospeedrun.usercode.inventory.containers.Chest3Container;
+import name.quasar.autospeedrun.usercode.inventory.containers.Container;
 
 public class InventoryManagement {
     private static InventoryManagement instance;
@@ -29,16 +32,24 @@ public class InventoryManagement {
         testTime++;
         if (testTime == 1) {
             AutoSpeedrunApi.tapRightClick();
-        }
-        if (testTime == 2) {
-            AutoSpeedrunApi.screenClick(400+1+18*5, 188+1+18*2, 0);
-        }
-        if (testTime == 3) {
-            AutoSpeedrunApi.screenClick(400+1+18*5, 188+1+18*2, 0);
-        }
-        if (testTime >= 10) {
-            testTime = -1;
+        } else {
+            if (!lootBTChest() || testTime > 40) {
+                testTime = -1;
+                return false;
+            }
         }
         return true;
+    }
+
+    private boolean lootBTChest() {
+        // AbstractContainerScreen
+        // this.leftPos = (this.width - this.imageWidth) / 2;
+        // this.topPos = (this.height - this.imageHeight) / 2;
+        Container chest = new Chest3Container();
+        int scale = Util.OPTIONS_TXT_GUI_SCALE;
+        int leftPos = (AutoSpeedrunApi.getScreenshotWidth() - chest.getImageWidth() * scale) / 2;
+        int topPos = (AutoSpeedrunApi.getScreenshotHeight() - chest.getImageHeight() * scale) / 2;
+        AutoSpeedrunApi.screenClick(leftPos, topPos, 0);
+        return false;
     }
 }

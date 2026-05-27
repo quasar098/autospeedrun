@@ -11,6 +11,7 @@ public class Util {
 
     public static final double OPTIONS_TXT_SENS = 0.40140846371650696;  // from options.txt
     public static final double OPTIONS_TXT_FOV = 0.825;  // from options.txt
+    public static final int OPTIONS_TXT_GUI_SCALE = 2;  // from options.txt
 
     // idk how these values are calculated if 0.85 * 1.8 is not 1.62 ???? wtf
     public static final double PLAYER_STANDING_EYE_HEIGHT = 1.62;

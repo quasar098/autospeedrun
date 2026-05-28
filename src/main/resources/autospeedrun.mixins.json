@@ -1,15 +1,16 @@
 {
-	"required": true,
-	"package": "name.quasar.autospeedrun.mixin",
-	"compatibilityLevel": "JAVA_8",
-	"mixins": [
-		"ScreenMixin",
-		"DebugRendererMixin"
-	],
-	"injectors": {
-		"defaultRequire": 1
-	},
-	"overwrites": {
-		"requireAnnotations": true
-	}
+  "required": true,
+  "package": "name.quasar.autospeedrun.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [
+    "DebugRendererMixin",
+    "InputConstantsMixin",
+    "ScreenMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "overwrites": {
+    "requireAnnotations": true
+  }
 }

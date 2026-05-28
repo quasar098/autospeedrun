@@ -2,11 +2,12 @@ package name.quasar.autospeedrun.usercode.inventory.containers;
 
 import name.quasar.autospeedrun.usercode.inventory.ContainerItem;
 
-public class Chest3Container extends Container {
-    // ContainerScreen,ChestMenu useful
+public class CraftingContainer extends Container {
+    // CraftingScreen,CraftingMenu useful
+    // inaccurate naming because crafting is not a container but idc
 
-    public Chest3Container() {
-        containerSlotItems = new ContainerItem[27];
+    public CraftingContainer() {
+        containerSlotItems = new ContainerItem[9];
     }
 
     public int getImageWidth() {
@@ -14,11 +15,11 @@ public class Chest3Container extends Container {
     }
 
     public int getImageHeight() {
-        return 114 + 3 * Container.SLOT_PX;
+        return 166;
     }
 
     public int getIdTextX() {
-        return 8;
+        return 29;
     }
 
     public int getIdTextY() {
@@ -26,19 +27,19 @@ public class Chest3Container extends Container {
     }
 
     public String getIdTextStr() {
-        return "Chest";
+        return "Crafting";
     }
 
     public int getNumContainerSlots() {
-        return 3 * 9;
+        return 9;
     }
 
     public int getContainerSlotX(int slot) {
-        return 8 + (slot % 9) * Container.SLOT_PX;
+        return 30 + (slot % 3) * Container.SLOT_PX;
     }
 
     public int getContainerSlotY(int slot) {
-        return 18 + (slot / 9) * Container.SLOT_PX;
+        return 17 + (slot / 3) * Container.SLOT_PX;
     }
 
     public int getInventorySlotX(int slot) {
@@ -46,7 +47,6 @@ public class Chest3Container extends Container {
     }
 
     public int getInventorySlotY(int slot) {
-        int k = (3 - 4) * Container.SLOT_PX;
-        return (slot < 9 ? 161 : 85 + (slot / 9) * Container.SLOT_PX) + k;
+        return slot < 9 ? 142 : 66 + (slot / 9) * Container.SLOT_PX;
     }
 }

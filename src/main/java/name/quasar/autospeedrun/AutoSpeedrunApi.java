@@ -12,6 +12,8 @@ import org.lwjgl.glfw.GLFW;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 import static name.quasar.autospeedrun.Util.*;
 
@@ -87,6 +89,20 @@ public class AutoSpeedrunApi {
     public static boolean leftShifting = false;
     public static boolean rightShifting = false;
 
+    private static Set<Integer> keyOverrides = new HashSet<>();
+
+    private static void addKeyOverride(int key) {
+        keyOverrides.add(key);
+    }
+
+    private static void removeKeyOverride(int key) {
+        keyOverrides.remove(key);
+    }
+
+    public static boolean keyOverridden(int key) {
+        return keyOverrides.contains(key);
+    }
+
     public static void tapKey(int key) {
         announceAction("Tap key " + keyNameFromConstant(key));
         Minecraft client = Minecraft.getInstance();
@@ -111,6 +127,7 @@ public class AutoSpeedrunApi {
         long window = client.getWindow().getWindow();
         int scanCode = GLFW.glfwGetKeyScancode(key);
         client.execute(() -> client.keyboardHandler.keyPress(window, key, scanCode, GLFW.GLFW_PRESS, 0));
+        addKeyOverride(key);
     }
 
     public static void releaseKey(int key) {
@@ -127,6 +144,7 @@ public class AutoSpeedrunApi {
         long window = client.getWindow().getWindow();
         int scanCode = GLFW.glfwGetKeyScancode(key);
         client.execute(() -> client.keyboardHandler.keyPress(window, key, scanCode, GLFW.GLFW_RELEASE, 0));
+        removeKeyOverride(key);
     }
 
     /**
@@ -164,6 +182,7 @@ public class AutoSpeedrunApi {
         });
     }
 
+    // really its 0xAABBGGRR
     public static int getScreenshotPixelRGBA(int x, int y) {
         if (img == null) {
             return 0;

@@ -12,15 +12,16 @@ public class F3Information {
     public static boolean f3HasBackgroundDim = false;
 
     public static boolean isF3Open() {
+        // todo fix bright [sun or other] overlap bug
         if (Util.readScreenStringForward(4, 4, c -> c == 0xdddddd, 2).startsWith("Minecraft 1.16.1")) {
             f3TextColor = 0xffdddddd;
             f3HasBackgroundDim = false;
             return true;
-        } else if (Util.readScreenStringForward(4, 4, 0xff3c3c3c, 2).startsWith("Minecraft 1.16.1")) {
+        } else if (Util.readScreenStringForward(4, 4, 0xff3b3b3b, 2).startsWith("Minecraft 1.16.1")) {
             // Screen.java
             // this.fillGradient(poseStack, 0, 0, this.width, this.height, -1072689136, -804253680);
             // wtf
-            f3TextColor = 0xff3c3c3c;
+            f3TextColor = 0xff3b3b3b;
             f3HasBackgroundDim = true;
             return true;
         }

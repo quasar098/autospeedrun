@@ -2,11 +2,11 @@ package name.quasar.autospeedrun.usercode.inventory.containers;
 
 import name.quasar.autospeedrun.usercode.inventory.ContainerItem;
 
-public class Chest3Container extends Container {
+public class Chest6Container extends Container {
     // ContainerScreen,ChestMenu useful
 
-    public Chest3Container() {
-        containerSlotItems = new ContainerItem[27];
+    public Chest6Container() {
+        containerSlotItems = new ContainerItem[54];
     }
 
     public int getImageWidth() {
@@ -14,7 +14,7 @@ public class Chest3Container extends Container {
     }
 
     public int getImageHeight() {
-        return 114 + 3 * Container.SLOT_PX;
+        return 114 + 6 * Container.SLOT_PX;
     }
 
     public int getIdTextX() {
@@ -26,11 +26,11 @@ public class Chest3Container extends Container {
     }
 
     public String getIdTextStr() {
-        return "Chest";
+        return "Large Chest";
     }
 
     public int getNumContainerSlots() {
-        return 3 * 9;
+        return 6 * 9;
     }
 
     public int getContainerSlotX(int slot) {
@@ -46,7 +46,7 @@ public class Chest3Container extends Container {
     }
 
     public int getInventorySlotY(int slot) {
-        int k = (3 - 4) * Container.SLOT_PX;
+        int k = (6 - 4) * Container.SLOT_PX;
         return (slot < 9 ? 161 : 85 + (slot / 9) * Container.SLOT_PX) + k;
     }
 }

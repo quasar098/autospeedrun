@@ -1,6 +1,6 @@
 package name.quasar.autospeedrun.usercode;
 
-import name.quasar.autospeedrun.AutoSpeedrunApi;
+import name.quasar.autospeedrun.AutoSpeedrunAPI;
 import name.quasar.autospeedrun.usercode.geometry.BlockLocation;
 import name.quasar.autospeedrun.usercode.geometry.Vector3;
 
@@ -108,7 +108,7 @@ public class F3Information {
             } else if (f3ReadDimension.contains("minecraft:the_end")) {
                 cachedDimension = Dimension.END;
             } else {
-                AutoSpeedrunApi.chatMessage("Unknown dimension (assuming overworld): " + f3ReadDimension);
+                AutoSpeedrunAPI.chatMessage("Unknown dimension (assuming overworld): " + f3ReadDimension);
                 cachedDimension = Dimension.OVERWORLD;
             }
         }

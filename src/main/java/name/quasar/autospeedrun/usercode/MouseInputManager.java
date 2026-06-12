@@ -1,6 +1,6 @@
 package name.quasar.autospeedrun.usercode;
 
-import name.quasar.autospeedrun.AutoSpeedrunApi;
+import name.quasar.autospeedrun.AutoSpeedrunAPI;
 import name.quasar.autospeedrun.usercode.geometry.Vector3;
 
 import static name.quasar.autospeedrun.usercode.Util.*;
@@ -40,7 +40,7 @@ public class MouseInputManager {
     public static void setPlayerAngle(double yaw, double pitch) {
         /* todo change calibration offsets to be where the 0,0 mouse position is and then use LLL to get optimal integer
             mouse coordinates */
-        AutoSpeedrunApi.mouseMove(
+        AutoSpeedrunAPI.mouseMove(
                 (int) (calibrationOffsetX + 1.0/degPerPix * yaw),
                 (int) (calibrationOffsetY + 1.0/degPerPix * pitch)
         );
@@ -58,7 +58,7 @@ public class MouseInputManager {
             // after LLL is added change > 0.2 to >= 0.1 for both yaw and pitch
             if (Math.abs(lastPlayerYawCorrected - F3Information.getYaw()) > 0.2) {
                 calibrationStage = 0;
-                AutoSpeedrunApi.chatMessage(String.format(
+                AutoSpeedrunAPI.chatMessage(String.format(
                     "Restarting mouse calibration (lastYaw=%f vs currYaw=%f)",
                     lastPlayerYawCorrected, F3Information.getYaw()
                 ));
@@ -66,7 +66,7 @@ public class MouseInputManager {
             }
             if (Math.abs(lastPlayerPitch - F3Information.getPitch()) > 0.2) {
                 calibrationStage = 0;
-                AutoSpeedrunApi.chatMessage(String.format(
+                AutoSpeedrunAPI.chatMessage(String.format(
                     "Restarting mouse calibration (lastPitch=%f vs currPitch=%f)",
                     lastPlayerPitch, F3Information.getPitch()
                 ));
@@ -83,12 +83,12 @@ public class MouseInputManager {
                 if (String.valueOf(mod(degPerPix, 0.1)).length() < 8) {
                     // todo alternative mouse handling if degPerPix*10 is approx a nonzero integer
                     // probably that only leaves the case that gcd(round(degPerPix*10), 360) != 1 which is never manageable probably
-                    AutoSpeedrunApi.chatMessage("your sensitivity leads to degPerPix that is highly commensurable with 0.1 (bad)");
-                    AutoSpeedrunApi.emergencyStopUserCode();
+                    AutoSpeedrunAPI.chatMessage("your sensitivity leads to degPerPix that is highly commensurable with 0.1 (bad)");
+                    AutoSpeedrunAPI.emergencyStopUserCode();
                     return true;
                 }
                 // mc ignores the first move or something so we make sure it happens
-                AutoSpeedrunApi.mouseMove(0, 0);
+                AutoSpeedrunAPI.mouseMove(0, 0);
                 psbsYawLeftAccept = 0.0;
                 psbsYawRightAccept = 1.0;
                 psbsOriginalRealYaw = null;
@@ -104,9 +104,9 @@ public class MouseInputManager {
                     if (psbsOriginalRealYaw == null || psbsOriginalRealPitch == null) {
                         psbsOriginalRealYaw = F3Information.getYaw();
                         psbsOriginalRealPitch = F3Information.getPitch();
-                        AutoSpeedrunApi.chatMessage("dpp:" + degPerPix);
-                        AutoSpeedrunApi.chatMessage("psbsOriginalRealYaw:" + psbsOriginalRealYaw);
-                        AutoSpeedrunApi.chatMessage("psbsOriginalRealPitch:" + psbsOriginalRealPitch);
+                        AutoSpeedrunAPI.chatMessage("dpp:" + degPerPix);
+                        AutoSpeedrunAPI.chatMessage("psbsOriginalRealYaw:" + psbsOriginalRealYaw);
+                        AutoSpeedrunAPI.chatMessage("psbsOriginalRealPitch:" + psbsOriginalRealPitch);
                     }
                     // yaw
                     Integer bestYawIndex = null;
@@ -133,8 +133,8 @@ public class MouseInputManager {
                     int minI = (int) ((-85 - psbsOriginalRealPitch)/degPerPix);
                     int maxI = (int) ((85 - psbsOriginalRealPitch)/degPerPix);
                     if (minI >= maxI) {
-                        AutoSpeedrunApi.chatMessage("no valid pitch wtf");
-                        AutoSpeedrunApi.emergencyStopUserCode();
+                        AutoSpeedrunAPI.chatMessage("no valid pitch wtf");
+                        AutoSpeedrunAPI.emergencyStopUserCode();
                         return false;
                     }
                     for (int i = minI; i < maxI; i++) {
@@ -157,7 +157,7 @@ public class MouseInputManager {
                     System.out.println("PSBS moving mouse, pix to move from orig: " + bestYawIndex);
                     psbsYawPixelOffset = bestYawIndex;
                     psbsPitchPixelOffset = bestPitchIndex;
-                    AutoSpeedrunApi.mouseMove(psbsYawPixelOffset, psbsPitchPixelOffset);
+                    AutoSpeedrunAPI.mouseMove(psbsYawPixelOffset, psbsPitchPixelOffset);
                     psbsAwaitingF3Change = true;
                 } else {
                     // yaw
@@ -166,9 +166,9 @@ public class MouseInputManager {
                         double f3Yaw = F3Information.getYaw();
                         double lowerYaw = round(round(psbsOriginalRealYaw, 1) - 0.05, 2);
                         double expectedYaw = round(lowerYaw + degPerPix * psbsYawPixelOffset, 1);
-                        AutoSpeedrunApi.chatMessage("lowerYaw:" + lowerYaw);
+                        AutoSpeedrunAPI.chatMessage("lowerYaw:" + lowerYaw);
                         if (Math.abs(mod(f3Yaw - expectedYaw + 180, 360.0) - 180.0) > 5.0) {
-                            AutoSpeedrunApi.chatMessage("Restarting calibration");
+                            AutoSpeedrunAPI.chatMessage("Restarting calibration");
                             calibrationStage = 0;
                             break;
                         }
@@ -177,24 +177,24 @@ public class MouseInputManager {
                                 yawUnchanged = true;
                             }
                             psbsYawLeftAccept = (0.1 - mod(degPerPix * psbsYawPixelOffset, 0.1)) * 10;
-                            AutoSpeedrunApi.chatMessage("Modifying leftAccept: " + psbsYawLeftAccept);
+                            AutoSpeedrunAPI.chatMessage("Modifying leftAccept: " + psbsYawLeftAccept);
                         } else {
                             if (psbsYawRightAccept == (0.1 - mod(degPerPix * psbsYawPixelOffset, 0.1)) * 10) {
                                 yawUnchanged = true;
                             }
                             psbsYawRightAccept = (0.1 - mod(degPerPix * psbsYawPixelOffset, 0.1)) * 10;
-                            AutoSpeedrunApi.chatMessage("Modifying rightAccept: " + psbsYawRightAccept);
+                            AutoSpeedrunAPI.chatMessage("Modifying rightAccept: " + psbsYawRightAccept);
                         }
                         if (psbsYawLeftAccept > psbsYawRightAccept) {
-                            AutoSpeedrunApi.chatMessage("psbsYawLeftAccept > psbsYawRightAccept");
-                            AutoSpeedrunApi.chatMessage(psbsYawLeftAccept + "," + psbsYawRightAccept);
-                            AutoSpeedrunApi.emergencyStopUserCode();
+                            AutoSpeedrunAPI.chatMessage("psbsYawLeftAccept > psbsYawRightAccept");
+                            AutoSpeedrunAPI.chatMessage(psbsYawLeftAccept + "," + psbsYawRightAccept);
+                            AutoSpeedrunAPI.emergencyStopUserCode();
                             return true;
                         }
                         if (psbsYawRightAccept - psbsYawLeftAccept > 1.0) {
-                            AutoSpeedrunApi.chatMessage("psbsYawRightAccept - psbsYawLeftAccept > 1.0");
-                            AutoSpeedrunApi.chatMessage(psbsYawLeftAccept + "," + psbsYawRightAccept);
-                            AutoSpeedrunApi.emergencyStopUserCode();
+                            AutoSpeedrunAPI.chatMessage("psbsYawRightAccept - psbsYawLeftAccept > 1.0");
+                            AutoSpeedrunAPI.chatMessage(psbsYawLeftAccept + "," + psbsYawRightAccept);
+                            AutoSpeedrunAPI.emergencyStopUserCode();
                             return true;
                         }
                     }
@@ -204,9 +204,9 @@ public class MouseInputManager {
                         double f3Pitch = F3Information.getPitch();
                         double lowerPitch = round(round(psbsOriginalRealPitch, 1) - 0.05, 2);
                         double expectedPitch = round(lowerPitch + degPerPix * psbsPitchPixelOffset, 1);
-                        AutoSpeedrunApi.chatMessage("lowerPitch:" + lowerPitch);
+                        AutoSpeedrunAPI.chatMessage("lowerPitch:" + lowerPitch);
                         if (Math.abs(mod(f3Pitch - expectedPitch + 180, 360.0) - 180.0) > 5.0) {
-                            AutoSpeedrunApi.chatMessage("Restarting calibration");
+                            AutoSpeedrunAPI.chatMessage("Restarting calibration");
                             calibrationStage = 0;
                             break;
                         }
@@ -215,24 +215,24 @@ public class MouseInputManager {
                                 pitchUnchanged = true;
                             }
                             psbsPitchLeftAccept = (0.1 - mod(degPerPix * psbsPitchPixelOffset, 0.1)) * 10;
-                            AutoSpeedrunApi.chatMessage("Modifying leftAccept: " + psbsPitchLeftAccept);
+                            AutoSpeedrunAPI.chatMessage("Modifying leftAccept: " + psbsPitchLeftAccept);
                         } else {
                             if (psbsPitchRightAccept == (0.1 - mod(degPerPix * psbsPitchPixelOffset, 0.1)) * 10) {
                                 pitchUnchanged = true;
                             }
                             psbsPitchRightAccept = (0.1 - mod(degPerPix * psbsPitchPixelOffset, 0.1)) * 10;
-                            AutoSpeedrunApi.chatMessage("Modifying rightAccept: " + psbsPitchRightAccept);
+                            AutoSpeedrunAPI.chatMessage("Modifying rightAccept: " + psbsPitchRightAccept);
                         }
                         if (psbsPitchLeftAccept > psbsPitchRightAccept) {
-                            AutoSpeedrunApi.chatMessage("psbsPitchLeftAccept > psbsPitchRightAccept");
-                            AutoSpeedrunApi.chatMessage(psbsPitchLeftAccept + "," + psbsPitchRightAccept);
-                            AutoSpeedrunApi.emergencyStopUserCode();
+                            AutoSpeedrunAPI.chatMessage("psbsPitchLeftAccept > psbsPitchRightAccept");
+                            AutoSpeedrunAPI.chatMessage(psbsPitchLeftAccept + "," + psbsPitchRightAccept);
+                            AutoSpeedrunAPI.emergencyStopUserCode();
                             return true;
                         }
                         if (psbsPitchRightAccept - psbsPitchLeftAccept > 1.0) {
-                            AutoSpeedrunApi.chatMessage("psbsPitchRightAccept - psbsPitchLeftAccept > 1.0");
-                            AutoSpeedrunApi.chatMessage(psbsPitchLeftAccept + "," + psbsPitchRightAccept);
-                            AutoSpeedrunApi.emergencyStopUserCode();
+                            AutoSpeedrunAPI.chatMessage("psbsPitchRightAccept - psbsPitchLeftAccept > 1.0");
+                            AutoSpeedrunAPI.chatMessage(psbsPitchLeftAccept + "," + psbsPitchRightAccept);
+                            AutoSpeedrunAPI.emergencyStopUserCode();
                             return true;
                         }
                     }
@@ -243,8 +243,8 @@ public class MouseInputManager {
                         double maximumYaw = psbsYawRightAccept/10+round(round(psbsOriginalRealYaw, 1)-0.05, 2);
                         double minimumPitch = psbsPitchLeftAccept/10+round(round(psbsOriginalRealPitch, 1)-0.05, 2);
                         double maximumPitch = psbsPitchRightAccept/10+round(round(psbsOriginalRealPitch, 1)-0.05, 2);
-                        AutoSpeedrunApi.chatMessage("min/max yaw: " + minimumYaw + "," + maximumYaw);
-                        AutoSpeedrunApi.chatMessage("min/max pitch: " + minimumPitch + "," + maximumPitch);
+                        AutoSpeedrunAPI.chatMessage("min/max yaw: " + minimumYaw + "," + maximumYaw);
+                        AutoSpeedrunAPI.chatMessage("min/max pitch: " + minimumPitch + "," + maximumPitch);
                         calibrationStage++;
                     } else {
                         psbsAwaitingF3Change = false;
@@ -269,7 +269,7 @@ public class MouseInputManager {
 //                    AutoSpeedrunApi.chatMessage("Retrying mouse calibration");
 //                    break;
 //                }
-                AutoSpeedrunApi.chatMessage("Mouse calibration successful");
+                AutoSpeedrunAPI.chatMessage("Mouse calibration successful");
                 calibrationStage = -1;
                 return false;
         }

@@ -1,6 +1,6 @@
 package name.quasar.autospeedrun.usercode.pathing;
 
-import name.quasar.autospeedrun.AutoSpeedrunApi;
+import name.quasar.autospeedrun.AutoSpeedrunAPI;
 import name.quasar.autospeedrun.DebugRenderLine;
 import name.quasar.autospeedrun.usercode.F3Information;
 import name.quasar.autospeedrun.usercode.MouseInputManager;
@@ -45,7 +45,7 @@ public class Exploration {
             BlockLocation outsideBlockLoc = dbf.getOutsideBlock(F3Information.getDimension());
             BlockType outsideBlockType = known.getOrDefault(outsideBlockLoc, BlockType.AIR);
             if (outsideBlockType.getValue().equals("air")) {
-                AutoSpeedrunApi.chatMessage("DBF selected: " + dbf);
+                AutoSpeedrunAPI.chatMessage("DBF selected: " + dbf);
                 return dbf.getCenter();
             }
         }
@@ -57,10 +57,10 @@ public class Exploration {
         if (toExplore == null) { return; }
         Vector3 lookAt = findPointToLookAtToLookAtBlock(toExplore);
         if (lookAt == null) { return; }
-        AutoSpeedrunApi.renderLine(new DebugRenderLine(
+        AutoSpeedrunAPI.renderLine(new DebugRenderLine(
             lookAt.offsetY(-0.01).toVector3f(), lookAt.offsetY(0.01).toVector3f(), 1.0f, 0.0f, 0.0f
         ));
-        AutoSpeedrunApi.chatMessage("Look at point: " + lookAt.toString(4));
+        AutoSpeedrunAPI.chatMessage("Look at point: " + lookAt.toString(4));
         MouseInputManager.lookAtPoint(lookAt);
     }
 }

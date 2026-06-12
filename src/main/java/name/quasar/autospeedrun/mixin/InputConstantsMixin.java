@@ -5,7 +5,7 @@ import org.lwjgl.glfw.GLFW;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 
-import static name.quasar.autospeedrun.AutoSpeedrunApi.keyOverridden;
+import static name.quasar.autospeedrun.AutoSpeedrunAPI.keyOverridden;
 
 @Mixin(InputConstants.class)
 public abstract class InputConstantsMixin {

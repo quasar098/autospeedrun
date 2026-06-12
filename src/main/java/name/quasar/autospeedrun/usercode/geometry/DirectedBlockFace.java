@@ -1,8 +1,5 @@
 package name.quasar.autospeedrun.usercode.geometry;
 
-import com.mojang.math.Vector3f;
-import name.quasar.autospeedrun.AutoSpeedrunApi;
-import name.quasar.autospeedrun.DebugRenderLine;
 import name.quasar.autospeedrun.usercode.Dimension;
 
 /**

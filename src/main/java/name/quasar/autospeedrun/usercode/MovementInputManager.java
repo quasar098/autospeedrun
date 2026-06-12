@@ -1,6 +1,6 @@
 package name.quasar.autospeedrun.usercode;
 
-import name.quasar.autospeedrun.AutoSpeedrunApi;
+import name.quasar.autospeedrun.AutoSpeedrunAPI;
 import org.lwjgl.glfw.GLFW;
 
 public class MovementInputManager {
@@ -31,48 +31,48 @@ public class MovementInputManager {
     public static void handle() {
         if (prevW != currW) {
             if (currW) {
-                AutoSpeedrunApi.pressKey(GLFW.GLFW_KEY_W);
+                AutoSpeedrunAPI.pressKey(GLFW.GLFW_KEY_W);
             } else {
-                AutoSpeedrunApi.releaseKey(GLFW.GLFW_KEY_W);
+                AutoSpeedrunAPI.releaseKey(GLFW.GLFW_KEY_W);
             }
         }
         if (prevA != currA) {
             if (currA) {
-                AutoSpeedrunApi.pressKey(GLFW.GLFW_KEY_A);
+                AutoSpeedrunAPI.pressKey(GLFW.GLFW_KEY_A);
             } else {
-                AutoSpeedrunApi.releaseKey(GLFW.GLFW_KEY_A);
+                AutoSpeedrunAPI.releaseKey(GLFW.GLFW_KEY_A);
             }
         }
         if (prevS != currS) {
             if (currS) {
-                AutoSpeedrunApi.pressKey(GLFW.GLFW_KEY_S);
+                AutoSpeedrunAPI.pressKey(GLFW.GLFW_KEY_S);
             } else {
-                AutoSpeedrunApi.releaseKey(GLFW.GLFW_KEY_S);
+                AutoSpeedrunAPI.releaseKey(GLFW.GLFW_KEY_S);
             }
         }
         if (prevD != currD) {
             if (currD) {
-                AutoSpeedrunApi.pressKey(GLFW.GLFW_KEY_D);
+                AutoSpeedrunAPI.pressKey(GLFW.GLFW_KEY_D);
             } else {
-                AutoSpeedrunApi.releaseKey(GLFW.GLFW_KEY_D);
+                AutoSpeedrunAPI.releaseKey(GLFW.GLFW_KEY_D);
             }
         }
         if (prevSpace != currSpace) {
             if (currSpace) {
-                AutoSpeedrunApi.pressKey(GLFW.GLFW_KEY_SPACE);
+                AutoSpeedrunAPI.pressKey(GLFW.GLFW_KEY_SPACE);
             } else {
-                AutoSpeedrunApi.releaseKey(GLFW.GLFW_KEY_SPACE);
+                AutoSpeedrunAPI.releaseKey(GLFW.GLFW_KEY_SPACE);
             }
         }
         if (prevCrouch != currCrouch) {
             if (currCrouch) {
-                AutoSpeedrunApi.pressKey(GLFW.GLFW_KEY_LEFT_SHIFT);
+                AutoSpeedrunAPI.pressKey(GLFW.GLFW_KEY_LEFT_SHIFT);
             } else {
-                AutoSpeedrunApi.releaseKey(GLFW.GLFW_KEY_LEFT_SHIFT);
+                AutoSpeedrunAPI.releaseKey(GLFW.GLFW_KEY_LEFT_SHIFT);
             }
         }
         if (prevSprint != currSprint) {
-            AutoSpeedrunApi.pressKey(GLFW.GLFW_KEY_P);  // todo fix potential sync issues
+            AutoSpeedrunAPI.pressKey(GLFW.GLFW_KEY_P);  // todo fix potential sync issues
         }
         prevW = currW;
         prevA = currA;

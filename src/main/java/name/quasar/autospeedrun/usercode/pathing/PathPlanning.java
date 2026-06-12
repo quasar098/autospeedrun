@@ -1,6 +1,6 @@
 package name.quasar.autospeedrun.usercode.pathing;
 
-import name.quasar.autospeedrun.AutoSpeedrunApi;
+import name.quasar.autospeedrun.AutoSpeedrunAPI;
 import name.quasar.autospeedrun.DebugRenderLine;
 import name.quasar.autospeedrun.usercode.*;
 import name.quasar.autospeedrun.usercode.geometry.*;
@@ -59,7 +59,7 @@ public class PathPlanning {
         if (goalPosition == null) { return PathPlanningResult.NO_GOAL_POSITION; }
 
         // debug draw tall vertical line at goal
-        AutoSpeedrunApi.renderLine(new DebugRenderLine(
+        AutoSpeedrunAPI.renderLine(new DebugRenderLine(
             goalPosition.withY(0.0).toVector3f(),
             goalPosition.withY(256.0).toVector3f(),
             0.0f, 0.0f, 0.0f
@@ -134,7 +134,7 @@ public class PathPlanning {
         ArrayList<BlockLocation> path = null;
         aStarWhileLoop : while (!openSet.isEmpty()) {
             if (++iterations == maxIterations) {
-                AutoSpeedrunApi.chatMessage("Max iterations reached on A* pathfinding");
+                AutoSpeedrunAPI.chatMessage("Max iterations reached on A* pathfinding");
                 break;
             }
             BlockLocation current = openSet.peek();

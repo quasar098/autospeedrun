@@ -21,13 +21,13 @@ public class AutoSpeedrunStartTick implements ClientTickEvents.StartTick {
             GLFW.glfwGetCursorPos(handle, xBuffer, yBuffer);
             double x = xBuffer[0];
             double y = yBuffer[0];
-            AutoSpeedrunApi.chatMessage(x + "," + y);
+            AutoSpeedrunAPI.chatMessage(x + "," + y);
         }
         if (Minecraft.getInstance().player != null && !Util.togglePaused) {
             if (Minecraft.getInstance().screen == null || !Minecraft.getInstance().screen.getTitle().getString().equals("Game paused")) {
                 userCode.tick();
             }
         }
-        AutoSpeedrunApi.screenClickedThisTick = false;
+        AutoSpeedrunAPI.screenClickedThisTick = false;
     }
 }

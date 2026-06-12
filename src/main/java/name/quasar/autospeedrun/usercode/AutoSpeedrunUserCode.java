@@ -1,14 +1,12 @@
 package name.quasar.autospeedrun.usercode;
 
-import name.quasar.autospeedrun.AutoSpeedrunApi;
+import name.quasar.autospeedrun.AutoSpeedrunAPI;
 import name.quasar.autospeedrun.usercode.geometry.BlockLocation;
 import name.quasar.autospeedrun.usercode.geometry.Vector3;
 import name.quasar.autospeedrun.usercode.geometry.GreatCircle;
 import name.quasar.autospeedrun.usercode.inventory.InventoryManagement;
-import name.quasar.autospeedrun.usercode.pathing.Exploration;
 import name.quasar.autospeedrun.usercode.pathing.Navigation;
 import name.quasar.autospeedrun.usercode.pathing.PathPlanning;
-import name.quasar.autospeedrun.usercode.pathing.PathPlanningResult;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
@@ -35,20 +33,20 @@ public class AutoSpeedrunUserCode {
 
     public void tick() {
         Util.tickCount++;
-        AutoSpeedrunApi.clearRenderLines();
-        AutoSpeedrunApi.screenshotAsync(1920, 1080);
+        AutoSpeedrunAPI.clearRenderLines();
+        AutoSpeedrunAPI.screenshotAsync(1920, 1080);
         // screen resolution not yet resolved, resolve it before doing anything else
         if (Util.SCREEN_W == 0 || Util.SCREEN_H == 0) {
-            Util.SCREEN_W = AutoSpeedrunApi.getScreenshotWidth();
-            Util.SCREEN_H = AutoSpeedrunApi.getScreenshotHeight();
+            Util.SCREEN_W = AutoSpeedrunAPI.getScreenshotWidth();
+            Util.SCREEN_H = AutoSpeedrunAPI.getScreenshotHeight();
             if (Util.SCREEN_W == 0 || Util.SCREEN_H == 0) {
                 return;
             }
-            AutoSpeedrunApi.chatMessage(String.format("Screenshots W/H Resolved: %dx%d", Util.SCREEN_W, Util.SCREEN_H));
+            AutoSpeedrunAPI.chatMessage(String.format("Screenshots W/H Resolved: %dx%d", Util.SCREEN_W, Util.SCREEN_H));
         }
         // f3 must open always
         if (!F3Information.isF3Open()) {
-            AutoSpeedrunApi.tapKey(GLFW.GLFW_KEY_F3);
+            AutoSpeedrunAPI.tapKey(GLFW.GLFW_KEY_F3);
             return;
         }
         F3Information.clearCache();
@@ -58,7 +56,7 @@ public class AutoSpeedrunUserCode {
         // live debug information
         BlockLocation targettedBL = F3Information.getTargettedBlockLocation();
         String targettedBlockPositionFormatted = targettedBL == null ? "(not targetting)" : targettedBL.toString();
-        AutoSpeedrunApi.subtitleMessage(String.format(
+        AutoSpeedrunAPI.subtitleMessage(String.format(
             "%.2fs Y:%.1f,P:%.1f %s %s", Util.tickCount / 20.0,
             F3Information.getYaw(), F3Information.getPitch(),
             targettedBlockPositionFormatted, F3Information.getTargettedBlockName()
@@ -70,7 +68,7 @@ public class AutoSpeedrunUserCode {
         }
         // inventory management
         if (InventoryManagement.getInstance().perform()) {
-            AutoSpeedrunApi.chatMessage("bruh");
+            AutoSpeedrunAPI.chatMessage("bruh");
             return;
         }
         // do mouse calibration on world join
@@ -104,24 +102,24 @@ public class AutoSpeedrunUserCode {
         String[] split = debugStr.split(" ");
         switch (split[0]) {
             case "dimension":
-                AutoSpeedrunApi.chatMessage("Dimension: " + F3Information.getDimension());
+                AutoSpeedrunAPI.chatMessage("Dimension: " + F3Information.getDimension());
                 break;
             case "clearf3cache":
                 F3Information.clearCache();
-                AutoSpeedrunApi.chatMessage("F3 Cache cleared");
+                AutoSpeedrunAPI.chatMessage("F3 Cache cleared");
                 break;
             case "clearworldblocks":
                 WorldBlocks.reset();
-                AutoSpeedrunApi.chatMessage("World blocks cleared");
+                AutoSpeedrunAPI.chatMessage("World blocks cleared");
                 break;
             case "blockproperties":
                 for (String s : F3Information.getBlockProperties()) {
-                    AutoSpeedrunApi.chatMessage(s);
+                    AutoSpeedrunAPI.chatMessage(s);
                 }
                 break;
             case "mousemove":
                 String[] xyStr = split[1].split(",");
-                AutoSpeedrunApi.mouseMove(Integer.parseInt(xyStr[0]), Integer.parseInt(xyStr[1]));
+                AutoSpeedrunAPI.mouseMove(Integer.parseInt(xyStr[0]), Integer.parseInt(xyStr[1]));
                 break;
             case "setnav":
                 String[] xyzStr = split[1].split(",");
@@ -133,22 +131,22 @@ public class AutoSpeedrunUserCode {
                 PathPlanning.getInstance().setGoalPosition(null);
                 break;
             case "lclicktap":
-                AutoSpeedrunApi.tapLeftClick();
+                AutoSpeedrunAPI.tapLeftClick();
                 break;
             case "lclickpress":
-                AutoSpeedrunApi.pressLeftClick();
+                AutoSpeedrunAPI.pressLeftClick();
                 break;
             case "lclickrelease":
-                AutoSpeedrunApi.releaseLeftClick();
+                AutoSpeedrunAPI.releaseLeftClick();
                 break;
             case "rclicktap":
-                AutoSpeedrunApi.tapRightClick();
+                AutoSpeedrunAPI.tapRightClick();
                 break;
             case "rclickpress":
-                AutoSpeedrunApi.pressRightClick();
+                AutoSpeedrunAPI.pressRightClick();
                 break;
             case "rclickrelease":
-                AutoSpeedrunApi.releaseRightClick();
+                AutoSpeedrunAPI.releaseRightClick();
                 break;
             case "inventorytest":
                 InventoryManagement.getInstance().testTime = 0;
@@ -157,7 +155,7 @@ public class AutoSpeedrunUserCode {
                 Util.toggleDebugAir = !Util.toggleDebugAir;
                 break;
             case "greatcircles":
-                AutoSpeedrunApi.chatMessage("great circles");
+                AutoSpeedrunAPI.chatMessage("great circles");
                 String[] xyzStr2 = new String[]{};
                 if (split.length >= 2) {
                     xyzStr2 = split[1].split(",");
@@ -188,7 +186,7 @@ public class AutoSpeedrunUserCode {
                 }
                 break;
             default:
-                AutoSpeedrunApi.chatMessage("there is no such thing");
+                AutoSpeedrunAPI.chatMessage("there is no such thing");
                 break;
         }
     }

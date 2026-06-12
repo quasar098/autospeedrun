@@ -1,6 +1,6 @@
 package name.quasar.autospeedrun.usercode.geometry;
 
-import name.quasar.autospeedrun.AutoSpeedrunApi;
+import name.quasar.autospeedrun.AutoSpeedrunAPI;
 import name.quasar.autospeedrun.DebugRenderLine;
 
 public class GreatCircle {
@@ -37,7 +37,7 @@ public class GreatCircle {
         for (double t = 0; t < Math.PI * 2; t += increment) {
             Vector3 start = orthog1.mult(Math.sin(t)).add(orthog2.mult(Math.cos(t)));
             Vector3 end = orthog1.mult(Math.sin(t+increment)).add(orthog2.mult(Math.cos(t+increment)));
-            AutoSpeedrunApi.renderLine(new DebugRenderLine(
+            AutoSpeedrunAPI.renderLine(new DebugRenderLine(
                 start.add(center).toVector3f(), end.add(center).toVector3f(), 0.2f, 0.9f, 1.0f
             ));
         }

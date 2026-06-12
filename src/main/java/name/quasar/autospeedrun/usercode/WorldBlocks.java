@@ -1,7 +1,7 @@
 package name.quasar.autospeedrun.usercode;
 
 import com.mojang.math.Vector3f;
-import name.quasar.autospeedrun.AutoSpeedrunApi;
+import name.quasar.autospeedrun.AutoSpeedrunAPI;
 import name.quasar.autospeedrun.DebugRenderLine;
 import name.quasar.autospeedrun.usercode.geometry.BlockFace;
 import name.quasar.autospeedrun.usercode.geometry.BlockLocation;
@@ -97,8 +97,8 @@ public class WorldBlocks {
             }
         }
         if (iterations == maxIterations) {
-            AutoSpeedrunApi.chatMessage("Max iterations reached for eye ray collision detection");
-            AutoSpeedrunApi.emergencyStopUserCode();
+            AutoSpeedrunAPI.chatMessage("Max iterations reached for eye ray collision detection");
+            AutoSpeedrunAPI.emergencyStopUserCode();
             return null;
         }
         return bfsTotal;
@@ -136,7 +136,7 @@ public class WorldBlocks {
             BlockFace faceTL = bfsMaxTL.get(i);
             BlockFace faceBR = bfsMaxBR.get(i);
             if (!faceTL.equals(faceBR)) {
-                AutoSpeedrunApi.chatMessage(String.format("BAD %.2fs %d", Util.tickCount / 20.0, i));
+                AutoSpeedrunAPI.chatMessage(String.format("BAD %.2fs %d", Util.tickCount / 20.0, i));
                 faceTL.debugDraw();
                 faceBR.debugDraw();
                 return;
@@ -180,12 +180,12 @@ public class WorldBlocks {
             if (blockType.getValue().equals("air")) {
                 // draw black X through air blocks
                 if (Util.toggleDebugAir) {
-                    AutoSpeedrunApi.renderLine(new DebugRenderLine(
+                    AutoSpeedrunAPI.renderLine(new DebugRenderLine(
                             new Vector3f(loc.getX() + 0.4f, loc.getY() + 0.5f, loc.getZ() + 0.4f),
                             new Vector3f(loc.getX() + 0.6f, loc.getY() + 0.5f, loc.getZ() + 0.6f),
                             0f, 0f, 0f
                     ));
-                    AutoSpeedrunApi.renderLine(new DebugRenderLine(
+                    AutoSpeedrunAPI.renderLine(new DebugRenderLine(
                             new Vector3f(loc.getX() + 0.6f, loc.getY() + 0.5f, loc.getZ() + 0.4f),
                             new Vector3f(loc.getX() + 0.4f, loc.getY() + 0.5f, loc.getZ() + 0.6f),
                             0f, 0f, 0f
@@ -193,7 +193,7 @@ public class WorldBlocks {
                 }
             } else {
                 // draw green / on top of all known blocks
-                AutoSpeedrunApi.renderLine(new DebugRenderLine(
+                AutoSpeedrunAPI.renderLine(new DebugRenderLine(
                         new Vector3f(loc.getX(), loc.getY() + 1.02f, loc.getZ()),
                         new Vector3f(loc.getX() + 1f, loc.getY() + 1.02f, loc.getZ() + 1f),
                         0f, 1f, 0f

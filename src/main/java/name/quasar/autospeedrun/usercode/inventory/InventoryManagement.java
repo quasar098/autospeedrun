@@ -1,7 +1,6 @@
 package name.quasar.autospeedrun.usercode.inventory;
 
-import name.quasar.autospeedrun.AutoSpeedrunApi;
-import name.quasar.autospeedrun.usercode.inventory.containers.Chest3Container;
+import name.quasar.autospeedrun.AutoSpeedrunAPI;
 import name.quasar.autospeedrun.usercode.inventory.containers.Container;
 import org.lwjgl.glfw.GLFW;
 
@@ -32,14 +31,14 @@ public class InventoryManagement {
         }
         testTime++;
         if (testTime == 1) {
-            AutoSpeedrunApi.tapRightClick();
+            AutoSpeedrunAPI.tapRightClick();
         } else if (2 <= testTime) {
             if (testTime <= 5) {
                 container = ContainerRecognition.getInstance().pullFromScreen();
                 if (container == null) {
-                    AutoSpeedrunApi.chatMessage("no valid container recognized");
+                    AutoSpeedrunAPI.chatMessage("no valid container recognized");
                     if (testTime == 3) {
-                        AutoSpeedrunApi.emergencyStopUserCode();
+                        AutoSpeedrunAPI.emergencyStopUserCode();
                         testTime = -1;
                         container = null;
                     }
@@ -61,15 +60,15 @@ public class InventoryManagement {
     }
 
     private boolean lootChest() {
-        AutoSpeedrunApi.chatMessage("loot chest");
+        AutoSpeedrunAPI.chatMessage("loot chest");
         for (int slot = 0; slot < container.getNumContainerSlots(); slot++) {
             ContainerItem item = container.getItem(slot);
             if (isValuedItem(item)) {
-                AutoSpeedrunApi.pressKey(GLFW.GLFW_KEY_RIGHT_SHIFT);
+                AutoSpeedrunAPI.pressKey(GLFW.GLFW_KEY_RIGHT_SHIFT);
                 int x = container.getContainerSlotScreenX(slot);
                 int y = container.getContainerSlotScreenY(slot);
-                AutoSpeedrunApi.screenClick(x, y, 0);
-                AutoSpeedrunApi.releaseKey(GLFW.GLFW_KEY_RIGHT_SHIFT);
+                AutoSpeedrunAPI.screenClick(x, y, 0);
+                AutoSpeedrunAPI.releaseKey(GLFW.GLFW_KEY_RIGHT_SHIFT);
                 container.setItem(null, slot);
                 return true;
             }

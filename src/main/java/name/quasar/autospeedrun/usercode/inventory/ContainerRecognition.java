@@ -1,10 +1,8 @@
 package name.quasar.autospeedrun.usercode.inventory;
 
-import name.quasar.autospeedrun.AutoSpeedrunApi;
+import name.quasar.autospeedrun.AutoSpeedrunAPI;
 import name.quasar.autospeedrun.usercode.Util;
 import name.quasar.autospeedrun.usercode.inventory.containers.*;
-
-import java.util.Arrays;
 
 public class ContainerRecognition {
     private static ContainerRecognition instance;
@@ -70,7 +68,7 @@ public class ContainerRecognition {
             for (int v = 0; v < 256; v++) {
                 int x = ((v % 16)) * Util.OPTIONS_TXT_GUI_SCALE + c.getContainerSlotScreenX(slot);
                 int y = ((v / 16)) * Util.OPTIONS_TXT_GUI_SCALE + c.getContainerSlotScreenY(slot);
-                observedItemData[v] = AutoSpeedrunApi.getScreenshotPixelRGBA(x, y);
+                observedItemData[v] = AutoSpeedrunAPI.getScreenshotPixelRGBA(x, y);
                 if ((observedItemData[v] & 0x00ffffff) == 0x8b8b8b) { observedItemData[v] = 0; }
                 if ((observedItemData[v] & 0x00ffffff) == 0xc5c5c5) { observedItemData[v] = 0; }
             }

@@ -17,7 +17,7 @@ import java.util.Set;
 
 import static name.quasar.autospeedrun.Util.*;
 
-public class AutoSpeedrunApi {
+public class AutoSpeedrunAPI {
 
     private static final ArrayList<DebugRenderLine> lines = new ArrayList<>();
 
@@ -170,10 +170,10 @@ public class AutoSpeedrunApi {
     public static void screenshotAsync(int w, int h) {
         Minecraft mc = Minecraft.getInstance();
         mc.execute(() -> {
-            if (AutoSpeedrunApi.img != null) {
+            if (AutoSpeedrunAPI.img != null) {
                 img.close();
             }
-            AutoSpeedrunApi.img = Screenshot.takeScreenshot(w, h, mc.getMainRenderTarget());
+            AutoSpeedrunAPI.img = Screenshot.takeScreenshot(w, h, mc.getMainRenderTarget());
 //            try {
 //                img.writeToFile(new File("bruh.png"));
 //            } catch (IOException e) {

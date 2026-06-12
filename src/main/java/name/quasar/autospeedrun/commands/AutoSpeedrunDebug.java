@@ -8,7 +8,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import name.quasar.autospeedrun.AutoSpeedrunApi;
+import name.quasar.autospeedrun.AutoSpeedrunAPI;
 import name.quasar.autospeedrun.Util;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -44,18 +44,18 @@ public class AutoSpeedrunDebug {
             debugOptions = new HashMap<>();
             debugOptions.put("announcer_show", Util::enableAnnouncer);
             debugOptions.put("announcer_hide", Util::disableAnnouncer);
-            debugOptions.put("screenshot", () -> AutoSpeedrunApi.screenshotAsync(1920, 1080));
+            debugOptions.put("screenshot", () -> AutoSpeedrunAPI.screenshotAsync(1920, 1080));
             debugOptions.put("toggle_debug_mouse_pos", () -> {
                 Util.isDebuggingMousePosition = !Util.isDebuggingMousePosition;
             });
         }
         if (debugOptionsWithIntArg == null) {
             debugOptionsWithIntArg = new HashMap<>();
-            debugOptionsWithIntArg.put("tap_key", AutoSpeedrunApi::tapKey);
-            debugOptionsWithIntArg.put("press_key", AutoSpeedrunApi::pressKey);
-            debugOptionsWithIntArg.put("release_key", AutoSpeedrunApi::releaseKey);
-            debugOptionsWithIntArg.put("mouse_move_x", (x) -> AutoSpeedrunApi.mouseMove(x, 0));
-            debugOptionsWithIntArg.put("mouse_move_y", (y) -> AutoSpeedrunApi.mouseMove(0, y));
+            debugOptionsWithIntArg.put("tap_key", AutoSpeedrunAPI::tapKey);
+            debugOptionsWithIntArg.put("press_key", AutoSpeedrunAPI::pressKey);
+            debugOptionsWithIntArg.put("release_key", AutoSpeedrunAPI::releaseKey);
+            debugOptionsWithIntArg.put("mouse_move_x", (x) -> AutoSpeedrunAPI.mouseMove(x, 0));
+            debugOptionsWithIntArg.put("mouse_move_y", (y) -> AutoSpeedrunAPI.mouseMove(0, y));
         }
     }
 

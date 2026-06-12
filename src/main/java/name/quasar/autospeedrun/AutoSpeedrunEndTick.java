@@ -13,18 +13,18 @@ public class AutoSpeedrunEndTick implements ClientTickEvents.EndTick {
     public void onEndTick(Minecraft client) {
         if (Minecraft.getInstance().player != null && !Util.togglePaused) {
             if (Minecraft.getInstance().screen == null || !Minecraft.getInstance().screen.getTitle().getString().equals("Game paused")) {
-                if (AutoSpeedrunApi.tappingLeftClick) {
+                if (AutoSpeedrunAPI.tappingLeftClick) {
                     KeyMapping.click(InputConstants.Type.MOUSE.getOrCreate(GLFW.GLFW_MOUSE_BUTTON_1));
-                    AutoSpeedrunApi.tappingLeftClick = false;
+                    AutoSpeedrunAPI.tappingLeftClick = false;
                 }
-                if (AutoSpeedrunApi.holdingLeftClick && !prevHoldingLeftClick) {
+                if (AutoSpeedrunAPI.holdingLeftClick && !prevHoldingLeftClick) {
                     Minecraft.getInstance().options.keyAttack.setDown(true);
                 }
-                if (!AutoSpeedrunApi.holdingLeftClick && prevHoldingLeftClick) {
+                if (!AutoSpeedrunAPI.holdingLeftClick && prevHoldingLeftClick) {
                     Minecraft.getInstance().options.keyAttack.setDown(false);
                 }
             }
         }
-        prevHoldingLeftClick = AutoSpeedrunApi.holdingLeftClick;
+        prevHoldingLeftClick = AutoSpeedrunAPI.holdingLeftClick;
     }
 }

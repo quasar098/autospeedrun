@@ -1,6 +1,6 @@
 package name.quasar.autospeedrun.usercode.inventory.containers;
 
-import name.quasar.autospeedrun.AutoSpeedrunApi;
+import name.quasar.autospeedrun.AutoSpeedrunAPI;
 import name.quasar.autospeedrun.usercode.Util;
 import name.quasar.autospeedrun.usercode.inventory.ContainerItem;
 
@@ -14,11 +14,11 @@ public abstract class Container {
     public abstract int getImageHeight();
 
     public int getImageScreenX() {
-        return (AutoSpeedrunApi.getScreenshotWidth() - getImageWidth() * Util.OPTIONS_TXT_GUI_SCALE) / 2;
+        return (AutoSpeedrunAPI.getScreenshotWidth() - getImageWidth() * Util.OPTIONS_TXT_GUI_SCALE) / 2;
     }
 
     public int getImageScreenY() {
-        return (AutoSpeedrunApi.getScreenshotHeight() - getImageHeight() * Util.OPTIONS_TXT_GUI_SCALE) / 2;
+        return (AutoSpeedrunAPI.getScreenshotHeight() - getImageHeight() * Util.OPTIONS_TXT_GUI_SCALE) / 2;
     }
 
     // identification purposes

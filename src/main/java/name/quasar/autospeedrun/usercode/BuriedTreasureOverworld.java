@@ -1,6 +1,6 @@
 package name.quasar.autospeedrun.usercode;
 
-import name.quasar.autospeedrun.AutoSpeedrunApi;
+import name.quasar.autospeedrun.AutoSpeedrunAPI;
 import name.quasar.autospeedrun.usercode.pathing.PathPlanning;
 import org.lwjgl.glfw.GLFW;
 
@@ -49,22 +49,22 @@ public class BuriedTreasureOverworld {
     private void performScan() {
         // force pie chart open
         if (!F3Information.isPieChartShown()) {
-            AutoSpeedrunApi.pressKey(GLFW.GLFW_KEY_RIGHT_SHIFT);
-            AutoSpeedrunApi.tapKey(GLFW.GLFW_KEY_F3);
+            AutoSpeedrunAPI.pressKey(GLFW.GLFW_KEY_RIGHT_SHIFT);
+            AutoSpeedrunAPI.tapKey(GLFW.GLFW_KEY_F3);
             return;
         }
         // force close inventory/whatever other bullshit
         if (F3Information.f3HasBackgroundDim) {
-            AutoSpeedrunApi.tapKey(GLFW.GLFW_KEY_ESCAPE);
+            AutoSpeedrunAPI.tapKey(GLFW.GLFW_KEY_ESCAPE);
             return;
         }
         // force correct path
         int pathTravNum = F3Information.getRecommendedNumForPiePathTraversal("root.gameRenderer.level.entities");
         if (pathTravNum != -1) {
-            AutoSpeedrunApi.tapKey(pathTravNum + '0');
+            AutoSpeedrunAPI.tapKey(pathTravNum + '0');
             if (pathTravNum == 3) {  // f5/perspective key :(
-                AutoSpeedrunApi.tapKey(GLFW.GLFW_KEY_3);
-                AutoSpeedrunApi.tapKey(GLFW.GLFW_KEY_3);
+                AutoSpeedrunAPI.tapKey(GLFW.GLFW_KEY_3);
+                AutoSpeedrunAPI.tapKey(GLFW.GLFW_KEY_3);
             }
             return;
         }
@@ -81,20 +81,20 @@ public class BuriedTreasureOverworld {
         if (scanDirection != 0) {
             Double globalPerc = F3Information.getPieDirectoryGlobalPercentage("blockentities");
             if (globalPerc == null) {
-                AutoSpeedrunApi.chatMessage("gloabl percentage of blockentities null on scan");
-                AutoSpeedrunApi.emergencyStopUserCode();
+                AutoSpeedrunAPI.chatMessage("gloabl percentage of blockentities null on scan");
+                AutoSpeedrunAPI.emergencyStopUserCode();
                 return;
             }
             double scanAngleBetter = (((scanAngle + 180) % 360) - 180);
-            AutoSpeedrunApi.chatMessage(String.format("(%f, %f)", scanAngleBetter, globalPerc));
+            AutoSpeedrunAPI.chatMessage(String.format("(%f, %f)", scanAngleBetter, globalPerc));
 
             if (scanPrevGlobalPerc == null) {
-                AutoSpeedrunApi.tapKey(GLFW.GLFW_KEY_F3);
+                AutoSpeedrunAPI.tapKey(GLFW.GLFW_KEY_F3);
                 scanAngle += scanDirection * Math.toDegrees(hfov) / (2 * Math.pow(2, scanPrecision));
                 scanPause = 3;
             } else if (scanPrevGlobalPerc > 1.3) {
                 scanAngle += scanDirection * Math.toDegrees(hfov) / (2 * Math.pow(2, scanPrecision));
-                AutoSpeedrunApi.tapKey(GLFW.GLFW_KEY_F3);
+                AutoSpeedrunAPI.tapKey(GLFW.GLFW_KEY_F3);
                 scanPause = 3;
             } else if (globalPerc > 1.3) {  // implied: prevGlobalPerc <= 1 already
                 double prevScanAngle = scanAngle;
@@ -104,20 +104,20 @@ public class BuriedTreasureOverworld {
                     scanPrecision = 0;
                     if (scanDirection == 1) {
                         scanRightScreenEdgeAngle = (prevScanAngle + Math.toDegrees(hfov) / 2 + 3600) % 360;
-                        AutoSpeedrunApi.chatMessage("Found right edge: " + scanRightScreenEdgeAngle);
+                        AutoSpeedrunAPI.chatMessage("Found right edge: " + scanRightScreenEdgeAngle);
                         scanDirection = -1;
                     } else {
                         scanLeftScreenEdgeAngle = (prevScanAngle - Math.toDegrees(hfov) / 2 + 3600) % 360;
-                        AutoSpeedrunApi.chatMessage("Found left edge: " + scanLeftScreenEdgeAngle);
+                        AutoSpeedrunAPI.chatMessage("Found left edge: " + scanLeftScreenEdgeAngle);
                         scanDirection = 0;
                     }
                 }
                 scanPrecision += 1;
-                AutoSpeedrunApi.tapKey(GLFW.GLFW_KEY_F3);
+                AutoSpeedrunAPI.tapKey(GLFW.GLFW_KEY_F3);
                 scanPause = 3;
             } else {
                 scanAngle += scanDirection * Math.toDegrees(hfov) / (2 * Math.pow(2, scanPrecision) * 2);
-                AutoSpeedrunApi.tapKey(GLFW.GLFW_KEY_F3);
+                AutoSpeedrunAPI.tapKey(GLFW.GLFW_KEY_F3);
                 scanPause = 1;
             }
 
@@ -142,8 +142,8 @@ public class BuriedTreasureOverworld {
         System.out.printf("%f %f\n", cx, cz);
         double btx = cx + 9.5;
         double btz = cx + 9.5;
-        AutoSpeedrunApi.chatMessage("Found BT at " + btx + "," + btz);
-        AutoSpeedrunApi.releaseKey(GLFW.GLFW_KEY_RIGHT_SHIFT);
+        AutoSpeedrunAPI.chatMessage("Found BT at " + btx + "," + btz);
+        AutoSpeedrunAPI.releaseKey(GLFW.GLFW_KEY_RIGHT_SHIFT);
         PathPlanning.getInstance().setGoalPosition(btx, btz);
         subsection = Subsection.MOVING_TO_9_9;
     }

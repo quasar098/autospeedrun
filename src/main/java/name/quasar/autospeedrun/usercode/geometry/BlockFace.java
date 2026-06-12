@@ -1,7 +1,7 @@
 package name.quasar.autospeedrun.usercode.geometry;
 
 import com.mojang.math.Vector3f;
-import name.quasar.autospeedrun.AutoSpeedrunApi;
+import name.quasar.autospeedrun.AutoSpeedrunAPI;
 import name.quasar.autospeedrun.DebugRenderLine;
 import name.quasar.autospeedrun.usercode.Dimension;
 
@@ -90,43 +90,43 @@ public class BlockFace {
 
     public void debugDraw() {
         if (dir == Direction.POS_X) {
-            AutoSpeedrunApi.renderLine(new DebugRenderLine(
+            AutoSpeedrunAPI.renderLine(new DebugRenderLine(
                     new Vector3f(x+1f, y, z), new Vector3f(x+1f, y+1f, z), 1.0f, 0.68f, 0.77f
             ));
-            AutoSpeedrunApi.renderLine(new DebugRenderLine(
+            AutoSpeedrunAPI.renderLine(new DebugRenderLine(
                     new Vector3f(x+1f, y+1f, z), new Vector3f(x+1f, y+1f, z+1f), 1.0f, 0.68f, 0.77f
             ));
-            AutoSpeedrunApi.renderLine(new DebugRenderLine(
+            AutoSpeedrunAPI.renderLine(new DebugRenderLine(
                     new Vector3f(x+1f, y+1f, z+1f), new Vector3f(x+1f, y, z+1f), 1.0f, 0.68f, 0.77f
             ));
-            AutoSpeedrunApi.renderLine(new DebugRenderLine(
+            AutoSpeedrunAPI.renderLine(new DebugRenderLine(
                     new Vector3f(x+1f, y, z+1f), new Vector3f(x+1f, y, z), 1.0f, 0.68f, 0.77f
             ));
         } else if (dir == Direction.POS_Y) {
-            AutoSpeedrunApi.renderLine(new DebugRenderLine(
+            AutoSpeedrunAPI.renderLine(new DebugRenderLine(
                     new Vector3f(x, y+1f, z), new Vector3f(x+1f, y+1f, z), 1.0f, 0.68f, 0.77f
             ));
-            AutoSpeedrunApi.renderLine(new DebugRenderLine(
+            AutoSpeedrunAPI.renderLine(new DebugRenderLine(
                     new Vector3f(x+1f, y+1f, z), new Vector3f(x+1f, y+1f, z+1f), 1.0f, 0.68f, 0.77f
             ));
-            AutoSpeedrunApi.renderLine(new DebugRenderLine(
+            AutoSpeedrunAPI.renderLine(new DebugRenderLine(
                     new Vector3f(x+1f, y+1f, z+1f), new Vector3f(x, y+1f, z+1f), 1.0f, 0.68f, 0.77f
             ));
-            AutoSpeedrunApi.renderLine(new DebugRenderLine(
+            AutoSpeedrunAPI.renderLine(new DebugRenderLine(
                     new Vector3f(x, y+1f, z+1f), new Vector3f(x, y+1f, z), 1.0f, 0.68f, 0.77f
             ));
         } else {
             if (dir == Direction.POS_Z) {
-                AutoSpeedrunApi.renderLine(new DebugRenderLine(
+                AutoSpeedrunAPI.renderLine(new DebugRenderLine(
                         new Vector3f(x, y, z+1f), new Vector3f(x+1f, y, z+1f), 1.0f, 0.68f, 0.77f
                 ));
-                AutoSpeedrunApi.renderLine(new DebugRenderLine(
+                AutoSpeedrunAPI.renderLine(new DebugRenderLine(
                         new Vector3f(x+1f, y, z+1f), new Vector3f(x+1f, y+1f, z+1f), 1.0f, 0.68f, 0.77f
                 ));
-                AutoSpeedrunApi.renderLine(new DebugRenderLine(
+                AutoSpeedrunAPI.renderLine(new DebugRenderLine(
                         new Vector3f(x+1f, y+1f, z+1f), new Vector3f(x, y+1f, z+1f), 1.0f, 0.68f, 0.77f
                 ));
-                AutoSpeedrunApi.renderLine(new DebugRenderLine(
+                AutoSpeedrunAPI.renderLine(new DebugRenderLine(
                         new Vector3f(x, y+1f, z+1f), new Vector3f(x, y, z+1f), 1.0f, 0.68f, 0.77f
                 ));
             }

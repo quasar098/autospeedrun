@@ -1,10 +1,7 @@
 package name.quasar.autospeedrun.usercode.geometry;
 
-import name.quasar.autospeedrun.AutoSpeedrunApi;
-import name.quasar.autospeedrun.DebugRenderLine;
+import name.quasar.autospeedrun.AutoSpeedrunAPI;
 import name.quasar.autospeedrun.usercode.Dimension;
-import name.quasar.autospeedrun.usercode.F3Information;
-import name.quasar.autospeedrun.usercode.Util;
 
 import java.util.ArrayList;
 
@@ -109,7 +106,7 @@ public class BlockLocation {
     }
 
     public void debugDrawGreatCircles(Vector3 camera) {
-        AutoSpeedrunApi.chatMessage("great circles");
+        AutoSpeedrunAPI.chatMessage("great circles");
         ArrayList<GreatCircle> gcs = new ArrayList<>();
         for (Vector3 gcPosition : new Vector3[] { new Vector3(x, y, z),     new Vector3(x+1, y+1, z),
                                                   new Vector3(x+1, y, z+1), new Vector3(x, y+1, z+1) }) {

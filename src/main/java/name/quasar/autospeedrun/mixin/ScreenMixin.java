@@ -1,7 +1,7 @@
 package name.quasar.autospeedrun.mixin;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import name.quasar.autospeedrun.AutoSpeedrunApi;
+import name.quasar.autospeedrun.AutoSpeedrunAPI;
 import name.quasar.autospeedrun.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -14,7 +14,7 @@ public class ScreenMixin {
 	@Overwrite
 	public static boolean hasShiftDown() {
 		// not entirely accurate because of right shift but do ppl use right shift at all??
-		if (!Util.togglePaused) { return AutoSpeedrunApi.shifting; }
+		if (!Util.togglePaused) { return AutoSpeedrunAPI.shifting; }
 		return InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), 340)
 				|| InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), 344);
 	}

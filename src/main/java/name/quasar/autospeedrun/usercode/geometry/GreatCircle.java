@@ -3,6 +3,9 @@ package name.quasar.autospeedrun.usercode.geometry;
 import name.quasar.autospeedrun.AutoSpeedrunAPI;
 import name.quasar.autospeedrun.DebugRenderLine;
 
+/**
+ * likely not being used but remains just in case
+ */
 public class GreatCircle {
     private final Vector3 orthog1;
     private final Vector3 orthog2;

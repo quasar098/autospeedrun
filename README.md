@@ -14,6 +14,12 @@ https://www.mcpk.wiki/wiki/Horizontal_Movement_Formulas
 
 https://minecraft.wiki/w/Options.txt
 
+https://en.wikipedia.org/wiki/3D_projection#Perspective_projection
+
+https://en.wikipedia.org/wiki/Boolean_operations_on_polygons
+
+https://dl.acm.org/doi/epdf/10.1145/129902.129906
+
 ## practice seed list
 
 - `-1807904186447035469` easy trees, easy bt

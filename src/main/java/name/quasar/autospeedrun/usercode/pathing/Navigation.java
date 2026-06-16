@@ -72,9 +72,24 @@ public class Navigation {
         return new Vector3(predicted.getX(), F3Information.getPosition().getY(), predicted.getZ());
     }
 
+    /**
+     * has the potential to return null
+     */
+    public double getPredictedPeakY() {
+        if (getCurrentVelocity() == null) { return F3Information.getPosition().getY(); }
+        double vy = getCurrentVelocity().getY();
+        double predictedY = F3Information.getPosition().getY();
+        while (vy > 0.003) {
+            vy = (vy - 0.08) * 0.98;
+            predictedY += vy;
+        }
+        return predictedY;
+    }
+
     public void drawPredictedPlayerBox() {
         Vector3 predictedStablePos = getPredictedStablePosition();
         if (predictedStablePos == null) { return; }
+        predictedStablePos = predictedStablePos.withY(getPredictedPeakY());
         Vector3 aaa = predictedStablePos.offsetX(-0.3).offsetZ(-0.3);
         Vector3 baa = aaa.offsetX(0.6);
         Vector3 aab = aaa.offsetZ(0.6);
@@ -115,7 +130,7 @@ public class Navigation {
             nextNode.toVector3f(), nextNode.offsetY(1.0).toVector3f(), 1.0f, 0.0f, 0.0f
         ));
 
-        // go to next node
+        // move to next node
         Vector3 vecToNextNode = nextNode.sub(getPredictedStablePosition());
         moveInBestDirection(vecToNextNode);
         AutoSpeedrunAPI.renderLine(new DebugRenderLine(
@@ -198,6 +213,7 @@ public class Navigation {
         }
         // todo change to preemptively jump
         if (vecToDirec.getY() > 0.25 && vecToDirec.normalized().getY() > 0.5) {
+//            AutoSpeedrunAPI.emergencyStopUserCode();
             MovementInputManager.planPressKeySpace();
         }
     }

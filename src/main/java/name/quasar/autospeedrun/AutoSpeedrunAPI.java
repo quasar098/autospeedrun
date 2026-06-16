@@ -148,7 +148,7 @@ public class AutoSpeedrunAPI {
     }
 
     /**
-    set the mouse position
+     * set the mouse position
      */
     public static void mouseMove(int x, int y) {
         announceAction("Mouse move " + x + "," + y);

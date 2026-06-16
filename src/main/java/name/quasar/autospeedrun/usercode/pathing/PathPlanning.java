@@ -4,6 +4,8 @@ import name.quasar.autospeedrun.AutoSpeedrunAPI;
 import name.quasar.autospeedrun.DebugRenderLine;
 import name.quasar.autospeedrun.usercode.*;
 import name.quasar.autospeedrun.usercode.geometry.*;
+import name.quasar.autospeedrun.usercode.world.BlockType;
+import name.quasar.autospeedrun.usercode.world.WorldBlocks;
 
 import java.util.*;
 
@@ -54,6 +56,15 @@ public class PathPlanning {
 
     /** also sets nextBlockToExplore and cachedPath */
     public PathPlanningResult perform() {
+
+        // hack to detect jumping.
+        // >>> 64 % 0.0005
+        // 0.0004999999999986677  # insane btw
+//        if (Math.abs(((F3Information.getPosition().getY() + 0.00025) % 0.0005) - 0.00025) > 0.0000001) {
+//            AutoSpeedrunAPI.chatMessage("currently jumping " + Math.abs(((F3Information.getPosition().getY() + 0.00025) % 0.0005) - 0.00025));
+//            return PathPlanningResult.CURRENTLY_JUMPING;
+//        }
+
         cachedPath = null;
         nextBlockToExplore = null;
         if (goalPosition == null) { return PathPlanningResult.NO_GOAL_POSITION; }
@@ -84,13 +95,11 @@ public class PathPlanning {
         return PathPlanningResult.SUCCESS;
     }
 
+    // A* heuristic function
     private double h(BlockLocation bl) {
-        if (goalPosition.getY() <= 0) {
-            return Math.sqrt(Math.pow(bl.getX() - goalPosition.getX(), 2) + Math.pow(bl.getZ() - goalPosition.getZ(), 2));
-        }
-        return Math.sqrt(Math.pow(bl.getX() - goalPosition.getX(), 2) +
-                Math.pow(bl.getY() - goalPosition.getY(), 2) +
-                Math.pow(bl.getZ() - goalPosition.getZ(), 2));
+        return (goalPosition.getY() > 0 ? Math.abs(goalPosition.getY() - bl.getY()) : 0)
+             + Math.sqrt(Math.pow(bl.getX() - goalPosition.getX(), 2)
+                       + Math.pow(bl.getZ() - goalPosition.getZ(), 2));
     }
 
     private ArrayList<BlockLocation> reconstructPath(HashMap<BlockLocation, BlockLocation> cameFrom, BlockLocation current) {
@@ -112,12 +121,13 @@ public class PathPlanning {
         canReachGoalPosition = false;
         Vector3 goal = goalPosition;
         assert(goal != null);
-        Vector3 playerPos = F3Information.getPosition();
+        Vector3 playerPos = Navigation.getInstance().getPredictedStablePosition();
+        if (playerPos == null) { playerPos = F3Information.getPosition(); }
         BlockLocation lookAtBlock = null;
         HashMap<BlockLocation, BlockType> kb = WorldBlocks.getInstance().knownBlocks;
         Dimension dim = F3Information.getDimension();
         // rip off of wikipedia a* article
-        BlockLocation start = new BlockLocation(dim, playerPos);
+        BlockLocation start = new BlockLocation(dim, playerPos.withY(Navigation.getInstance().getPredictedPeakY()));
         HashMap<BlockLocation, BlockLocation> cameFrom = new HashMap<>();
         HashMap<BlockLocation, Double> gScore = new HashMap<>();
         gScore.put(start, 0.0);
@@ -128,7 +138,9 @@ public class PathPlanning {
         );
         openSet.add(start);
         HashMap<BlockLocation, Boolean> canJumpFrom = new HashMap<>();
-        canJumpFrom.put(start, !kb.containsKey(start) || !kb.get(start).getValue().equals("air"));
+        BlockLocation belowStart = start.offsetY(-1);
+        canJumpFrom.put(start, (kb.containsKey(start) && kb.get(start).getValue().equals("air")) &&
+            !(kb.containsKey(belowStart) && kb.get(belowStart).getValue().equals("air")));
         int iterations = 0;
         int maxIterations = 2000;
         ArrayList<BlockLocation> path = null;
@@ -161,12 +173,19 @@ public class PathPlanning {
                         path = reconstructPath(cameFrom, current);
                         break aStarWhileLoop;
                     } else {
+                        boolean walkingOnAir = false;
                         if (canJumpFrom.containsKey(current.offsetY(-1))) {
                             if (!canJumpFrom.get(current.offsetY(-1))) {
-                                d += 999999.0;  // bad to walk on air lmao
+                                walkingOnAir = true;
                             }
                         } else if (kb.get(current.offsetY(-1)).getValue().equals("air")) {
-                            d += 999999.0;  // bad to walk on air lmao
+                            walkingOnAir = true;
+                        }
+                        if (Navigation.getInstance().getCurrentVelocity().getY() > 0.0 && current.equals(start)) {
+                            walkingOnAir = false;
+                        }
+                        if (walkingOnAir) {
+                            d += 99999.0;
                         }
                     }
                 }

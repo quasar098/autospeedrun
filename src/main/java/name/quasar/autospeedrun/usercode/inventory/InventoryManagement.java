@@ -47,6 +47,7 @@ public class InventoryManagement {
                 testTime = 5;
             }
             if (!lootChest() || testTime > 40) {
+                AutoSpeedrunAPI.tapKey(GLFW.GLFW_KEY_ESCAPE);
                 testTime = -1;
                 container = null;
                 return false;
@@ -56,7 +57,22 @@ public class InventoryManagement {
     }
 
     private boolean isValuedItem(ContainerItem item) {
-        return !ContainerItem.isEmpty(item) && !item.getName().equals("air");  // todo replace
+        if (ContainerItem.isEmpty(item)) {
+            return false;
+        }
+        // todo do blocks
+        switch (item.getName()) {
+            case "diamond":
+            case "iron_ingot":
+            case "gold_ingot":
+            case "cooked_cod":
+            case "salmon":
+            case "carrot":
+            case "golden_carrot":
+                return true;
+            default:
+                return false;
+        }
     }
 
     private boolean lootChest() {

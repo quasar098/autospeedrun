@@ -1,11 +1,12 @@
-package name.quasar.autospeedrun.usercode;
+package name.quasar.autospeedrun.usercode.world;
 
 import com.mojang.math.Vector3f;
 import name.quasar.autospeedrun.AutoSpeedrunAPI;
 import name.quasar.autospeedrun.DebugRenderLine;
+import name.quasar.autospeedrun.usercode.F3Information;
+import name.quasar.autospeedrun.usercode.Util;
 import name.quasar.autospeedrun.usercode.geometry.BlockFace;
 import name.quasar.autospeedrun.usercode.geometry.BlockLocation;
-import name.quasar.autospeedrun.usercode.geometry.BlockType;
 import name.quasar.autospeedrun.usercode.geometry.Vector3;
 import name.quasar.autospeedrun.usercode.pathing.Navigation;
 
@@ -29,6 +30,10 @@ public class WorldBlocks {
     }
 
     public HashMap<BlockLocation, BlockType> knownBlocks = new HashMap<>();
+
+    public boolean isSolidBlock(BlockLocation bl) {
+        return knownBlocks.containsKey(bl) && knownBlocks.get(bl).isSolid();
+    }
 
     public static void reset() {
         instance = null;
@@ -112,7 +117,7 @@ public class WorldBlocks {
         BlockLocation targetted = F3Information.getTargettedBlockLocation();
         if (targetted != null) {
             knownBlocks.put(targetted, new BlockType(
-                    F3Information.getTargettedBlockName()
+                F3Information.getTargettedBlockName()
             ));
         }
         if (prevTickYaw == null || prevTickPitch == null) {
@@ -136,7 +141,7 @@ public class WorldBlocks {
             BlockFace faceTL = bfsMaxTL.get(i);
             BlockFace faceBR = bfsMaxBR.get(i);
             if (!faceTL.equals(faceBR)) {
-                AutoSpeedrunAPI.chatMessage(String.format("BAD %.2fs %d", Util.tickCount / 20.0, i));
+//                AutoSpeedrunAPI.chatMessage(String.format("BAD %.2fs %d", Util.tickCount / 20.0, i));
                 faceTL.debugDraw();
                 faceBR.debugDraw();
                 return;

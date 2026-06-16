@@ -5,8 +5,11 @@ import name.quasar.autospeedrun.usercode.geometry.BlockLocation;
 import name.quasar.autospeedrun.usercode.geometry.Vector3;
 import name.quasar.autospeedrun.usercode.geometry.GreatCircle;
 import name.quasar.autospeedrun.usercode.inventory.InventoryManagement;
+import name.quasar.autospeedrun.usercode.pathing.Exploration;
 import name.quasar.autospeedrun.usercode.pathing.Navigation;
 import name.quasar.autospeedrun.usercode.pathing.PathPlanning;
+import name.quasar.autospeedrun.usercode.pathing.PathPlanningResult;
+import name.quasar.autospeedrun.usercode.world.WorldBlocks;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
@@ -73,6 +76,7 @@ public class AutoSpeedrunUserCode {
         }
         // do mouse calibration on world join
         if (MouseInputManager.calibrateMouse()) {
+            MovementInputManager.handle();
             return;
         }
         // collect facing block information
@@ -89,11 +93,11 @@ public class AutoSpeedrunUserCode {
 //        }
 
         // path planning, navigation, exploration
-//        PathPlanningResult pathPlanningResult = PathPlanning.getInstance().perform();
-//        MovementInputManager.handle();
-//        if (pathPlanningResult != PathPlanningResult.SUCCESS) { return; }
-//        Exploration.getInstance().perform();
-//        Navigation.getInstance().perform();
+        PathPlanningResult pathPlanningResult = PathPlanning.getInstance().perform();
+        if (pathPlanningResult != PathPlanningResult.SUCCESS && pathPlanningResult != PathPlanningResult.CURRENTLY_JUMPING) { return; }
+        Exploration.getInstance().perform();
+        Navigation.getInstance().perform();
+        MovementInputManager.handle();
     }
 
     private ArrayList<GreatCircle> gc = null;

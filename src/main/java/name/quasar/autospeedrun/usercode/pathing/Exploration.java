@@ -4,9 +4,9 @@ import name.quasar.autospeedrun.AutoSpeedrunAPI;
 import name.quasar.autospeedrun.DebugRenderLine;
 import name.quasar.autospeedrun.usercode.F3Information;
 import name.quasar.autospeedrun.usercode.MouseInputManager;
-import name.quasar.autospeedrun.usercode.WorldBlocks;
+import name.quasar.autospeedrun.usercode.world.WorldBlocks;
 import name.quasar.autospeedrun.usercode.geometry.BlockLocation;
-import name.quasar.autospeedrun.usercode.geometry.BlockType;
+import name.quasar.autospeedrun.usercode.world.BlockType;
 import name.quasar.autospeedrun.usercode.geometry.DirectedBlockFace;
 import name.quasar.autospeedrun.usercode.geometry.Vector3;
 

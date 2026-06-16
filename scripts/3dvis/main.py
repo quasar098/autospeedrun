@@ -196,8 +196,8 @@ def distance(p1: Sequence[float], p2: Sequence[float]):
 
 
 def main():
-    cam_p = [0.0, 0.0, 0.0]
-    cam_r = [0.0, 0.0, 0.0]
+    cam_p = [1.93, 0.58, 0.644]
+    cam_r = [0.014, 0.204, 0.0]
 
     player_hitbox = None
 
@@ -214,15 +214,19 @@ def main():
                     skip_mouse_move = True
                 if event.button == 3:
                     player_hitbox = PlayerHitbox([cam_p[0], cam_p[1]-1.62, cam_p[2]], cam_r[1], cam_r[0])
-                    # print(cam_p, cam_r[1], cam_r[0])
+                    print(cam_p, cam_r[1], cam_r[0])
 
         # do the important stuff
-        blocks = []
-        for v in range(0, 10):
-            blocks.append(Block([v, 0, v], "grass_block", wireframe=0))
-        for block in blocks:
-            block.queue_draw()
+        other_faces = [
+            BlockFace((0, 1, 4), FaceDirection.SOUTH, (255, 0, 255)),
+            BlockFace((0, 1, 4), FaceDirection.EAST, (255, 0, 255))
+        ]
+        for face in other_faces:
+            face.queue_draw()
+        special_face = BlockFace((-2, 5, 15), FaceDirection.SOUTH, (0, 255, 255))
+        special_face.queue_draw()
 
+        blocks = []
         if player_hitbox is not None:
             player_hitbox.queue_draw()
             yaw, pitch = player_hitbox.yaw, player_hitbox.pitch
@@ -306,7 +310,7 @@ def main():
             cardinal_dir = "west"
         if 135.0 <= yaw_deg or yaw_deg <= -135.1:
             cardinal_dir = "north"
-        screen.blit(font.render(f"({cardinal_dir}) {yaw_deg:.4f} / {pitch_deg:.4f}", False, (255, 255, 255)), (4, 4+18))
+        screen.blit(font.render(f"({cardinal_dir}) {yaw_deg:.4f} / {pitch_deg:.4f} | {cam_r}", False, (255, 255, 255)), (4, 4+18))
 
         pygame.display.flip()
         clock.tick(FRAMERATE)

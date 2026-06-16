@@ -162,7 +162,8 @@ public class F3Information {
             int i = 0;
             while (true) {
                 String prop = Util.readScreenStringBackward(
-                    Util.SCREEN_W - 6, 4 + 18 * (12 + i), f3TextColor, new int[]{
+                    Util.SCREEN_W - 6, 4 + 18 * (12 + i),
+                    (c) -> c == (f3TextColor & 0xffffff) || c == 0xfc5454, new int[]{
                         63, 65, 66, 67, 68, 69, 71, 72, 74, 77, 78, 79, 80, 81, 82, 83, 85, 86, 87, 88, 89, 90,
                         16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 3, 70, 75, 84, 76, 73, 26, 0
                     }, 2);

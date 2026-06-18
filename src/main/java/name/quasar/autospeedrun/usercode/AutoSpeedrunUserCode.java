@@ -28,6 +28,7 @@ public class AutoSpeedrunUserCode {
 
         // other systems
         WorldBlocks.reset();
+        Exploration.reset();
         PathPlanning.reset();
         Navigation.reset();
         MouseInputManager.reset();

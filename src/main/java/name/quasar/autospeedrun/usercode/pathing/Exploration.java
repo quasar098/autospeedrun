@@ -27,24 +27,23 @@ public class Exploration {
         return instance;
     }
 
-    public static void Exploration() {
+    public static void reset() {
         instance = null;
     }
 
     private Vector3 findPointToLookAtToLookAtBlock(BlockLocation bl) {
 //        bl.debugDrawGreatCircles(Util.getEyePosition());
-        // this is such a hard problem to solve im just going to use a heuristic for now
+        // this is such an annoying problem to solve im just going to use a heuristic for now
+        // solution is perspective projection + vatti polygon boolean operations + reverse perspective projection btw
         DirectedBlockFace[] dbfs = bl.getDirectedFaces();
         double yaw = Math.toRadians(F3Information.getYaw());
         double pitch = Math.toRadians(F3Information.getPitch());
         Vector3 eyeVec = Vector3.fromRadians(yaw, pitch);
         Arrays.sort(dbfs, Comparator.comparingDouble(a -> eyeVec.dot(a.getNormal())));
-        HashMap<BlockLocation, BlockType> known = WorldBlocks.getInstance().knownBlocks;
         for (DirectedBlockFace dbf : dbfs) {
             if (eyeVec.dot(dbf.getNormal()) >= 0) { break; }
             BlockLocation outsideBlockLoc = dbf.getOutsideBlock(F3Information.getDimension());
-            BlockType outsideBlockType = known.getOrDefault(outsideBlockLoc, BlockType.AIR);
-            if (outsideBlockType.getValue().equals("air")) {
+            if (WorldBlocks.getInstance().isAirOrUnknown(outsideBlockLoc)) {
                 AutoSpeedrunAPI.chatMessage("DBF selected: " + dbf);
                 return dbf.getCenter();
             }

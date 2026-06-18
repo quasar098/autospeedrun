@@ -16,7 +16,7 @@ public class WorldBlock {
 
     public WorldBlock(BlockType blockType, double prob, HashMap<String, Object> attributes) {
         this.blockType = blockType;
-        this.prob = prob;
+        this.prob = Math.max(Math.min(prob, 1.0), 0.0);
         this.attributes = attributes;
     }
 
@@ -25,7 +25,7 @@ public class WorldBlock {
     }
 
     public void setProb(double prob) {
-        this.prob = prob;
+        this.prob = Math.max(Math.min(prob, 1.0), 0.0);
     }
 
     public BlockType getBlockType() {

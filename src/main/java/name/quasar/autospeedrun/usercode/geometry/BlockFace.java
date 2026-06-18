@@ -88,48 +88,49 @@ public class BlockFace {
         }
     }
 
-    public void debugDraw() {
+    public void debugDraw() { debugDraw(0.0f, 1.0f, 0.68f, 0.77f); }
+    
+    public void debugDraw(float s, float r, float g, float b) {
+        // s is the shrink amount
         if (dir == Direction.POS_X) {
             AutoSpeedrunAPI.renderLine(new DebugRenderLine(
-                    new Vector3f(x+1f, y, z), new Vector3f(x+1f, y+1f, z), 1.0f, 0.68f, 0.77f
+                new Vector3f(x+1f-s, y+s, z+s), new Vector3f(x+1f-s, y+1f-s, z+s), r, g, b
             ));
             AutoSpeedrunAPI.renderLine(new DebugRenderLine(
-                    new Vector3f(x+1f, y+1f, z), new Vector3f(x+1f, y+1f, z+1f), 1.0f, 0.68f, 0.77f
+                new Vector3f(x+1f-s, y+1f-s, z+s), new Vector3f(x+1f-s, y+1f-s, z+1f-s), r, g, b
             ));
             AutoSpeedrunAPI.renderLine(new DebugRenderLine(
-                    new Vector3f(x+1f, y+1f, z+1f), new Vector3f(x+1f, y, z+1f), 1.0f, 0.68f, 0.77f
+                new Vector3f(x+1f-s, y+1f-s, z+1f-s), new Vector3f(x+1f-s, y+s, z+1f-s), r, g, b
             ));
             AutoSpeedrunAPI.renderLine(new DebugRenderLine(
-                    new Vector3f(x+1f, y, z+1f), new Vector3f(x+1f, y, z), 1.0f, 0.68f, 0.77f
+                new Vector3f(x+1f-s, y+s, z+1f-s), new Vector3f(x+1f-s, y+s, z+s), r, g, b
             ));
         } else if (dir == Direction.POS_Y) {
             AutoSpeedrunAPI.renderLine(new DebugRenderLine(
-                    new Vector3f(x, y+1f, z), new Vector3f(x+1f, y+1f, z), 1.0f, 0.68f, 0.77f
+                new Vector3f(x+s, y+1f-s, z+s), new Vector3f(x+1f-s, y+1f-s, z+s), r, g, b
             ));
             AutoSpeedrunAPI.renderLine(new DebugRenderLine(
-                    new Vector3f(x+1f, y+1f, z), new Vector3f(x+1f, y+1f, z+1f), 1.0f, 0.68f, 0.77f
+                new Vector3f(x+1f-s, y+1f-s, z+s), new Vector3f(x+1f-s, y+1f-s, z+1f-s), r, g, b
             ));
             AutoSpeedrunAPI.renderLine(new DebugRenderLine(
-                    new Vector3f(x+1f, y+1f, z+1f), new Vector3f(x, y+1f, z+1f), 1.0f, 0.68f, 0.77f
+                new Vector3f(x+1f-s, y+1f-s, z+1f-s), new Vector3f(x+s, y+1f-s, z+1f-s), r, g, b
             ));
             AutoSpeedrunAPI.renderLine(new DebugRenderLine(
-                    new Vector3f(x, y+1f, z+1f), new Vector3f(x, y+1f, z), 1.0f, 0.68f, 0.77f
+                new Vector3f(x+s, y+1f-s, z+1f-s), new Vector3f(x+s, y+1f-s, z+s), r, g, b
             ));
-        } else {
-            if (dir == Direction.POS_Z) {
-                AutoSpeedrunAPI.renderLine(new DebugRenderLine(
-                        new Vector3f(x, y, z+1f), new Vector3f(x+1f, y, z+1f), 1.0f, 0.68f, 0.77f
-                ));
-                AutoSpeedrunAPI.renderLine(new DebugRenderLine(
-                        new Vector3f(x+1f, y, z+1f), new Vector3f(x+1f, y+1f, z+1f), 1.0f, 0.68f, 0.77f
-                ));
-                AutoSpeedrunAPI.renderLine(new DebugRenderLine(
-                        new Vector3f(x+1f, y+1f, z+1f), new Vector3f(x, y+1f, z+1f), 1.0f, 0.68f, 0.77f
-                ));
-                AutoSpeedrunAPI.renderLine(new DebugRenderLine(
-                        new Vector3f(x, y+1f, z+1f), new Vector3f(x, y, z+1f), 1.0f, 0.68f, 0.77f
-                ));
-            }
+        } else {  // (dir == Direction.POS_Z)
+            AutoSpeedrunAPI.renderLine(new DebugRenderLine(
+                new Vector3f(x+s, y+s, z+1f-s), new Vector3f(x+1f-s, y+s, z+1f-s), r, g, b
+            ));
+            AutoSpeedrunAPI.renderLine(new DebugRenderLine(
+                new Vector3f(x+1f-s, y+s, z+1f-s), new Vector3f(x+1f-s, y+1f-s, z+1f-s), r, g, b
+            ));
+            AutoSpeedrunAPI.renderLine(new DebugRenderLine(
+                new Vector3f(x+1f-s, y+1f-s, z+1f-s), new Vector3f(x+s, y+1f-s, z+1f-s), r, g, b
+            ));
+            AutoSpeedrunAPI.renderLine(new DebugRenderLine(
+                new Vector3f(x+s, y+1f-s, z+1f-s), new Vector3f(x+s, y+s, z+1f-s), r, g, b
+            ));
         }
     }
 }

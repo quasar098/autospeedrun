@@ -72,6 +72,8 @@ public class BlockLocation {
 
     public BlockLocation offsetZ(long z) { return new BlockLocation(getDimension(), getX(), getY(), z+getZ()); }
 
+    public BlockLocation below() { return new BlockLocation(getDimension(), getX(), getY()-1, getZ()); }
+
     public BlockLocation[] getNeighbors() {
         return new BlockLocation[]{
                 offsetX(1),

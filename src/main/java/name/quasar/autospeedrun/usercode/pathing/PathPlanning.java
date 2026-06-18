@@ -124,7 +124,6 @@ public class PathPlanning {
         Vector3 playerPos = Navigation.getInstance().getPredictedStablePosition();
         if (playerPos == null) { playerPos = F3Information.getPosition(); }
         BlockLocation lookAtBlock = null;
-        HashMap<BlockLocation, BlockType> kb = WorldBlocks.getInstance().knownBlocks;
         Dimension dim = F3Information.getDimension();
         // rip off of wikipedia a* article
         BlockLocation start = new BlockLocation(dim, playerPos.withY(Navigation.getInstance().getPredictedPeakY()));
@@ -138,9 +137,8 @@ public class PathPlanning {
         );
         openSet.add(start);
         HashMap<BlockLocation, Boolean> canJumpFrom = new HashMap<>();
-        BlockLocation belowStart = start.offsetY(-1);
-        canJumpFrom.put(start, (kb.containsKey(start) && kb.get(start).getValue().equals("air")) &&
-            !(kb.containsKey(belowStart) && kb.get(belowStart).getValue().equals("air")));
+        canJumpFrom.put(start, WorldBlocks.getInstance().isAirKnown(start) &&
+            !WorldBlocks.getInstance().isAirKnown(start.below()));
         int iterations = 0;
         int maxIterations = 2000;
         ArrayList<BlockLocation> path = null;
@@ -157,28 +155,33 @@ public class PathPlanning {
             }
             openSet.remove(current);
             for (BlockLocation neighbor : current.getNeighbors()) {
-                if (!kb.containsKey(neighbor)) {
+                // maybe refactor
+                if (!WorldBlocks.getInstance().isKnown(neighbor)) {
                     lookAtBlock = neighbor;
                     path = reconstructPath(cameFrom, current);
                     break aStarWhileLoop;
                 }
                 double d = 1.0;
-                BlockType aboveNeighborType = kb.getOrDefault(neighbor.offsetY(1), BlockType.AIR);
-                if (!kb.get(neighbor).getValue().equals("air") || !aboveNeighborType.getValue().equals("air")) {
-                    d += 999999.0;  // have to break through a block, bad
+                // maybe use nonsolid instead?
+                if (!WorldBlocks.getInstance().isAirOrUnknown(neighbor)) {
+                    d += 99999.0;  // have to break through a block, bad
                 }
+                if (!WorldBlocks.getInstance().isAirOrUnknown(neighbor.offsetY(1))) {
+                    d += 99999.0;  // have to break through a block, bad
+                }
+                // same y level, no jumping
                 if (neighbor.getY() == current.getY()) {
-                    if (!kb.containsKey(current.offsetY(-1))) {
-                        lookAtBlock = current.offsetY(-1);
+                    if (!WorldBlocks.getInstance().isKnown(current.below())) {
+                        lookAtBlock = current.below();
                         path = reconstructPath(cameFrom, current);
                         break aStarWhileLoop;
                     } else {
                         boolean walkingOnAir = false;
-                        if (canJumpFrom.containsKey(current.offsetY(-1))) {
-                            if (!canJumpFrom.get(current.offsetY(-1))) {
+                        if (canJumpFrom.containsKey(current.below())) {
+                            if (!canJumpFrom.get(current.below())) {
                                 walkingOnAir = true;
                             }
-                        } else if (kb.get(current.offsetY(-1)).getValue().equals("air")) {
+                        } else if (WorldBlocks.getInstance().isAirOrUnknown(current.below())) {
                             walkingOnAir = true;
                         }
                         if (Navigation.getInstance().getCurrentVelocity().getY() > 0.0 && current.equals(start)) {
@@ -192,13 +195,12 @@ public class PathPlanning {
                 if (neighbor.getY() > current.getY()) {
                     canJumpFrom.put(neighbor, false);
                     if (!canJumpFrom.containsKey(current)) {
-                        if (kb.containsKey(current.offsetY(-1))) {
-                            canJumpFrom.put(current, !kb.get(current.offsetY(-1)).getValue().equals("air"));
-                        } else {
+                        if (!WorldBlocks.getInstance().isKnown(current.below())) {
                             lookAtBlock = current.offsetY(-1);
                             path = reconstructPath(cameFrom, current);
                             break aStarWhileLoop;
                         }
+                        canJumpFrom.put(current, !WorldBlocks.getInstance().isAirKnown(current.below()));
                     }
                     if (canJumpFrom.get(current) == false) {
                         d += 99999.0;  // have to jump up 2+ blocks, bad

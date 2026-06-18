@@ -14,7 +14,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-/* collect information about all the blocks seen in the world */
+/**
+ * collect information about all the blocks seen in the world
+ * todo integrate some ml into predicting blocks given nearby blocks
+ */
 public class WorldBlocks {
     private static WorldBlocks instance = null;
 
@@ -29,10 +32,43 @@ public class WorldBlocks {
         // idk nothing
     }
 
-    public HashMap<BlockLocation, BlockType> knownBlocks = new HashMap<>();
+    public HashMap<BlockLocation, WorldBlock> knownBlocks = new HashMap<>();
 
-    public boolean isSolidBlock(BlockLocation bl) {
-        return knownBlocks.containsKey(bl) && knownBlocks.get(bl).isSolid();
+    /**
+     * write to knownBlocks if the probability of knowledge is greater or equal to
+     */
+    public void apply(BlockLocation bl, WorldBlock wb) {
+        if (!knownBlocks.containsKey(bl) || knownBlocks.get(bl).getProb() <= wb.getProb()) {
+            knownBlocks.put(bl, wb);
+        }
+    }
+
+    public void applyForcefully(BlockLocation bl, WorldBlock wb) {
+        knownBlocks.put(bl, wb);
+    }
+
+    public WorldBlock get(BlockLocation bl) {
+        return knownBlocks.getOrDefault(bl, null);
+    }
+
+    public boolean isKnown(BlockLocation bl) {
+        return knownBlocks.containsKey(bl);
+    }
+
+    public boolean isAirOrUnknown(BlockLocation bl) {
+        return !knownBlocks.containsKey(bl) || knownBlocks.get(bl).getBlockType().equals(BlockType.AIR);
+    }
+
+    public boolean isAirKnown(BlockLocation bl) {
+        return knownBlocks.containsKey(bl) && knownBlocks.get(bl).getBlockType().equals(BlockType.AIR);
+    }
+
+    public boolean isNonsolidOrUnknown(BlockLocation bl) {
+        return !knownBlocks.containsKey(bl) || !knownBlocks.get(bl).getBlockType().isSolid();
+    }
+
+    public boolean isNonsolidKnown(BlockLocation bl) {
+        return knownBlocks.containsKey(bl) && !knownBlocks.get(bl).getBlockType().isSolid();
     }
 
     public static void reset() {
@@ -67,35 +103,38 @@ public class WorldBlocks {
             pz += dz * mintime;
             // 20 is distance that eye ray max is, 20 squared is 400
             if ((px-opx)*(px-opx)+(py-opy)*(py-opy)+(pz-opz)*(pz-opz) >= 400) { break; }
-            ArrayList<BlockFace> bfs = new ArrayList<>();
+            ArrayList<BlockFace> newBFs = new ArrayList<>();
             if (mintime == xt) {
-                bfs.add(new BlockFace(
+                newBFs.add(new BlockFace(
                         (int) (Math.round(px) - 1), (int) Math.floor(py), (int) Math.floor(pz),
                         BlockFace.Direction.POS_X
                 ));
+                px = Math.round(px);
             }
             if (mintime == yt) {
-                bfs.add(new BlockFace(
+                newBFs.add(new BlockFace(
                         (int) Math.floor(px), (int) (Math.round(py) - 1), (int) Math.floor(pz),
                         BlockFace.Direction.POS_Y
                 ));
+                py = Math.round(py);
             }
             if (mintime == zt) {
-                bfs.add(new BlockFace(
+                newBFs.add(new BlockFace(
                         (int) Math.floor(px), (int) Math.floor(py), (int) (Math.round(pz) - 1),
                         BlockFace.Direction.POS_Z
                 ));
+                pz = Math.round(pz);
             }
-            for (BlockFace bf : bfs) {
-                if (bf.getAdjacentA(F3Information.getDimension()).equals(targetted)) {
+            for (BlockFace newBF : newBFs) {
+                if (newBF.getAdjacentA(F3Information.getDimension()).equals(targetted)) {
                     hit = true;
                     break;
                 }
-                if (bf.getAdjacentB(F3Information.getDimension()).equals(targetted)) {
+                if (newBF.getAdjacentB(F3Information.getDimension()).equals(targetted)) {
                     hit = true;
                     break;
                 }
-                bfsTotal.add(bf);
+                bfsTotal.add(newBF);
             }
             if (hit) {
                 break;
@@ -116,9 +155,9 @@ public class WorldBlocks {
         // targetted block
         BlockLocation targetted = F3Information.getTargettedBlockLocation();
         if (targetted != null) {
-            knownBlocks.put(targetted, new BlockType(
+            WorldBlocks.getInstance().applyForcefully(targetted, new WorldBlock(new BlockType(
                 F3Information.getTargettedBlockName()
-            ));
+            ), 1.0));  // we see it clear as day so we can assume its there
         }
         if (prevTickYaw == null || prevTickPitch == null) {
             prevTickYaw = F3Information.getYaw();
@@ -131,6 +170,7 @@ public class WorldBlocks {
         double yawBR = Math.toRadians(F3Information.getYaw()+0.05);
         double pitchBR = Math.toRadians(F3Information.getPitch()+0.05);
         Vector3 prevTickPlayerPos = Navigation.getInstance().prevPosition();
+        if (prevTickPlayerPos == null) { prevTickPlayerPos = F3Information.getPosition(); }
         double px = prevTickPlayerPos.getX();
         double py = prevTickPlayerPos.getY() + Util.getEyeOffset();
         double pz = prevTickPlayerPos.getZ();
@@ -144,6 +184,14 @@ public class WorldBlocks {
 //                AutoSpeedrunAPI.chatMessage(String.format("BAD %.2fs %d", Util.tickCount / 20.0, i));
                 faceTL.debugDraw();
                 faceBR.debugDraw();
+//                for (BlockFace f : bfsMaxTL) {
+//                    f.debugDraw(0.04f, 0.9f, 0.1f, 0.5f);
+//                    System.out.println("TL:" + f);
+//                }
+//                for (BlockFace f : bfsMaxBR) {
+//                    f.debugDraw(0.02f, 0.5f, 0.9f, 0.3f);
+//                    System.out.println("BR:" + f);
+//                }
                 return;
             }
             BlockFace mutualFace = bfsMaxTL.get(i);
@@ -170,8 +218,8 @@ public class WorldBlocks {
 //                AutoSpeedrunApi.chatMessage("WTF " + targetted);
 //                return;
 //            }
-            knownBlocks.put(blockA, BlockType.AIR);
-            knownBlocks.put(blockB, BlockType.AIR);
+            WorldBlocks.getInstance().apply(blockA, new WorldBlock(BlockType.AIR, 0.9));
+            WorldBlocks.getInstance().apply(blockB, new WorldBlock(BlockType.AIR, 0.9));
         }
 //        AutoSpeedrunApi.chatMessage("Success writing " + Math.min(bfsMaxTL.size(), bfsMaxBR.size()));
         prevTickYaw = F3Information.getYaw();
@@ -179,9 +227,9 @@ public class WorldBlocks {
     }
 
     public void debugDraw() {
-        for (Map.Entry<BlockLocation, BlockType> entry : knownBlocks.entrySet()) {
+        for (Map.Entry<BlockLocation, WorldBlock> entry : knownBlocks.entrySet()) {
             BlockLocation loc = entry.getKey();
-            BlockType blockType = entry.getValue();
+            BlockType blockType = entry.getValue().getBlockType();
             if (blockType.getValue().equals("air")) {
                 // draw black X through air blocks
                 if (Util.toggleDebugAir) {

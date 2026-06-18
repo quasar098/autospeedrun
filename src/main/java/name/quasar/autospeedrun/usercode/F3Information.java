@@ -8,20 +8,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class F3Information {
-    public static int f3TextColor = 0xffdddddd;
     public static boolean f3HasBackgroundDim = false;
 
     public static boolean isF3Open() {
-        // todo fix bright [sun or other] overlap bug
         if (Util.readScreenStringForward(4, 4, c -> c == 0xdddddd, 2).startsWith("Minecraft 1.16.1")) {
-            f3TextColor = 0xffdddddd;
             f3HasBackgroundDim = false;
             return true;
         } else if (Util.readScreenStringForward(4, 4, 0xff3b3b3b, 2).startsWith("Minecraft 1.16.1")) {
             // Screen.java
             // this.fillGradient(poseStack, 0, 0, this.width, this.height, -1072689136, -804253680);
             // wtf
-            f3TextColor = 0xff3b3b3b;
             f3HasBackgroundDim = true;
             return true;
         }
@@ -48,7 +44,7 @@ public class F3Information {
 
     public static Vector3 getPosition() {
         if (cachedPosition == null) {
-            String positionLine = Util.readScreenStringForward(4, 4 + 18*10, f3TextColor, 2);
+            String positionLine = Util.readF3ScreenStringForward(4, 4 + 18*10, 2);
             assert !positionLine.isEmpty();
             String[] splitPositionText = positionLine.replaceFirst("XYZ: ", "").split(" / ");
             cachedPosition = new Vector3(
@@ -66,7 +62,7 @@ public class F3Information {
 
     public static Double getPitch() {
         if (cachedPitch == null) {
-            String anglesLine = Util.readScreenStringForward(4, 4 + 18*13, f3TextColor, 2);
+            String anglesLine = Util.readF3ScreenStringForward(4, 4 + 18*13, 2);
             assert !anglesLine.isEmpty();
             String[] splitPositionText = anglesLine
                     .replaceFirst("Facing: [^(]+\\([^)]+\\) \\(", "")
@@ -82,7 +78,7 @@ public class F3Information {
 
     public static Double getYaw() {
         if (cachedYaw == null) {
-            String anglesLine = Util.readScreenStringForward(4, 4 + 18*13, f3TextColor, 2);
+            String anglesLine = Util.readF3ScreenStringForward(4, 4 + 18*13, 2);
             assert !anglesLine.isEmpty();
             String[] splitPositionText = anglesLine
                     .replaceFirst("Facing: [^(]+\\([^)]+\\) \\(", "")
@@ -100,7 +96,7 @@ public class F3Information {
 
     public static Dimension getDimension() {
         if (cachedDimension == null) {
-            String f3ReadDimension = Util.readScreenStringForward(4, 4 + 18*8, f3TextColor, 2);
+            String f3ReadDimension = Util.readF3ScreenStringForward(4, 4 + 18*8, 2);
             if (f3ReadDimension.contains("minecraft:overworld")) {
                 cachedDimension = Dimension.OVERWORLD;
             } else if (f3ReadDimension.contains("minecraft:the_nether")) {
@@ -121,7 +117,7 @@ public class F3Information {
 
     public static BlockLocation getTargettedBlockLocation() {
         if (cachedTargettedBlockPosition == null) {
-            String positionLine = Util.readScreenStringBackward(Util.SCREEN_W - 6, 4 + 18*10, f3TextColor, 2);
+            String positionLine = Util.readF3ScreenStringBackward(Util.SCREEN_W - 6, 4 + 18*10, 2);
             String[] split = positionLine.replaceFirst("Targeted Block: ", "").split(", ");
             if (split.length != 3) {
                 return null;
@@ -144,8 +140,8 @@ public class F3Information {
 
     public static String getTargettedBlockName() {
         if (cachedTargettedBlockName == null) {
-            cachedTargettedBlockName = Util.readScreenStringBackward(
-                Util.SCREEN_W - 6, 4 + 18*11, f3TextColor, new int[]{
+            cachedTargettedBlockName = Util.readF3ScreenStringBackward(
+                Util.SCREEN_W - 6, 4 + 18*11, new int[]{
                     63, 65, 66, 67, 68, 69, 71, 72, 74, 77, 78, 79, 80,
                     81, 82, 83, 85, 86, 87, 88, 89, 90, 70, 75, 84,
                     76, 26, 73
@@ -161,9 +157,9 @@ public class F3Information {
             cachedBlockProperties = new ArrayList<>();
             int i = 0;
             while (true) {
-                String prop = Util.readScreenStringBackward(
-                    Util.SCREEN_W - 6, 4 + 18 * (12 + i),
-                    (c) -> c == (f3TextColor & 0xffffff) || c == 0xfc5454, new int[]{
+                // todo fix red/green text
+                String prop = Util.readF3ScreenStringBackward(
+                    Util.SCREEN_W - 6, 4 + 18 * (12 + i), new int[]{
                         63, 65, 66, 67, 68, 69, 71, 72, 74, 77, 78, 79, 80, 81, 82, 83, 85, 86, 87, 88, 89, 90,
                         16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 3, 70, 75, 84, 76, 73, 26, 0
                     }, 2);

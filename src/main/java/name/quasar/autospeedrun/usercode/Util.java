@@ -5,6 +5,7 @@ import name.quasar.autospeedrun.usercode.geometry.Vector3;
 
 import java.util.function.IntPredicate;
 
+import static name.quasar.autospeedrun.usercode.F3Information.f3HasBackgroundDim;
 import static name.quasar.autospeedrun.usercode.F3Information.getPosition;
 
 public class Util {
@@ -1020,6 +1021,24 @@ public class Util {
         );
     }
 
+    public static String readF3ScreenStringForward(int sx, int sy, int sizeMult) {
+        // y in [0, 1)
+        double y = ((double) (sy + 4 * sizeMult) / AutoSpeedrunAPI.getScreenshotHeight());
+        // alpha
+        double a = (192+16*y)/255.0;
+        // expected color
+        int eC = (int) Math.round(0xdd*(1-a)+0x10*a);
+        System.out.println("y:" + y + ",a:" + a + ",eC:" + eC);
+        return readScreenStringForward(
+            sx, sy,
+            !f3HasBackgroundDim
+                ? (c -> (c & 0xffffff) == 0xdddddd)
+                : (c -> ((c >> 16) & 0xff) == (c & 0xff) && ((c >> 8) & 0xff) == (c & 0xff)
+                    && eC + 1 >= (c & 0xff) && (c & 0xff) >= eC - 1),
+            sizeMult
+        );
+    }
+
     public static String readScreenStringForward(int sx, int sy, IntPredicate separatorFn, int sizeMult) {
         char decidedChar = '\0';
         int decidedCharPixelsWidth = 0;
@@ -1081,6 +1100,29 @@ public class Util {
             c -> ((c & 0x0000ff) >= (separatorColor & 0x0000ff)) &&
                 ((c & 0x00ff00) >= (separatorColor & 0x00ff00)) &&
                 ((c & 0xff0000) >= (separatorColor & 0xff0000)),
+            glyphIndicies,
+            sizeMult
+        );
+    }
+
+    public static String readF3ScreenStringBackward(int sx, int sy, int sizeMult) {
+        return readF3ScreenStringBackward(sx, sy, glyphIndicesBySize, sizeMult);
+    }
+
+    public static String readF3ScreenStringBackward(int sx, int sy, int[] glyphIndicies, int sizeMult) {
+        // y in [0, 1)
+        double y = ((double) (sy + 4 * sizeMult) / AutoSpeedrunAPI.getScreenshotHeight());
+        // alpha
+        double a = (192+16*y)/255.0;
+        // expected color
+        int eC = (int) Math.round(0xdd*(1-a)+0x10*a);
+        System.out.println("y:" + y + ",a:" + a + ",eC:" + eC);
+        return readScreenStringBackward(
+            sx, sy,
+            !f3HasBackgroundDim
+                ? (c -> (c & 0xffffff) == 0xdddddd)
+                : (c -> ((c >> 16) & 0xff) == (c & 0xff) && ((c >> 8) & 0xff) == (c & 0xff)
+                && eC + 1 >= (c & 0xff) && (c & 0xff) >= eC - 1),
             glyphIndicies,
             sizeMult
         );

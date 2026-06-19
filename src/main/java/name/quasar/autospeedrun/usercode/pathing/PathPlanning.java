@@ -1,10 +1,10 @@
 package name.quasar.autospeedrun.usercode.pathing;
 
 import name.quasar.autospeedrun.AutoSpeedrunAPI;
-import name.quasar.autospeedrun.DebugRenderLine;
+import name.quasar.autospeedrun.debug.DebugWorldLine;
+import name.quasar.autospeedrun.debug.DebugWorldText;
 import name.quasar.autospeedrun.usercode.*;
 import name.quasar.autospeedrun.usercode.geometry.*;
-import name.quasar.autospeedrun.usercode.world.BlockType;
 import name.quasar.autospeedrun.usercode.world.WorldBlocks;
 
 import java.util.*;
@@ -26,6 +26,12 @@ public class PathPlanning {
 
     public static void reset() {
         instance = null;
+    }
+
+    private boolean debugDraw = false;
+
+    public void toggleDebugDraw() {
+        debugDraw = !debugDraw;
     }
 
     private Vector3 goalPosition = null;
@@ -54,7 +60,7 @@ public class PathPlanning {
         return nextBlockToExplore;
     }
 
-    /** also sets nextBlockToExplore and cachedPath */
+    /** sets navCanReachGoalPosition, nextBlockToExplore, cachedPath */
     public PathPlanningResult perform() {
 
         // hack to detect jumping.
@@ -70,7 +76,7 @@ public class PathPlanning {
         if (goalPosition == null) { return PathPlanningResult.NO_GOAL_POSITION; }
 
         // debug draw tall vertical line at goal
-        AutoSpeedrunAPI.renderLine(new DebugRenderLine(
+        AutoSpeedrunAPI.render(new DebugWorldLine(
             goalPosition.withY(0.0).toVector3f(),
             goalPosition.withY(256.0).toVector3f(),
             0.0f, 0.0f, 0.0f
@@ -97,9 +103,17 @@ public class PathPlanning {
 
     // A* heuristic function
     private double h(BlockLocation bl) {
-        return (goalPosition.getY() > 0 ? Math.abs(goalPosition.getY() - bl.getY()) : 0)
-             + Math.sqrt(Math.pow(bl.getX() - goalPosition.getX(), 2)
-                       + Math.pow(bl.getZ() - goalPosition.getZ(), 2));
+        double horiz = Math.sqrt(Math.pow(bl.getX() - goalPosition.getX(), 2)
+            + Math.pow(bl.getZ() - goalPosition.getZ(), 2));
+        if (goalPosition.getY() <= 0) {
+            return horiz;
+        }
+        double vert = goalPosition.getY() - bl.getY();
+        if (vert < 0) {  // we are above the goal, so it's easy to drop down
+            vert *= -0.2;
+        }
+        double interp = vert/(vert+horiz);
+        return vert * interp + horiz * (1 - interp);
     }
 
     private ArrayList<BlockLocation> reconstructPath(HashMap<BlockLocation, BlockLocation> cameFrom, BlockLocation current) {
@@ -210,7 +224,11 @@ public class PathPlanning {
                 if (tentativeGScore < gScore.getOrDefault(neighbor, Double.MAX_VALUE)) {
                     cameFrom.put(neighbor, current);
                     gScore.put(neighbor, tentativeGScore);
-                    fScore.put(neighbor, tentativeGScore + h(neighbor));
+                    double f = tentativeGScore + h(neighbor);
+                    fScore.put(neighbor, f);
+                    if (debugDraw) {
+                        AutoSpeedrunAPI.render(new DebugWorldText(neighbor.getCenter().toVector3f(), String.format("%.1f", f), 0xddeeff));
+                    }
                     if (!openSet.contains(neighbor)) {
                         openSet.add(neighbor);
                     }

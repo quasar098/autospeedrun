@@ -1,18 +1,16 @@
 package name.quasar.autospeedrun.usercode.pathing;
 
 import name.quasar.autospeedrun.AutoSpeedrunAPI;
-import name.quasar.autospeedrun.DebugRenderLine;
+import name.quasar.autospeedrun.debug.DebugWorldLine;
 import name.quasar.autospeedrun.usercode.F3Information;
 import name.quasar.autospeedrun.usercode.MouseInputManager;
 import name.quasar.autospeedrun.usercode.world.WorldBlocks;
 import name.quasar.autospeedrun.usercode.geometry.BlockLocation;
-import name.quasar.autospeedrun.usercode.world.BlockType;
 import name.quasar.autospeedrun.usercode.geometry.DirectedBlockFace;
 import name.quasar.autospeedrun.usercode.geometry.Vector3;
 
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.HashMap;
 
 /**
  * {@code Exploration} handles the scanning of world blocks information.
@@ -56,7 +54,7 @@ public class Exploration {
         if (toExplore == null) { return; }
         Vector3 lookAt = findPointToLookAtToLookAtBlock(toExplore);
         if (lookAt == null) { return; }
-        AutoSpeedrunAPI.renderLine(new DebugRenderLine(
+        AutoSpeedrunAPI.render(new DebugWorldLine(
             lookAt.offsetY(-0.01).toVector3f(), lookAt.offsetY(0.01).toVector3f(), 1.0f, 0.0f, 0.0f
         ));
         AutoSpeedrunAPI.chatMessage("Look at point: " + lookAt.toString(4));

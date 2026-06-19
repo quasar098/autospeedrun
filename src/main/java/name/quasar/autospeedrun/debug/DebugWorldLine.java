@@ -1,8 +1,8 @@
-package name.quasar.autospeedrun;
+package name.quasar.autospeedrun.debug;
 
 import com.mojang.math.Vector3f;
 
-public class DebugRenderLine {
+public class DebugWorldLine {
     public Vector3f getPa() {
         return pa;
     }
@@ -32,7 +32,7 @@ public class DebugRenderLine {
     /**
     r,g,b are [0.0f, 1.0f]
     */
-    public DebugRenderLine(Vector3f pa, Vector3f pb, float r, float g, float b) {
+    public DebugWorldLine(Vector3f pa, Vector3f pb, float r, float g, float b) {
         this.pa = pa;
         this.pb = pb;
         this.r = r;

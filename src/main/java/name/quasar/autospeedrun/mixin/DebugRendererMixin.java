@@ -3,10 +3,13 @@ package name.quasar.autospeedrun.mixin;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import com.mojang.math.Matrix4f;
+import com.mojang.math.Vector3f;
 import name.quasar.autospeedrun.AutoSpeedrunAPI;
-import name.quasar.autospeedrun.DebugRenderLine;
+import name.quasar.autospeedrun.debug.DebugWorldLine;
+import name.quasar.autospeedrun.debug.DebugWorldText;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.LightTexture;
@@ -47,7 +50,7 @@ public abstract class DebugRendererMixin {
         BufferBuilder buffer = tesselator.getBuilder();
 
         buffer.begin(1, DefaultVertexFormat.POSITION_COLOR);
-        for (DebugRenderLine drl : AutoSpeedrunAPI.getRenderLines()) {
+        for (DebugWorldLine drl : AutoSpeedrunAPI.getWorldLines()) {
             buffer.vertex(poseStack.last().pose(), drl.getPa().x(), drl.getPa().y(), drl.getPa().z())
                     .color(drl.getR(), drl.getG(), drl.getB(), 1f).endVertex();
             buffer.vertex(poseStack.last().pose(), drl.getPb().x(), drl.getPb().y(), drl.getPb().z())
@@ -60,6 +63,33 @@ public abstract class DebugRendererMixin {
         RenderSystem.enableLighting();
         RenderSystem.lineWidth(1.0f);
         RenderSystem.disableBlend();
+
+        poseStack.popPose();
+
+        poseStack.pushPose();
+
+        RenderSystem.enableDepthTest();
+        RenderSystem.disableLighting();
+
+        Font font = Minecraft.getInstance().font;
+
+        poseStack.translate(
+            -cameraPos.x,
+            -cameraPos.y,
+            -cameraPos.z
+        );
+        for (DebugWorldText dwt : AutoSpeedrunAPI.getWorldTexts()) {
+            poseStack.pushPose();
+            poseStack.translate(dwt.getPos().x(), dwt.getPos().y(), dwt.getPos().z());  // draw at 10,65,10
+            poseStack.scale(0.02f, 0.02f, 0.02f);
+            poseStack.mulPose(camera.rotation());
+            poseStack.mulPose(Vector3f.ZP.rotationDegrees(180.0f));
+            font.draw(poseStack, "hello", 0, 0, 0xffffff);
+            poseStack.popPose();
+        }
+
+        RenderSystem.disableDepthTest();
+        RenderSystem.enableLighting();
 
         poseStack.popPose();
     }

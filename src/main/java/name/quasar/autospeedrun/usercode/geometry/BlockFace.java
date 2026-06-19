@@ -2,7 +2,7 @@ package name.quasar.autospeedrun.usercode.geometry;
 
 import com.mojang.math.Vector3f;
 import name.quasar.autospeedrun.AutoSpeedrunAPI;
-import name.quasar.autospeedrun.DebugRenderLine;
+import name.quasar.autospeedrun.debug.DebugWorldLine;
 import name.quasar.autospeedrun.usercode.Dimension;
 
 /** rip off of scripts/3dvis/main.py BlockFace */
@@ -93,42 +93,42 @@ public class BlockFace {
     public void debugDraw(float s, float r, float g, float b) {
         // s is the shrink amount
         if (dir == Direction.POS_X) {
-            AutoSpeedrunAPI.renderLine(new DebugRenderLine(
+            AutoSpeedrunAPI.render(new DebugWorldLine(
                 new Vector3f(x+1f-s, y+s, z+s), new Vector3f(x+1f-s, y+1f-s, z+s), r, g, b
             ));
-            AutoSpeedrunAPI.renderLine(new DebugRenderLine(
+            AutoSpeedrunAPI.render(new DebugWorldLine(
                 new Vector3f(x+1f-s, y+1f-s, z+s), new Vector3f(x+1f-s, y+1f-s, z+1f-s), r, g, b
             ));
-            AutoSpeedrunAPI.renderLine(new DebugRenderLine(
+            AutoSpeedrunAPI.render(new DebugWorldLine(
                 new Vector3f(x+1f-s, y+1f-s, z+1f-s), new Vector3f(x+1f-s, y+s, z+1f-s), r, g, b
             ));
-            AutoSpeedrunAPI.renderLine(new DebugRenderLine(
+            AutoSpeedrunAPI.render(new DebugWorldLine(
                 new Vector3f(x+1f-s, y+s, z+1f-s), new Vector3f(x+1f-s, y+s, z+s), r, g, b
             ));
         } else if (dir == Direction.POS_Y) {
-            AutoSpeedrunAPI.renderLine(new DebugRenderLine(
+            AutoSpeedrunAPI.render(new DebugWorldLine(
                 new Vector3f(x+s, y+1f-s, z+s), new Vector3f(x+1f-s, y+1f-s, z+s), r, g, b
             ));
-            AutoSpeedrunAPI.renderLine(new DebugRenderLine(
+            AutoSpeedrunAPI.render(new DebugWorldLine(
                 new Vector3f(x+1f-s, y+1f-s, z+s), new Vector3f(x+1f-s, y+1f-s, z+1f-s), r, g, b
             ));
-            AutoSpeedrunAPI.renderLine(new DebugRenderLine(
+            AutoSpeedrunAPI.render(new DebugWorldLine(
                 new Vector3f(x+1f-s, y+1f-s, z+1f-s), new Vector3f(x+s, y+1f-s, z+1f-s), r, g, b
             ));
-            AutoSpeedrunAPI.renderLine(new DebugRenderLine(
+            AutoSpeedrunAPI.render(new DebugWorldLine(
                 new Vector3f(x+s, y+1f-s, z+1f-s), new Vector3f(x+s, y+1f-s, z+s), r, g, b
             ));
         } else {  // (dir == Direction.POS_Z)
-            AutoSpeedrunAPI.renderLine(new DebugRenderLine(
+            AutoSpeedrunAPI.render(new DebugWorldLine(
                 new Vector3f(x+s, y+s, z+1f-s), new Vector3f(x+1f-s, y+s, z+1f-s), r, g, b
             ));
-            AutoSpeedrunAPI.renderLine(new DebugRenderLine(
+            AutoSpeedrunAPI.render(new DebugWorldLine(
                 new Vector3f(x+1f-s, y+s, z+1f-s), new Vector3f(x+1f-s, y+1f-s, z+1f-s), r, g, b
             ));
-            AutoSpeedrunAPI.renderLine(new DebugRenderLine(
+            AutoSpeedrunAPI.render(new DebugWorldLine(
                 new Vector3f(x+1f-s, y+1f-s, z+1f-s), new Vector3f(x+s, y+1f-s, z+1f-s), r, g, b
             ));
-            AutoSpeedrunAPI.renderLine(new DebugRenderLine(
+            AutoSpeedrunAPI.render(new DebugWorldLine(
                 new Vector3f(x+s, y+1f-s, z+1f-s), new Vector3f(x+s, y+s, z+1f-s), r, g, b
             ));
         }

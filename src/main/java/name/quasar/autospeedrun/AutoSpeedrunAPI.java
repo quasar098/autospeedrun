@@ -2,6 +2,8 @@ package name.quasar.autospeedrun;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.NativeImage;
+import name.quasar.autospeedrun.debug.DebugWorldLine;
+import name.quasar.autospeedrun.debug.DebugWorldText;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -19,18 +21,28 @@ import static name.quasar.autospeedrun.Util.*;
 
 public class AutoSpeedrunAPI {
 
-    private static final ArrayList<DebugRenderLine> lines = new ArrayList<>();
+    private static final ArrayList<DebugWorldLine> worldLines = new ArrayList<>();
+    private static final ArrayList<DebugWorldText> worldText = new ArrayList<>();
 
-    public static ArrayList<DebugRenderLine> getRenderLines() {
-        return lines;
+    public static ArrayList<DebugWorldLine> getWorldLines() {
+        return worldLines;
     }
 
-    public static void renderLine(DebugRenderLine line) {
-        lines.add(line);
+    public static void render(DebugWorldLine line) {
+        worldLines.add(line);
     }
 
-    public static void clearRenderLines() {
-        lines.clear();
+    public static ArrayList<DebugWorldText> getWorldTexts() {
+        return worldText;
+    }
+
+    public static void render(DebugWorldText line) {
+        worldText.add(line);
+    }
+
+    public static void clearDebugDrawings() {
+        worldLines.clear();
+        worldText.clear();
     }
 
     static boolean tappingLeftClick = false;

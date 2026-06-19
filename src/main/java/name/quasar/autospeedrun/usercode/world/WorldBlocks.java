@@ -2,7 +2,7 @@ package name.quasar.autospeedrun.usercode.world;
 
 import com.mojang.math.Vector3f;
 import name.quasar.autospeedrun.AutoSpeedrunAPI;
-import name.quasar.autospeedrun.DebugRenderLine;
+import name.quasar.autospeedrun.debug.DebugWorldLine;
 import name.quasar.autospeedrun.usercode.F3Information;
 import name.quasar.autospeedrun.usercode.Util;
 import name.quasar.autospeedrun.usercode.geometry.BlockFace;
@@ -233,12 +233,12 @@ public class WorldBlocks {
             if (blockType.getValue().equals("air")) {
                 // draw black X through air blocks
                 if (Util.toggleDebugAir) {
-                    AutoSpeedrunAPI.renderLine(new DebugRenderLine(
+                    AutoSpeedrunAPI.render(new DebugWorldLine(
                             new Vector3f(loc.getX() + 0.4f, loc.getY() + 0.5f, loc.getZ() + 0.4f),
                             new Vector3f(loc.getX() + 0.6f, loc.getY() + 0.5f, loc.getZ() + 0.6f),
                             0f, 0f, 0f
                     ));
-                    AutoSpeedrunAPI.renderLine(new DebugRenderLine(
+                    AutoSpeedrunAPI.render(new DebugWorldLine(
                             new Vector3f(loc.getX() + 0.6f, loc.getY() + 0.5f, loc.getZ() + 0.4f),
                             new Vector3f(loc.getX() + 0.4f, loc.getY() + 0.5f, loc.getZ() + 0.6f),
                             0f, 0f, 0f
@@ -246,7 +246,7 @@ public class WorldBlocks {
                 }
             } else {
                 // draw green / on top of all known blocks
-                AutoSpeedrunAPI.renderLine(new DebugRenderLine(
+                AutoSpeedrunAPI.render(new DebugWorldLine(
                         new Vector3f(loc.getX(), loc.getY() + 1.02f, loc.getZ()),
                         new Vector3f(loc.getX() + 1f, loc.getY() + 1.02f, loc.getZ() + 1f),
                         0f, 1f, 0f

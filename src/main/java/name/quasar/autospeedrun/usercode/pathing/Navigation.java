@@ -1,7 +1,7 @@
 package name.quasar.autospeedrun.usercode.pathing;
 
 import name.quasar.autospeedrun.AutoSpeedrunAPI;
-import name.quasar.autospeedrun.DebugRenderLine;
+import name.quasar.autospeedrun.debug.DebugWorldLine;
 import name.quasar.autospeedrun.usercode.F3Information;
 import name.quasar.autospeedrun.usercode.MovementInputManager;
 import name.quasar.autospeedrun.usercode.geometry.Vector3;
@@ -98,18 +98,18 @@ public class Navigation {
         Vector3 bba = baa.offsetY(1.8);
         Vector3 abb = aab.offsetY(1.8);
         Vector3 bbb = bab.offsetY(1.8);
-        AutoSpeedrunAPI.renderLine(new DebugRenderLine(aaa.toVector3f(), baa.toVector3f(), 1.0f, 0.0f, 1.0f));
-        AutoSpeedrunAPI.renderLine(new DebugRenderLine(aaa.toVector3f(), aba.toVector3f(), 1.0f, 0.0f, 1.0f));
-        AutoSpeedrunAPI.renderLine(new DebugRenderLine(aaa.toVector3f(), aab.toVector3f(), 1.0f, 0.0f, 1.0f));
-        AutoSpeedrunAPI.renderLine(new DebugRenderLine(baa.toVector3f(), bba.toVector3f(), 1.0f, 0.0f, 1.0f));
-        AutoSpeedrunAPI.renderLine(new DebugRenderLine(baa.toVector3f(), bab.toVector3f(), 1.0f, 0.0f, 1.0f));
-        AutoSpeedrunAPI.renderLine(new DebugRenderLine(aba.toVector3f(), bba.toVector3f(), 1.0f, 0.0f, 1.0f));
-        AutoSpeedrunAPI.renderLine(new DebugRenderLine(aba.toVector3f(), abb.toVector3f(), 1.0f, 0.0f, 1.0f));
-        AutoSpeedrunAPI.renderLine(new DebugRenderLine(aab.toVector3f(), bab.toVector3f(), 1.0f, 0.0f, 1.0f));
-        AutoSpeedrunAPI.renderLine(new DebugRenderLine(aab.toVector3f(), abb.toVector3f(), 1.0f, 0.0f, 1.0f));
-        AutoSpeedrunAPI.renderLine(new DebugRenderLine(bba.toVector3f(), bbb.toVector3f(), 1.0f, 0.0f, 1.0f));
-        AutoSpeedrunAPI.renderLine(new DebugRenderLine(bab.toVector3f(), bbb.toVector3f(), 1.0f, 0.0f, 1.0f));
-        AutoSpeedrunAPI.renderLine(new DebugRenderLine(abb.toVector3f(), bbb.toVector3f(), 1.0f, 0.0f, 1.0f));
+        AutoSpeedrunAPI.render(new DebugWorldLine(aaa.toVector3f(), baa.toVector3f(), 1.0f, 0.0f, 1.0f));
+        AutoSpeedrunAPI.render(new DebugWorldLine(aaa.toVector3f(), aba.toVector3f(), 1.0f, 0.0f, 1.0f));
+        AutoSpeedrunAPI.render(new DebugWorldLine(aaa.toVector3f(), aab.toVector3f(), 1.0f, 0.0f, 1.0f));
+        AutoSpeedrunAPI.render(new DebugWorldLine(baa.toVector3f(), bba.toVector3f(), 1.0f, 0.0f, 1.0f));
+        AutoSpeedrunAPI.render(new DebugWorldLine(baa.toVector3f(), bab.toVector3f(), 1.0f, 0.0f, 1.0f));
+        AutoSpeedrunAPI.render(new DebugWorldLine(aba.toVector3f(), bba.toVector3f(), 1.0f, 0.0f, 1.0f));
+        AutoSpeedrunAPI.render(new DebugWorldLine(aba.toVector3f(), abb.toVector3f(), 1.0f, 0.0f, 1.0f));
+        AutoSpeedrunAPI.render(new DebugWorldLine(aab.toVector3f(), bab.toVector3f(), 1.0f, 0.0f, 1.0f));
+        AutoSpeedrunAPI.render(new DebugWorldLine(aab.toVector3f(), abb.toVector3f(), 1.0f, 0.0f, 1.0f));
+        AutoSpeedrunAPI.render(new DebugWorldLine(bba.toVector3f(), bbb.toVector3f(), 1.0f, 0.0f, 1.0f));
+        AutoSpeedrunAPI.render(new DebugWorldLine(bab.toVector3f(), bbb.toVector3f(), 1.0f, 0.0f, 1.0f));
+        AutoSpeedrunAPI.render(new DebugWorldLine(abb.toVector3f(), bbb.toVector3f(), 1.0f, 0.0f, 1.0f));
     }
 
     /* path following */
@@ -126,14 +126,14 @@ public class Navigation {
         if (pathNodes.size() >= 2) {
             nextNode = pathNodes.get(pathNodes.size() - 2);
         }
-        AutoSpeedrunAPI.renderLine(new DebugRenderLine(
+        AutoSpeedrunAPI.render(new DebugWorldLine(
             nextNode.toVector3f(), nextNode.offsetY(1.0).toVector3f(), 1.0f, 0.0f, 0.0f
         ));
 
         // move to next node
         Vector3 vecToNextNode = nextNode.sub(getPredictedStablePosition());
         moveInBestDirection(vecToNextNode);
-        AutoSpeedrunAPI.renderLine(new DebugRenderLine(
+        AutoSpeedrunAPI.render(new DebugWorldLine(
             getPredictedStablePosition().offsetY(0.1).toVector3f(), nextNode.offsetY(0.1).toVector3f(),
             0.3f, 0.3f, 0.3f
         ));
@@ -154,7 +154,7 @@ public class Navigation {
         Vector3 prevP = null;
         for (Vector3 currentP : totalPath) {
             if (prevP != null) {
-                AutoSpeedrunAPI.renderLine(new DebugRenderLine(
+                AutoSpeedrunAPI.render(new DebugWorldLine(
                     prevP.offsetY(0.2).toVector3f(), currentP.offsetY(0.2).toVector3f(), 0.0f, 0.0f, 1.0f
                 ));
             }

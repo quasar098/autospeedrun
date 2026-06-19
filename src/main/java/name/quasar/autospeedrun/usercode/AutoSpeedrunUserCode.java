@@ -37,7 +37,7 @@ public class AutoSpeedrunUserCode {
 
     public void tick() {
         Util.tickCount++;
-        AutoSpeedrunAPI.clearRenderLines();
+        AutoSpeedrunAPI.clearDebugDrawings();
         AutoSpeedrunAPI.screenshotAsync(1920, 1080);
         // screen resolution not yet resolved, resolve it before doing anything else
         if (Util.SCREEN_W == 0 || Util.SCREEN_H == 0) {
@@ -122,6 +122,8 @@ public class AutoSpeedrunUserCode {
                     AutoSpeedrunAPI.chatMessage(s);
                 }
                 break;
+            case "togglepathdebug":
+                PathPlanning.getInstance().toggleDebugDraw();
             case "mousemove":
                 String[] xyStr = split[1].split(",");
                 AutoSpeedrunAPI.mouseMove(Integer.parseInt(xyStr[0]), Integer.parseInt(xyStr[1]));

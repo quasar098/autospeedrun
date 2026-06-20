@@ -80,11 +80,12 @@ public abstract class DebugRendererMixin {
         );
         for (DebugWorldText dwt : AutoSpeedrunAPI.getWorldTexts()) {
             poseStack.pushPose();
-            poseStack.translate(dwt.getPos().x(), dwt.getPos().y(), dwt.getPos().z());  // draw at 10,65,10
+            poseStack.translate(dwt.getPos().x(), dwt.getPos().y(), dwt.getPos().z());
             poseStack.scale(0.02f, 0.02f, 0.02f);
             poseStack.mulPose(camera.rotation());
             poseStack.mulPose(Vector3f.ZP.rotationDegrees(180.0f));
-            font.draw(poseStack, "hello", 0, 0, 0xffffff);
+            poseStack.translate(-font.width(dwt.getText())/2.0, 0, 0);
+            font.draw(poseStack, dwt.getText(), 0, 0, dwt.getColor());
             poseStack.popPose();
         }
 

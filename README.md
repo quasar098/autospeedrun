@@ -25,6 +25,14 @@ https://dl.acm.org/doi/epdf/10.1145/129902.129906
 - `-1807904186447035469` easy trees, easy bt
 - `-405953324338831477` water traversal required for bt, hilly
 
+## setup
+
+recommended to open with IntelliJ IDEA
+
+All files/folders in `./settings/*` must be copied into `./run/`, overwriting files
+
+also [extra options, speedrunapi](https://mods.tildejustin.dev/?version=1.16.1&category=random_seed&mod=extra-options&mod=speedrunapi) mods required in mods folder
+
 ## notes
 
 1. mouse calibration

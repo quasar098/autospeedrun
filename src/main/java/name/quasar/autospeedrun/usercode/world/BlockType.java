@@ -1,16 +1,25 @@
 package name.quasar.autospeedrun.usercode.world;
 
+import java.util.ArrayList;
+
 public class BlockType {
 
     public static final BlockType AIR = new BlockType("minecraft:air");
-    public static final BlockType BEDROCK = new BlockType("minecraft:bedrock");
     public static final BlockType UNKNOWN_SOLID = new BlockType("minecraft:unknown_solid");
 
     private String value = null;
+    private final ArrayList<String> properties;
 
     public BlockType(String blockType) {
         assert blockType.startsWith("minecraft:");
         this.value = blockType.replaceFirst("minecraft:", "");
+        this.properties = null;
+    }
+
+    public BlockType(String blockType, ArrayList<String> properties) {
+        assert blockType.startsWith("minecraft:");
+        this.value = blockType.replaceFirst("minecraft:", "");
+        this.properties = properties;
     }
 
     public boolean equals(BlockType obj) {
@@ -33,19 +42,19 @@ public class BlockType {
     }
 
     public boolean isSolid() {
+        return !getValue().equals("air") && solidBlockYOffset() == null;
+    }
+
+    public Integer solidBlockYOffset() {
         switch (getValue()) {
-            case "dead_bush":
-            case "sign":
-            case "torch":
-            case "grass":
-            case "fern":
             case "tall_grass":
             case "large_fern":
             case "rose_bush":
             case "peony":
-            case "pink_tulip":
-            case "lilac":
             case "sunflower":
+            case "lilac":
+            case "pink_tulip":
+                return properties.contains("half: upper") ? -2 : -1;
             case "cornflower":
             case "allium":
             case "red_tulip":
@@ -57,9 +66,14 @@ public class BlockType {
             case "lily_of_the_valley":
             case "blue_orchid":
             case "oxeye_daisy":
-                return false;
+            case "dead_bush":
+            case "sign":
+            case "torch":
+            case "grass":
+            case "fern":
+                return -1;
             default:
-                return true;
+                return null;
         }
     }
 }

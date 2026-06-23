@@ -1,6 +1,8 @@
 package name.quasar.autospeedrun.usercode.geometry;
 
+import com.mojang.math.Vector3f;
 import name.quasar.autospeedrun.AutoSpeedrunAPI;
+import name.quasar.autospeedrun.debug.DebugWorldLine;
 import name.quasar.autospeedrun.usercode.Dimension;
 
 import java.util.ArrayList;
@@ -73,6 +75,7 @@ public class BlockLocation {
     public BlockLocation offsetZ(long z) { return new BlockLocation(getDimension(), getX(), getY(), z+getZ()); }
 
     public BlockLocation below() { return new BlockLocation(getDimension(), getX(), getY()-1, getZ()); }
+    public BlockLocation above() { return new BlockLocation(getDimension(), getX(), getY()+1, getZ()); }
 
     public BlockLocation[] getNeighbors() {
         return new BlockLocation[]{
@@ -127,5 +130,26 @@ public class BlockLocation {
         for (GreatCircle gc : gcs) {
             gc.debugDraw(camera);
         }
+    }
+
+    public void debugDraw() {
+        float x1 = getX()-0.01f;
+        float x2 = getX()+1.01f;
+        float y1 = getY()-0.01f;
+        float y2 = getY()+1.01f;
+        float z1 = getZ()-0.01f;
+        float z2 = getZ()+1.01f;
+        AutoSpeedrunAPI.render(new DebugWorldLine(new Vector3f(x1, y1, z1), new Vector3f(x2, y1, z1), 0.2f, 0.9f, 1.0f));
+        AutoSpeedrunAPI.render(new DebugWorldLine(new Vector3f(x1, y1, z1), new Vector3f(x1, y2, z1), 0.2f, 0.9f, 1.0f));
+        AutoSpeedrunAPI.render(new DebugWorldLine(new Vector3f(x1, y1, z1), new Vector3f(x1, y1, z2), 0.2f, 0.9f, 1.0f));
+        AutoSpeedrunAPI.render(new DebugWorldLine(new Vector3f(x2, y1, z1), new Vector3f(x2, y2, z1), 0.2f, 0.9f, 1.0f));
+        AutoSpeedrunAPI.render(new DebugWorldLine(new Vector3f(x2, y1, z1), new Vector3f(x2, y1, z2), 0.2f, 0.9f, 1.0f));
+        AutoSpeedrunAPI.render(new DebugWorldLine(new Vector3f(x1, y2, z1), new Vector3f(x2, y2, z1), 0.2f, 0.9f, 1.0f));
+        AutoSpeedrunAPI.render(new DebugWorldLine(new Vector3f(x1, y2, z1), new Vector3f(x1, y2, z2), 0.2f, 0.9f, 1.0f));
+        AutoSpeedrunAPI.render(new DebugWorldLine(new Vector3f(x1, y1, z2), new Vector3f(x2, y1, z2), 0.2f, 0.9f, 1.0f));
+        AutoSpeedrunAPI.render(new DebugWorldLine(new Vector3f(x1, y1, z2), new Vector3f(x1, y2, z2), 0.2f, 0.9f, 1.0f));
+        AutoSpeedrunAPI.render(new DebugWorldLine(new Vector3f(x2, y2, z1), new Vector3f(x2, y2, z2), 0.2f, 0.9f, 1.0f));
+        AutoSpeedrunAPI.render(new DebugWorldLine(new Vector3f(x2, y1, z2), new Vector3f(x2, y2, z2), 0.2f, 0.9f, 1.0f));
+        AutoSpeedrunAPI.render(new DebugWorldLine(new Vector3f(x1, y2, z2), new Vector3f(x2, y2, z2), 0.2f, 0.9f, 1.0f));
     }
 }

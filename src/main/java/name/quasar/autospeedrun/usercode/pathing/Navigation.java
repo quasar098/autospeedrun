@@ -121,7 +121,6 @@ public class Navigation {
         ArrayList<Vector3> pathNodes = PathPlanning.getInstance().getPath();
 
         // debug draw path and vertical red line at next node
-        debugDrawPath(pathNodes);
         Vector3 nextNode = pathNodes.get(pathNodes.size() - 1);
         if (pathNodes.size() >= 2) {
             nextNode = pathNodes.get(pathNodes.size() - 2);
@@ -147,18 +146,6 @@ public class Navigation {
             AutoSpeedrunAPI.chatMessage("Arrived at your destination");
             PathPlanning.getInstance().setGoalPosition(null);
             MovementInputManager.cancelWASD();
-        }
-    }
-
-    private void debugDrawPath(ArrayList<Vector3> totalPath) {
-        Vector3 prevP = null;
-        for (Vector3 currentP : totalPath) {
-            if (prevP != null) {
-                AutoSpeedrunAPI.render(new DebugWorldLine(
-                    prevP.offsetY(0.2).toVector3f(), currentP.offsetY(0.2).toVector3f(), 0.0f, 0.0f, 1.0f
-                ));
-            }
-            prevP = currentP;
         }
     }
 

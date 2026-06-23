@@ -1028,7 +1028,6 @@ public class Util {
         double a = (192+16*y)/255.0;
         // expected color
         int eC = (int) Math.round(0xdd*(1-a)+0x10*a);
-        System.out.println("y:" + y + ",a:" + a + ",eC:" + eC);
         return readScreenStringForward(
             sx, sy,
             !f3HasBackgroundDim
@@ -1116,7 +1115,6 @@ public class Util {
         double a = (192+16*y)/255.0;
         // expected color
         int eC = (int) Math.round(0xdd*(1-a)+0x10*a);
-        System.out.println("y:" + y + ",a:" + a + ",eC:" + eC);
         return readScreenStringBackward(
             sx, sy,
             !f3HasBackgroundDim

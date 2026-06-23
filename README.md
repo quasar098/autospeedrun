@@ -23,6 +23,7 @@ https://dl.acm.org/doi/epdf/10.1145/129902.129906
 ## practice seed list
 
 - `-1807904186447035469` easy trees, easy bt
+- `-405953324338831477` water traversal required for bt, hilly
 
 ## notes
 

@@ -44,6 +44,12 @@ public class AutoSpeedrun implements ModInitializer {
 			if (toggleRun.isDown() && !prevWasToggleKeyDown.get()) {
 				if (client.player != null) {
 					Util.togglePaused = !togglePaused;
+					if (togglePaused) {
+						AutoSpeedrunAPI.releaseKey(GLFW.GLFW_KEY_W);
+						AutoSpeedrunAPI.releaseKey(GLFW.GLFW_KEY_A);
+						AutoSpeedrunAPI.releaseKey(GLFW.GLFW_KEY_S);
+						AutoSpeedrunAPI.releaseKey(GLFW.GLFW_KEY_D);
+					}
 					client.player.displayClientMessage(new TextComponent("Toggle paused/unpaused"), false);
 				}
 			}

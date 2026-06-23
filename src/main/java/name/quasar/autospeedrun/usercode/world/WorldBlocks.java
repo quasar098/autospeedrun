@@ -59,8 +59,8 @@ public class WorldBlocks {
         return !knownBlocks.containsKey(bl) || knownBlocks.get(bl).getBlockType().equals(BlockType.AIR);
     }
 
-    public boolean isAirKnown(BlockLocation bl) {
-        return knownBlocks.containsKey(bl) && knownBlocks.get(bl).getBlockType().equals(BlockType.AIR);
+    public boolean isAir(BlockLocation bl) {
+        return knownBlocks.get(bl).getBlockType().equals(BlockType.AIR);
     }
 
     public boolean isNonsolidOrUnknown(BlockLocation bl) {
@@ -69,6 +69,10 @@ public class WorldBlocks {
 
     public boolean isNonsolidKnown(BlockLocation bl) {
         return knownBlocks.containsKey(bl) && !knownBlocks.get(bl).getBlockType().isSolid();
+    }
+
+    public boolean isSolidKnown(BlockLocation bl) {
+        return knownBlocks.containsKey(bl) && knownBlocks.get(bl).getBlockType().isSolid();
     }
 
     public static void reset() {
@@ -155,9 +159,15 @@ public class WorldBlocks {
         // targetted block
         BlockLocation targetted = F3Information.getTargettedBlockLocation();
         if (targetted != null) {
-            WorldBlocks.getInstance().applyForcefully(targetted, new WorldBlock(new BlockType(
-                F3Information.getTargettedBlockName()
-            ), 1.0));  // we see it clear as day so we can assume its there
+            BlockType bt = new BlockType(
+                F3Information.getTargettedBlockName(), F3Information.getBlockProperties()
+            );
+            // we see it clearly from f3 menu so we know 100% its there
+            apply(targetted, new WorldBlock(bt, 1.0));
+            Integer solidBlockOffset = bt.solidBlockYOffset();
+            if (solidBlockOffset != null) {
+                apply(targetted.offsetY(solidBlockOffset), new WorldBlock(BlockType.UNKNOWN_SOLID, 0.8));
+            }
         }
         if (prevTickYaw == null || prevTickPitch == null) {
             prevTickYaw = F3Information.getYaw();
@@ -218,8 +228,8 @@ public class WorldBlocks {
 //                AutoSpeedrunApi.chatMessage("WTF " + targetted);
 //                return;
 //            }
-            WorldBlocks.getInstance().apply(blockA, new WorldBlock(BlockType.AIR, 0.9));
-            WorldBlocks.getInstance().apply(blockB, new WorldBlock(BlockType.AIR, 0.9));
+            WorldBlocks.getInstance().apply(blockA, new WorldBlock(BlockType.AIR, 1.0));
+            WorldBlocks.getInstance().apply(blockB, new WorldBlock(BlockType.AIR, 1.0));
         }
 //        AutoSpeedrunApi.chatMessage("Success writing " + Math.min(bfsMaxTL.size(), bfsMaxBR.size()));
         prevTickYaw = F3Information.getYaw();
@@ -245,12 +255,21 @@ public class WorldBlocks {
                     ));
                 }
             } else {
-                // draw green / on top of all known blocks
-                AutoSpeedrunAPI.render(new DebugWorldLine(
+                if (blockType.isSolid()) {
+                    // draw green / on top of all known solid blocks
+                    AutoSpeedrunAPI.render(new DebugWorldLine(
                         new Vector3f(loc.getX(), loc.getY() + 1.02f, loc.getZ()),
                         new Vector3f(loc.getX() + 1f, loc.getY() + 1.02f, loc.getZ() + 1f),
                         0f, 1f, 0f
-                ));
+                    ));
+                } else {
+                    // draw pink / on top of all known nonsolid blocks
+                    AutoSpeedrunAPI.render(new DebugWorldLine(
+                        new Vector3f(loc.getX(), loc.getY() + 1.02f, loc.getZ()),
+                        new Vector3f(loc.getX() + 1f, loc.getY() + 1.02f, loc.getZ() + 1f),
+                        1f, 0f, 1f
+                    ));
+                }
             }
         }
     }

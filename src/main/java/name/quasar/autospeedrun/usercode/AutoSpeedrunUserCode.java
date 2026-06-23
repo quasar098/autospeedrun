@@ -1,6 +1,7 @@
 package name.quasar.autospeedrun.usercode;
 
 import name.quasar.autospeedrun.AutoSpeedrunAPI;
+import name.quasar.autospeedrun.debug.DebugWorldText;
 import name.quasar.autospeedrun.usercode.geometry.BlockLocation;
 import name.quasar.autospeedrun.usercode.geometry.Vector3;
 import name.quasar.autospeedrun.usercode.geometry.GreatCircle;
@@ -70,6 +71,7 @@ public class AutoSpeedrunUserCode {
                 gc2.debugDraw(Util.getEyePosition());
             }
         }
+        PathPlanning.getInstance().debugDraw();
         // inventory management
         if (InventoryManagement.getInstance().perform()) {
             AutoSpeedrunAPI.chatMessage("bruh");
@@ -84,6 +86,7 @@ public class AutoSpeedrunUserCode {
         WorldBlocks.getInstance().collectFacingBlockInformation();
         // debug draw world blocks information
         WorldBlocks.getInstance().debugDraw();
+        AutoSpeedrunAPI.render(new DebugWorldText(F3Information.getPosition().add(new Vector3(0, 2, 0)).toVector3f(), "me", 0xffffff));
 
         // do stuff based on stage of run
 //        if (Util.runStage == RunStage.OVERWORLD) {
@@ -124,6 +127,8 @@ public class AutoSpeedrunUserCode {
                 break;
             case "togglepathdebug":
                 PathPlanning.getInstance().toggleDebugDraw();
+            case "pathdebug":
+                PathPlanning.getInstance().debugDraw();
             case "mousemove":
                 String[] xyStr = split[1].split(",");
                 AutoSpeedrunAPI.mouseMove(Integer.parseInt(xyStr[0]), Integer.parseInt(xyStr[1]));

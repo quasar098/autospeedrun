@@ -8,6 +8,8 @@ import name.quasar.autospeedrun.usercode.geometry.*;
 import name.quasar.autospeedrun.usercode.world.WorldBlocks;
 
 import java.util.*;
+import java.util.function.Function;
+import java.util.function.ToDoubleFunction;
 
 /**
  * The purpose of {@code PathPlanning} is to plan movement paths.
@@ -29,6 +31,12 @@ public class PathPlanning {
     }
 
     private boolean debugDraw = false;
+    private HashMap<BlockLocation, Integer> dYRiseDebugSave = null;
+    private HashMap<BlockLocation, Integer> dYFallDebugSave = null;
+    private HashMap<BlockLocation, Double> fDebugSave = null;
+    private PriorityQueue<BlockLocation> exploredDebugSave = null;
+    private PriorityQueue<BlockLocation> unexploredDebugSave = null;
+    private ToDoubleFunction<BlockLocation> bruhTodoDelete = null;
 
     public void toggleDebugDraw() {
         debugDraw = !debugDraw;
@@ -60,7 +68,7 @@ public class PathPlanning {
         return nextBlockToExplore;
     }
 
-    /** sets navCanReachGoalPosition, nextBlockToExplore, cachedPath */
+    /** sets nextBlockToExplore, cachedPath */
     public PathPlanningResult perform() {
 
         // hack to detect jumping.
@@ -93,12 +101,38 @@ public class PathPlanning {
         if (goalPosition.getY() <= 0) {
             correctedGoal = new Vector3(correctedGoal.getX(), F3Information.getPosition().getY(), correctedGoal.getZ());
         }
-        if (canReachGoalPosition) {
-            pathNodes.set(0, correctedGoal);
-        }
+        pathNodes.set(0, correctedGoal);
         cachedPath = pathNodes;
-
+        debugDrawPath(pathNodes);
         return PathPlanningResult.SUCCESS;
+    }
+
+    public void debugDrawPath(ArrayList<Vector3> totalPath) {
+        Vector3 prevP = null;
+        for (Vector3 currentP : totalPath) {
+            if (prevP != null) {
+                AutoSpeedrunAPI.render(new DebugWorldLine(
+                    prevP.offsetY(0.2).toVector3f(), currentP.offsetY(0.2).toVector3f(), 0.0f, 0.0f, 1.0f
+                ));
+            }
+            prevP = currentP;
+        }
+    }
+
+    private ArrayList<BlockLocation> reconstructPath(HashMap<BlockLocation, BlockLocation> cameFrom, BlockLocation current) {
+        ArrayList<BlockLocation> totalPath = new ArrayList<>();
+        totalPath.add(current);
+        int iterations = 0;
+        while (cameFrom.containsKey(current)) {
+            iterations++;
+            if (iterations > 10000) {
+                AutoSpeedrunAPI.chatMessage("too many cameFrom iterations!");
+                break;
+            }
+            current = cameFrom.get(current);
+            totalPath.add(current);
+        }
+        return totalPath;
     }
 
     // A* heuristic function
@@ -113,131 +147,203 @@ public class PathPlanning {
             vert *= -0.2;
         }
         double interp = vert/(vert+horiz);
-        return vert * interp + horiz * (1 - interp);
+        return (vert * interp + horiz * (1 - interp));
     }
-
-    private ArrayList<BlockLocation> reconstructPath(HashMap<BlockLocation, BlockLocation> cameFrom, BlockLocation current) {
-        ArrayList<BlockLocation> totalPath = new ArrayList<>();
-        totalPath.add(current);
-        while (cameFrom.containsKey(current)) {
-            current = cameFrom.get(current);
-            totalPath.add(current);
-        }
-        return totalPath;
-    }
-
-    public boolean canReachGoalPosition = false;
 
     /**
-     * sets navCanReachGoalPosition
+     * sets nextBlockToExplore
      */
     private ArrayList<BlockLocation> planPath() {
-        canReachGoalPosition = false;
         Vector3 goal = goalPosition;
         assert(goal != null);
         Vector3 playerPos = Navigation.getInstance().getPredictedStablePosition();
         if (playerPos == null) { playerPos = F3Information.getPosition(); }
-        BlockLocation lookAtBlock = null;
         Dimension dim = F3Information.getDimension();
-        // rip off of wikipedia a* article
+        WorldBlocks wb = WorldBlocks.getInstance();
         BlockLocation start = new BlockLocation(dim, playerPos.withY(Navigation.getInstance().getPredictedPeakY()));
+
+        // A* specific stuff
         HashMap<BlockLocation, BlockLocation> cameFrom = new HashMap<>();
-        HashMap<BlockLocation, Double> gScore = new HashMap<>();
-        gScore.put(start, 0.0);
-        HashMap<BlockLocation, Double> fScore = new HashMap<>();
-        fScore.put(start, h(start));
+        HashMap<BlockLocation, BlockLocation> unexploredCameFrom = new HashMap<>();
+        HashMap<BlockLocation, Integer> dYRise = new HashMap<>();  // rising information
+        dYRiseDebugSave = dYRise;
+        HashMap<BlockLocation, Integer> dYFall = new HashMap<>();  // falling information
+        dYFallDebugSave = dYFall;
+        // distance from player to each block
+        HashMap<BlockLocation, Double> g = new HashMap<>();
+        HashMap<BlockLocation, Double> f = new HashMap<>();
+        fDebugSave = f;
         PriorityQueue<BlockLocation> openSet = new PriorityQueue<>(
-                Comparator.comparingDouble(o -> fScore.getOrDefault(o, Double.MAX_VALUE))
+            Comparator.comparingDouble(o -> f.getOrDefault(o, Double.MAX_VALUE))
         );
+        // set of candidates to decide where to look next
+        Vector3 finalPlayerPos = playerPos;
+        bruhTodoDelete = o -> -100.0/(100.0+o.getCenter().distanceToSquared(finalPlayerPos));
+//        bruhTodoDelete = o -> o.getCenter().distanceToSquared(finalPlayerPos);
+        PriorityQueue<BlockLocation> unexplored = new PriorityQueue<>(
+            Comparator.comparingDouble(
+                bruhTodoDelete
+            )
+        );
+        unexploredDebugSave = unexplored;
+        PriorityQueue<BlockLocation> explored = new PriorityQueue<>(
+            Comparator.comparingDouble(o -> f.getOrDefault(o, Double.MAX_VALUE)));
+        exploredDebugSave = explored;
+
         openSet.add(start);
-        HashMap<BlockLocation, Boolean> canJumpFrom = new HashMap<>();
-        canJumpFrom.put(start, WorldBlocks.getInstance().isAirKnown(start) &&
-            !WorldBlocks.getInstance().isAirKnown(start.below()));
+        g.put(start, 0.0);
+        f.put(start, h(start));
+        dYRise.put(start, 0);
+        dYFall.put(start, 0);
+
+        // todo rework to account for block place/break costs
+
         int iterations = 0;
-        int maxIterations = 2000;
-        ArrayList<BlockLocation> path = null;
-        aStarWhileLoop : while (!openSet.isEmpty()) {
-            if (++iterations == maxIterations) {
-                AutoSpeedrunAPI.chatMessage("Max iterations reached on A* pathfinding");
+
+        while (!openSet.isEmpty()) {
+            iterations++;
+            if (iterations > 10000) {
+                AutoSpeedrunAPI.chatMessage("max iterations!");
                 break;
             }
             BlockLocation current = openSet.peek();
             if (current.getX() == Math.floor(goal.getX()) && current.getZ() == Math.floor(goal.getZ()) &&
-                    (goal.getY() <= 0 || current.getY() == Math.floor(goal.getY()))) {
-                canReachGoalPosition = true;
-                return reconstructPath(cameFrom, current);
+                (goal.getY() <= 0 || current.getY() == Math.floor(goal.getY()))) {
+                // find path to walk along (complete)
+                ArrayList<BlockLocation> path = reconstructPath(cameFrom, current);
+                unexplored.removeIf(bl -> !(path.contains(bl) || path.contains(bl.above()) || path.contains(bl.below())));
+                BlockLocation bestBlockToExplore = unexplored.peek();
+                if (bestBlockToExplore != null) {
+                    bestBlockToExplore.debugDraw();
+                }
+                nextBlockToExplore = bestBlockToExplore;
+                AutoSpeedrunAPI.chatMessage("best (c):" + bestBlockToExplore);
+                return path;
             }
             openSet.remove(current);
+            explored.add(current);
+            if (!wb.isKnown(current)) {
+                unexplored.add(current);
+                unexploredCameFrom.put(current, cameFrom.getOrDefault(current, current));
+            }
             for (BlockLocation neighbor : current.getNeighbors()) {
-                // maybe refactor
-                if (!WorldBlocks.getInstance().isKnown(neighbor)) {
-                    lookAtBlock = neighbor;
-                    path = reconstructPath(cameFrom, current);
-                    break aStarWhileLoop;
+                if (wb.isKnown(current)) {
+                    if (!wb.isKnown(neighbor)) {
+                        unexplored.add(neighbor);
+                        unexploredCameFrom.put(neighbor, current);
+                    }
+                    if (!wb.isKnown(neighbor.above())) {
+                        unexplored.add(neighbor.above());
+                        unexploredCameFrom.put(neighbor.above(), current);
+                    }
+                    if (!wb.isKnown(neighbor.below())) {
+                        unexplored.add(neighbor.below());
+                        unexploredCameFrom.put(neighbor.below(), current);
+                    }
                 }
                 double d = 1.0;
-                // maybe use nonsolid instead?
-                if (!WorldBlocks.getInstance().isAirOrUnknown(neighbor)) {
-                    d += 99999.0;  // have to break through a block, bad
+                if (!wb.isAirOrUnknown(neighbor)) {
+                    d += 3.0;  // have to break through a block, bad
                 }
-                if (!WorldBlocks.getInstance().isAirOrUnknown(neighbor.offsetY(1))) {
-                    d += 99999.0;  // have to break through a block, bad
+                if (!wb.isAirOrUnknown(neighbor.above())) {
+                    d += 3.0;  // have to break through a block, bad
                 }
-                // same y level, no jumping
-                if (neighbor.getY() == current.getY()) {
-                    if (!WorldBlocks.getInstance().isKnown(current.below())) {
-                        lookAtBlock = current.below();
-                        path = reconstructPath(cameFrom, current);
-                        break aStarWhileLoop;
+                if (neighbor.getY() < current.getY()) {  // falling
+                    if (wb.isSolidKnown(neighbor.below())) {
+                        dYRise.put(neighbor, 0);
+                        dYFall.put(neighbor, 0);
                     } else {
-                        boolean walkingOnAir = false;
-                        if (canJumpFrom.containsKey(current.below())) {
-                            if (!canJumpFrom.get(current.below())) {
-                                walkingOnAir = true;
-                            }
-                        } else if (WorldBlocks.getInstance().isAirOrUnknown(current.below())) {
-                            walkingOnAir = true;
+                        dYFall.merge(neighbor, dYFall.getOrDefault(neighbor.above(), 0) - 1, Math::max);
+                    }
+                    if (dYFall.get(neighbor) < 0) {
+                        d += 6.0;  // falling without knowing where you land, bad
+                    }
+                    // todo better dYfall logic for places we know we can fall safely
+                } else if (neighbor.getY() == current.getY()) {  // same y
+                    if (dYFall.getOrDefault(current, 0) < 0) {
+                        d += 0.0;  // bad to go from falling to going sideways (maybe change later?)
+                    }
+                    if (wb.isSolidKnown(neighbor.below())) {
+                        dYRise.put(neighbor, 0);
+                        dYFall.put(neighbor, 0);
+                    } else {
+                        if (dYRise.getOrDefault(current, 0) > 0) {
+                            d += 9.0;  // bad to go from jumping in the air to sideways supported by nothing
                         }
-                        if (Navigation.getInstance().getCurrentVelocity().getY() > 0.0 && current.equals(start)) {
-                            walkingOnAir = false;
+                        if (dYFall.get(current) != null && dYFall.get(current) == 0) {
+                            dYFall.put(neighbor, -1);
                         }
-                        if (walkingOnAir) {
-                            d += 99999.0;
-                        }
+                    }
+                } else if (neighbor.getY() > current.getY()) {  // jumping
+                    if (dYRise.containsKey(current)) {
+                        dYRise.put(neighbor, dYRise.get(current) + 1);
+                    }
+                    if (dYRise.getOrDefault(neighbor, 999) >= 2) {
+                        d += 7.0;  // can't jump up two blocks or more
                     }
                 }
-                if (neighbor.getY() > current.getY()) {
-                    canJumpFrom.put(neighbor, false);
-                    if (!canJumpFrom.containsKey(current)) {
-                        if (!WorldBlocks.getInstance().isKnown(current.below())) {
-                            lookAtBlock = current.offsetY(-1);
-                            path = reconstructPath(cameFrom, current);
-                            break aStarWhileLoop;
-                        }
-                        canJumpFrom.put(current, !WorldBlocks.getInstance().isAirKnown(current.below()));
-                    }
-                    if (canJumpFrom.get(current) == false) {
-                        d += 99999.0;  // have to jump up 2+ blocks, bad
-                    }
-                }
-                double tentativeGScore = gScore.getOrDefault(current, Double.MAX_VALUE) + d;
-                if (tentativeGScore < gScore.getOrDefault(neighbor, Double.MAX_VALUE)) {
+                // update g,f for neighbor
+                double newGScore = g.getOrDefault(current, Double.MAX_VALUE) + d;
+                if (newGScore < g.getOrDefault(neighbor, Double.MAX_VALUE)) {
                     cameFrom.put(neighbor, current);
-                    gScore.put(neighbor, tentativeGScore);
-                    double f = tentativeGScore + h(neighbor);
-                    fScore.put(neighbor, f);
-                    if (debugDraw) {
-                        AutoSpeedrunAPI.render(new DebugWorldText(neighbor.getCenter().toVector3f(), String.format("%.1f", f), 0xddeeff));
-                    }
+                    g.put(neighbor, newGScore);
+                    f.put(neighbor, newGScore + h(neighbor));
                     if (!openSet.contains(neighbor)) {
                         openSet.add(neighbor);
                     }
                 }
             }
         }
-        if (lookAtBlock != null && lookAtBlock.getCenter().distanceTo(Util.getEyePosition()) < 19.0) {
-            nextBlockToExplore = lookAtBlock;
+        // find path to walk along (incomplete)
+        if (unexplored.isEmpty()) { AutoSpeedrunAPI.chatMessage("no path 1!"); return null; }
+//        path = reconstructPath(cameFrom, unexplored.peek());
+        // find place to look at
+        // todo rework to favor close blocks more
+        BlockLocation bestBlockToExplore = unexplored.peek();
+        AutoSpeedrunAPI.chatMessage("bruh:" + bruhTodoDelete.applyAsDouble(bestBlockToExplore));
+        if (bestBlockToExplore == null) { AutoSpeedrunAPI.chatMessage("no path 2!"); return null; }
+        ArrayList<BlockLocation> path = reconstructPath(cameFrom, explored.peek());
+//        return path;
+//        nextBlockToExplore = bestBlockToExplore;
+        nextBlockToExplore = null;
+        return null;
+    }
+
+    public void debugDraw() {
+        if (debugDraw) {
+            Vector3 slightUp = new Vector3(0, 0.18, 0);
+            Vector3 slightDown = new Vector3(0, -0.18, 0);
+            if (exploredDebugSave != null) {
+                for (BlockLocation bl : exploredDebugSave) {
+                    if (bl.getCenter().distanceTo(F3Information.getPosition()) > 7.0) {
+                        continue;
+                    }
+                    Double fScore = fDebugSave.get(bl);
+                    AutoSpeedrunAPI.render(
+                        new DebugWorldText(
+                            bl.getCenter().add(slightUp).toVector3f(),
+                            fScore != null ? String.format("%.1f", fScore) : "?", 0xffffff)
+                    );
+                    if (dYRiseDebugSave != null && dYFallDebugSave != null) {
+                        Integer r = dYRiseDebugSave.get(bl);
+                        Integer f = dYFallDebugSave.get(bl);
+                        String dYStr = String.format("R:%s F:%s", r == null ? "?" : r, f == null ? "?" : f);
+                        AutoSpeedrunAPI.render(
+                            new DebugWorldText(bl.getCenter().add(slightDown).toVector3f(), dYStr, 0xffffff)
+                        );
+                    }
+                }
+            }
+            if (unexploredDebugSave != null && bruhTodoDelete != null) {
+                for (BlockLocation bl : unexploredDebugSave) {
+                    double exploreScore = bruhTodoDelete.applyAsDouble(bl);
+                    AutoSpeedrunAPI.render(
+                        new DebugWorldText(
+                            bl.getCenter().toVector3f(),
+                            String.format("%.1f", exploreScore), 0xff8888)
+                    );
+                }
+            }
         }
-        return path;
     }
 }

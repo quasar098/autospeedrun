@@ -7,7 +7,6 @@ WIDTH = img.width
 HEIGHT = img.height
 VFOV = 110 * pi/180
 HFOV = 2*atan(tan(VFOV/2)*WIDTH/HEIGHT)
-print(VFOV, HFOV)
 
 
 def project(a, c, t):
@@ -24,16 +23,29 @@ def project(a, c, t):
     return (ez/dz*dx) * WIDTH/2 + WIDTH/2, HEIGHT/2 - (ez/dz*dy) * WIDTH/2
 
 
+def main():
+    c_pos = [-11.890, 66.00000+1.62, -0.811]  # [x, y+1.62, z]
+    c_rot = [36.4, 15.3, 0]  # [pitch, yaw, 0]
 
-c_pos = [-11.890, 66.00000+1.62, -0.811]
-c_rot = [36.4, 15.3, 0]
+    B = [-13, 64, 2]
 
-B = [-13, 64, 2]
+    draw = ImageDraw.Draw(img)
+    dl = lambda from_3d, to_3d: draw.line((*project(from_3d, c_pos, c_rot), *project(to_3d, c_pos, c_rot)), fill="red", width=2)
 
-from_p = project([B[0], B[1]+1, B[2]], c_pos, c_rot)
-to_p = project([B[0]+1, B[1]+1, B[2]], c_pos, c_rot)
-print(from_p, to_p)
+    # dl([B[0], B[1]+1, B[2]], [B[0]+1, B[1]+1, B[2]])
+    # dl([B[0]+1, B[1]+1, B[2]], [B[0]+1, B[1]+1, B[2]+1])
+    # dl([B[0]+1, B[1]+1, B[2]+1], [B[0], B[1]+1, B[2]+1])
+    # dl([B[0], B[1]+1, B[2]+1], [B[0], B[1]+1, B[2]])
 
-draw = ImageDraw.Draw(img)
-draw.line((*from_p, *to_p), fill="red", width=2)
-img.save(f"out_img.png")
+    blockface = Image.new("RGB", (16, 16))
+    for x in range(16):
+        for y in range(16):
+            xf, yf = project([B[0]+(1+x*2)/32, B[1]+1, B[2]+(1+y*2)/32], c_pos, c_rot)
+            blockface.putpixel((x, y), img.getpixel((round(xf), round(yf))))
+
+    img.save(f"out_img.png")
+    blockface.save(f"out_blockface.png")
+
+
+if __name__ == '__main__':
+    main()

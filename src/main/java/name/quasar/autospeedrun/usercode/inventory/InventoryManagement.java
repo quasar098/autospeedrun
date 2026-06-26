@@ -78,14 +78,14 @@ public class InventoryManagement {
     private boolean lootChest() {
         AutoSpeedrunAPI.chatMessage("loot chest");
         for (int slot = 0; slot < container.getNumContainerSlots(); slot++) {
-            ContainerItem item = container.getItem(slot);
+            ContainerItem item = container.getContainerItem(slot);
             if (isValuedItem(item)) {
                 AutoSpeedrunAPI.pressKey(GLFW.GLFW_KEY_RIGHT_SHIFT);
                 int x = container.getContainerSlotScreenX(slot);
                 int y = container.getContainerSlotScreenY(slot);
                 AutoSpeedrunAPI.screenClick(x, y, 0);
                 AutoSpeedrunAPI.releaseKey(GLFW.GLFW_KEY_RIGHT_SHIFT);
-                container.setItem(null, slot);
+                container.setContainerItem(null, slot);
                 return true;
             }
         }

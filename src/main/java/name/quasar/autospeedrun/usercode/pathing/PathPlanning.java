@@ -8,7 +8,6 @@ import name.quasar.autospeedrun.usercode.geometry.*;
 import name.quasar.autospeedrun.usercode.world.WorldBlocks;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.function.ToDoubleFunction;
 
 /**
@@ -62,25 +61,17 @@ public class PathPlanning {
         return cachedPath;
     }
 
-    private BlockLocation nextBlockToExplore = null;
+    private DirectedBlockFace nextDBFToExplore = null;
 
-    public BlockLocation getNextBlockToExplore() {
-        return nextBlockToExplore;
+    public DirectedBlockFace getNextDBFToExplore() {
+        return nextDBFToExplore;
     }
 
-    /** sets nextBlockToExplore, cachedPath */
+    /** sets nextDBFToExplore, cachedPath */
     public PathPlanningResult perform() {
 
-        // hack to detect jumping.
-        // >>> 64 % 0.0005
-        // 0.0004999999999986677  # insane btw
-//        if (Math.abs(((F3Information.getPosition().getY() + 0.00025) % 0.0005) - 0.00025) > 0.0000001) {
-//            AutoSpeedrunAPI.chatMessage("currently jumping " + Math.abs(((F3Information.getPosition().getY() + 0.00025) % 0.0005) - 0.00025));
-//            return PathPlanningResult.CURRENTLY_JUMPING;
-//        }
-
         cachedPath = null;
-        nextBlockToExplore = null;
+        nextDBFToExplore = null;
         if (goalPosition == null) { return PathPlanningResult.NO_GOAL_POSITION; }
 
         // debug draw tall vertical line at goal
@@ -151,7 +142,7 @@ public class PathPlanning {
     }
 
     /**
-     * sets nextBlockToExplore
+     * sets nextBlockFaceToExplore
      */
     private ArrayList<BlockLocation> planPath() {
         Vector3 goal = goalPosition;
@@ -193,7 +184,11 @@ public class PathPlanning {
         openSet.add(start);
         g.put(start, 0.0);
         f.put(start, h(start));
-        dYRise.put(start, 0);
+        // hack to detect if player is in the air
+        // >>> 64 % 0.0005
+        // 0.0004999999999986677  # insane btw
+        boolean inTheAir = Math.abs(((F3Information.getPosition().getY() + 0.00025) % 0.0005) - 0.00025) > 0.0000001;
+        dYRise.put(start, inTheAir ? 1 : 0);
         dYFall.put(start, 0);
 
         // todo rework to account for block place/break costs
@@ -212,12 +207,22 @@ public class PathPlanning {
                 // find path to walk along (complete)
                 ArrayList<BlockLocation> path = reconstructPath(cameFrom, current);
                 unexplored.removeIf(bl -> !(path.contains(bl) || path.contains(bl.above()) || path.contains(bl.below())));
-                BlockLocation bestBlockToExplore = unexplored.peek();
+                BlockLocation bestBlockToExplore;
+                DirectedBlockFace visibleFace = null;
+                do {
+                    bestBlockToExplore = unexplored.poll();
+                    if (bestBlockToExplore == null) { break; }
+                    visibleFace = wb.getVisibleFace(bestBlockToExplore);
+                } while (visibleFace == null);
                 if (bestBlockToExplore != null) {
                     bestBlockToExplore.debugDraw();
                 }
-                nextBlockToExplore = bestBlockToExplore;
                 AutoSpeedrunAPI.chatMessage("best (c):" + bestBlockToExplore);
+                if (bestBlockToExplore != null) {
+                    nextDBFToExplore = visibleFace;
+                    visibleFace.toBlockFace().debugDraw(-0.04f, 0.3f, 0.1f, 0.3f);
+                    AutoSpeedrunAPI.chatMessage("visible:" + visibleFace);
+                }
                 return path;
             }
             openSet.remove(current);
@@ -242,11 +247,11 @@ public class PathPlanning {
                     }
                 }
                 double d = 1.0;
-                if (!wb.isAirOrUnknown(neighbor)) {
-                    d += 3.0;  // have to break through a block, bad
+                if (wb.isSolidKnown(neighbor)) {
+                    d += 8.0;  // have to break through a block, bad
                 }
-                if (!wb.isAirOrUnknown(neighbor.above())) {
-                    d += 3.0;  // have to break through a block, bad
+                if (wb.isSolidKnown(neighbor.above())) {
+                    d += 8.0;  // have to break through a block, bad
                 }
                 if (neighbor.getY() < current.getY()) {  // falling
                     if (wb.isSolidKnown(neighbor.below())) {
@@ -294,18 +299,17 @@ public class PathPlanning {
                 }
             }
         }
-        // find path to walk along (incomplete)
+        // todo fix up this path because its totally broken lol
         if (unexplored.isEmpty()) { AutoSpeedrunAPI.chatMessage("no path 1!"); return null; }
 //        path = reconstructPath(cameFrom, unexplored.peek());
         // find place to look at
-        // todo rework to favor close blocks more
-        BlockLocation bestBlockToExplore = unexplored.peek();
-        AutoSpeedrunAPI.chatMessage("bruh:" + bruhTodoDelete.applyAsDouble(bestBlockToExplore));
-        if (bestBlockToExplore == null) { AutoSpeedrunAPI.chatMessage("no path 2!"); return null; }
-        ArrayList<BlockLocation> path = reconstructPath(cameFrom, explored.peek());
+//        BlockLocation bestBlockToExplore = unexplored.peek();
+//        AutoSpeedrunAPI.chatMessage("bruh:" + bruhTodoDelete.applyAsDouble(bestBlockToExplore));
+//        if (bestBlockToExplore == null) { AutoSpeedrunAPI.chatMessage("no path 2!"); return null; }
+//        ArrayList<BlockLocation> path = reconstructPath(cameFrom, explored.peek());
 //        return path;
 //        nextBlockToExplore = bestBlockToExplore;
-        nextBlockToExplore = null;
+        nextDBFToExplore = null;
         return null;
     }
 

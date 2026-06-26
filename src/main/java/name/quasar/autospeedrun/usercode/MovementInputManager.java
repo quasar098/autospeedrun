@@ -10,7 +10,6 @@ public class MovementInputManager {
     private static boolean prevD = false;
     private static boolean prevSpace = false;
     private static boolean prevCrouch = false;
-    private static boolean prevSprint = false;
 
     private static boolean currW = false;
     private static boolean currA = false;
@@ -18,19 +17,22 @@ public class MovementInputManager {
     private static boolean currD = false;
     private static boolean currSpace = false;
     private static boolean currCrouch = false;
-    private static boolean currSprint = false;
+    private static boolean sprinting = false;
 
     public static boolean isSprinting() {
-        return currSprint;
+        return sprinting;
     }
 
     public static void setSprinting(boolean sprint) {
-        currSprint = sprint;
+        sprinting = sprint;
     }
 
     public static void handle() {
         if (prevW != currW) {
             if (currW) {
+                if (sprinting) {
+                    AutoSpeedrunAPI.pressKey(GLFW.GLFW_KEY_P);
+                }
                 AutoSpeedrunAPI.pressKey(GLFW.GLFW_KEY_W);
             } else {
                 AutoSpeedrunAPI.releaseKey(GLFW.GLFW_KEY_W);
@@ -71,16 +73,12 @@ public class MovementInputManager {
                 AutoSpeedrunAPI.releaseKey(GLFW.GLFW_KEY_LEFT_SHIFT);
             }
         }
-        if (prevSprint != currSprint) {
-            AutoSpeedrunAPI.pressKey(GLFW.GLFW_KEY_P);  // todo fix potential sync issues
-        }
         prevW = currW;
         prevA = currA;
         prevS = currS;
         prevD = currD;
         prevSpace = currSpace;
         prevCrouch = currCrouch;
-        prevSprint = currSprint;
         currW = false;
         currA = false;
         currS = false;

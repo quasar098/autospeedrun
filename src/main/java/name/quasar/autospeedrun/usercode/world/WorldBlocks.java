@@ -7,6 +7,7 @@ import name.quasar.autospeedrun.usercode.F3Information;
 import name.quasar.autospeedrun.usercode.Util;
 import name.quasar.autospeedrun.usercode.geometry.BlockFace;
 import name.quasar.autospeedrun.usercode.geometry.BlockLocation;
+import name.quasar.autospeedrun.usercode.geometry.DirectedBlockFace;
 import name.quasar.autospeedrun.usercode.geometry.Vector3;
 import name.quasar.autospeedrun.usercode.pathing.Navigation;
 
@@ -236,9 +237,46 @@ public class WorldBlocks {
         prevTickPitch = F3Information.getPitch();
     }
 
+    /**
+     * returns null if there is no visible block face from where the camera point is
+     */
+    public DirectedBlockFace getVisibleFace(BlockLocation desired) {
+        // todo predict next tick (eye) position and use instead of current tick eye position !!
+        Vector3 camera = Util.getEyePosition();
+        DirectedBlockFace[] dbfaces = desired.getDirectedFaces();
+        for (DirectedBlockFace dbface : dbfaces) {
+            if (dbface.getNormal().dot((dbface.getCenter().sub(camera)).normalized()) > -0.04) {
+                continue;
+            }
+            double[] yawAndPitch = (dbface.getCenter().sub(camera)).toYawAndPitchRadians();
+            ArrayList<BlockFace> detect = rayCollisionDetection(yawAndPitch[0], yawAndPitch[1],
+                camera.getX(), camera.getY(), camera.getZ(), desired);
+            boolean blockInTheWay = false;
+            for (BlockFace bf : detect) {
+                BlockLocation blockA = bf.getAdjacentA(F3Information.getDimension());
+                BlockLocation blockB = bf.getAdjacentB(F3Information.getDimension());
+                if (!blockA.equals(desired) && !WorldBlocks.getInstance().isAirOrUnknown(blockA)) {
+                    blockInTheWay = true;
+                    break;
+                }
+                if (!blockB.equals(desired) && !WorldBlocks.getInstance().isAirOrUnknown(blockB)) {
+                    blockInTheWay = true;
+                    break;
+                }
+            }
+            if (!blockInTheWay) {
+                return dbface;
+            }
+        }
+        return null;
+    }
+
     public void debugDraw() {
         for (Map.Entry<BlockLocation, WorldBlock> entry : knownBlocks.entrySet()) {
             BlockLocation loc = entry.getKey();
+            if (loc.getDimension() != F3Information.getDimension()) {
+                continue;
+            }
             BlockType blockType = entry.getValue().getBlockType();
             if (blockType.getValue().equals("air")) {
                 // draw black X through air blocks

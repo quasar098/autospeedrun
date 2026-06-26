@@ -98,7 +98,7 @@ public class AutoSpeedrunUserCode {
 
         // path planning, navigation, exploration
         PathPlanningResult pathPlanningResult = PathPlanning.getInstance().perform();
-        if (pathPlanningResult != PathPlanningResult.SUCCESS && pathPlanningResult != PathPlanningResult.CURRENTLY_JUMPING) { return; }
+        if (pathPlanningResult != PathPlanningResult.SUCCESS) { return; }
         Exploration.getInstance().perform();
         Navigation.getInstance().perform();
         MovementInputManager.handle();

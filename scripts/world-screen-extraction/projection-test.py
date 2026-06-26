@@ -2,7 +2,7 @@ from PIL import Image, ImageDraw
 from math import tan, sin, cos, pi, atan
 
 
-img = Image.open("img.png").convert("RGB")
+img = Image.open("img_2.png").convert("RGB")
 WIDTH = img.width
 HEIGHT = img.height
 VFOV = 110 * pi/180
@@ -24,14 +24,18 @@ def project(a, c, t):
 
 
 def main():
-    c_pos = [-11.890, 66.00000+1.62, -0.811]  # [x, y+1.62, z]
-    c_rot = [36.4, 15.3, 0]  # [pitch, yaw, 0]
+    # [x, y+1.62, z]
+    # c_pos = [-11.890, 66.00000+1.62, -0.811]
+    c_pos = [-13.456, 64.00000+1.62, 6.871]
+    # [pitch, yaw, 0]
+    # c_rot = [36.4, 15.3, 0]
+    c_rot = [3.5, -156.0, 0]
 
-    B = [-13, 64, 2]
+    # B = [-13, 64, 2]
+    B = [-12, 65, 3]
 
-    draw = ImageDraw.Draw(img)
-    dl = lambda from_3d, to_3d: draw.line((*project(from_3d, c_pos, c_rot), *project(to_3d, c_pos, c_rot)), fill="red", width=2)
-
+    # draw = ImageDraw.Draw(img)
+    # dl = lambda from_3d, to_3d: draw.line((*project(from_3d, c_pos, c_rot), *project(to_3d, c_pos, c_rot)), fill="red", width=2)
     # dl([B[0], B[1]+1, B[2]], [B[0]+1, B[1]+1, B[2]])
     # dl([B[0]+1, B[1]+1, B[2]], [B[0]+1, B[1]+1, B[2]+1])
     # dl([B[0]+1, B[1]+1, B[2]+1], [B[0], B[1]+1, B[2]+1])
@@ -40,7 +44,10 @@ def main():
     blockface = Image.new("RGB", (16, 16))
     for x in range(16):
         for y in range(16):
-            xf, yf = project([B[0]+(1+x*2)/32, B[1]+1, B[2]+(1+y*2)/32], c_pos, c_rot)
+            # top face
+            # xf, yf = project([B[0]+(1+x*2)/32, B[1]+1, B[2]+(1+y*2)/32], c_pos, c_rot)
+            # west (neg x)
+            xf, yf = project([B[0], B[1]+1-(1+y*2)/32, B[2]+(1+x*2)/32], c_pos, c_rot)
             blockface.putpixel((x, y), img.getpixel((round(xf), round(yf))))
 
     img.save(f"out_img.png")

@@ -86,7 +86,7 @@ public class ContainerRecognition {
                     break;
                 }
             }
-            c.setItem(new ContainerItem(bestItem), slot);
+            c.setContainerItem(new ContainerItem(bestItem), slot);
         }
     }
 

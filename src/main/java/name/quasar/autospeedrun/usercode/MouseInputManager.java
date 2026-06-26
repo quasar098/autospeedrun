@@ -80,6 +80,7 @@ public class MouseInputManager {
                 return false;
             case 0:
             case 1:
+                // is this even necessary it seems to work fine even with degPerPix commensurable with 0.1
                 if (String.valueOf(mod(degPerPix, 0.1)).length() < 8) {
                     // todo alternative mouse handling if degPerPix*10 is approx a nonzero integer
                     // probably that only leaves the case that gcd(round(degPerPix*10), 360) != 1 which is never manageable probably

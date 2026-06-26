@@ -26,6 +26,7 @@ public class F3Information {
 
     public static void clearCache() {
         cachedPosition = null;
+        cachedPositionStr = null;
         cachedYaw = null;
         cachedPitch = null;
         cachedDimension = null;
@@ -41,19 +42,27 @@ public class F3Information {
     /* xyz position */
 
     public static Vector3 cachedPosition = null;
+    public static String cachedPositionStr = null;
 
     public static Vector3 getPosition() {
         if (cachedPosition == null) {
-            String positionLine = Util.readF3ScreenStringForward(4, 4 + 18*10, 2);
-            assert !positionLine.isEmpty();
+            String positionLine = getCachedPositionStr();
             String[] splitPositionText = positionLine.replaceFirst("XYZ: ", "").split(" / ");
             cachedPosition = new Vector3(
-                    Double.parseDouble(splitPositionText[0]),
-                    Double.parseDouble(splitPositionText[1]),
-                    Double.parseDouble(splitPositionText[2])
+                Double.parseDouble(splitPositionText[0]),
+                Double.parseDouble(splitPositionText[1]),
+                Double.parseDouble(splitPositionText[2])
             );
         }
         return cachedPosition;
+    }
+
+    public static String getCachedPositionStr() {
+        if (cachedPositionStr == null) {
+            cachedPositionStr = Util.readF3ScreenStringForward(4, 4 + 18*10, 2);
+            assert !cachedPositionStr.isEmpty();
+        }
+        return cachedPositionStr;
     }
 
     /* pitch + yaw angles */

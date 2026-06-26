@@ -48,11 +48,11 @@ public abstract class Container {
 
     protected ContainerItem[] containerSlotItems;
 
-    public void setItem(ContainerItem item, int slot) {
+    public void setContainerItem(ContainerItem item, int slot) {
         containerSlotItems[slot] = item;
     }
 
-    public ContainerItem getItem(int slot) {
+    public ContainerItem getContainerItem(int slot) {
         return containerSlotItems[slot];
     }
 

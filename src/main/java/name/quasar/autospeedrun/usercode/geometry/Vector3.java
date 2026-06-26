@@ -149,4 +149,15 @@ public class Vector3 {
         }
         return new double[] { yaw, pitch };
     }
+
+    /**
+     * linear interpolation. amt between 0 and 1
+     */
+    public Vector3 interpTo(Vector3 other, double amt) {
+        return new Vector3(
+            getX()*(1-amt) + other.getX()*amt,
+            getY()*(1-amt) + other.getY()*amt,
+            getZ()*(1-amt) + other.getZ()*amt
+        );
+    }
 }

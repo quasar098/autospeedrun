@@ -36,11 +36,22 @@ public class Exploration {
         Vector3 lookAt;
         if (toExplore == null) {
             ArrayList<Vector3> pathNodes = PathPlanning.getInstance().getPath();
-            Vector3 nextNode = pathNodes.get(pathNodes.size() - 1);
-            if (pathNodes.size() >= 2) {
-                nextNode = pathNodes.get(pathNodes.size() - 2);
+            Vector3 playerPos = F3Information.getPosition();
+            Vector3 newLookAt = pathNodes.get(pathNodes.size() - 1);
+            double lookAheadDistance = 4.0;
+            for (int i = pathNodes.size() - 2; i >= 0; i--) {
+                Vector3 next = pathNodes.get(i);
+                double nextD = next.distanceTo(playerPos);
+                double currD = newLookAt.distanceTo(playerPos);
+                if (nextD > lookAheadDistance) {
+                    double clampedAmt = Math.max(0.0, Math.min(1.0, (lookAheadDistance-currD)/(nextD-currD)));
+                    newLookAt = pathNodes.get(i).interpTo(next, clampedAmt);
+                    break;
+                } else {
+                    newLookAt = pathNodes.get(i);
+                }
             }
-            lookAt = nextNode.withY(Util.getEyePosition().getY());
+            lookAt = newLookAt.withY(Util.getEyePosition().getY());
         } else {
             lookAt = toExplore.getCenter();
         }

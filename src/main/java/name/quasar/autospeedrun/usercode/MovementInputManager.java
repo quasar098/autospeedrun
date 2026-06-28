@@ -19,10 +19,6 @@ public class MovementInputManager {
     private static boolean currCrouch = false;
     private static boolean sprinting = false;
 
-    public static boolean isSprinting() {
-        return sprinting;
-    }
-
     public static void setSprinting(boolean sprint) {
         sprinting = sprint;
     }

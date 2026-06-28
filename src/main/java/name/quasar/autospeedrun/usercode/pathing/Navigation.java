@@ -118,7 +118,7 @@ public class Navigation {
         // player hitbox 0.6 wide, so ~0.2 remaining on each side
         final double ARRIVED_AT_DEST_POSITION_BOUND = 0.16;
 
-        ArrayList<Vector3> pathNodes = PathPlanning.getInstance().getPath();
+        ArrayList<Vector3> pathNodes = PathPlanning.getInstance().getResult().getPath();
 
         // debug draw path and vertical red line at next node
         Vector3 nextNode = pathNodes.get(pathNodes.size() - 1);

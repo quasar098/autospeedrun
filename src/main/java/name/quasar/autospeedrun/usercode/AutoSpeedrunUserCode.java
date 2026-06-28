@@ -6,10 +6,7 @@ import name.quasar.autospeedrun.usercode.geometry.BlockLocation;
 import name.quasar.autospeedrun.usercode.geometry.Vector3;
 import name.quasar.autospeedrun.usercode.geometry.GreatCircle;
 import name.quasar.autospeedrun.usercode.inventory.InventoryManagement;
-import name.quasar.autospeedrun.usercode.pathing.Exploration;
-import name.quasar.autospeedrun.usercode.pathing.Navigation;
-import name.quasar.autospeedrun.usercode.pathing.PathPlanning;
-import name.quasar.autospeedrun.usercode.pathing.PathPlanningResult;
+import name.quasar.autospeedrun.usercode.pathing.*;
 import name.quasar.autospeedrun.usercode.world.WorldBlocks;
 import org.lwjgl.glfw.GLFW;
 
@@ -97,11 +94,13 @@ public class AutoSpeedrunUserCode {
 //        }
 
         // path planning, navigation, exploration
-        PathPlanningResult pathPlanningResult = PathPlanning.getInstance().perform();
-        if (pathPlanningResult != PathPlanningResult.SUCCESS) { return; }
-        Exploration.getInstance().perform();
-        Navigation.getInstance().perform();
+        PathPlanning.getInstance().perform();
+        if (PathPlanning.getInstance().getResult().getStatus() == PathPlanningStatusCode.SUCCESS) {
+            Exploration.getInstance().perform();
+            Navigation.getInstance().perform();
+        }
         MovementInputManager.handle();
+        MouseInputManager.handle();
     }
 
     private ArrayList<GreatCircle> gc = null;

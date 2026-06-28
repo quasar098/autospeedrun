@@ -87,9 +87,11 @@ public class AutoSpeedrunAPI {
                 if (!screenClickedThisTick) {
                     screenClickedThisTick = true;
                     int scale = Minecraft.getInstance().options.guiScale;
+                    if (scale == 0) {
+                        scale = 2;  // maybe fix later ? Window.calculateScale has the answers ...
+                    }
                     Minecraft.getInstance().screen.mouseClicked((double) x / scale, (double) y / scale, button);
                     Minecraft.getInstance().screen.mouseReleased((double) x / scale, (double) y / scale, button);
-                    // todo fix 0 scale
                     long handle = Minecraft.getInstance().getWindow().getWindow();
                     GLFW.glfwSetCursorPos(handle, x, y);
                 }

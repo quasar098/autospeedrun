@@ -55,24 +55,18 @@ public class PathPlanning {
         goalPosition = new Vector3(x, -1, z);
     }
 
-    private ArrayList<Vector3> cachedPath = null;
+    private PathPlanningResult result;
 
-    public ArrayList<Vector3> getPath() {
-        return cachedPath;
+    public PathPlanningResult getResult() {
+        return result;
     }
 
-    private DirectedBlockFace nextDBFToExplore = null;
-
-    public DirectedBlockFace getNextDBFToExplore() {
-        return nextDBFToExplore;
-    }
-
-    /** sets nextDBFToExplore, cachedPath */
-    public PathPlanningResult perform() {
-
-        cachedPath = null;
-        nextDBFToExplore = null;
-        if (goalPosition == null) { return PathPlanningResult.NO_GOAL_POSITION; }
+    /** sets result */
+    public void perform() {
+        if (goalPosition == null) {
+            result = new PathPlanningResult(PathPlanningStatusCode.NO_GOAL_POSITION);
+            return;
+        }
 
         // debug draw tall vertical line at goal
         AutoSpeedrunAPI.render(new DebugWorldLine(
@@ -82,20 +76,11 @@ public class PathPlanning {
         ));
 
         // do the path planning, overwrite last node to be actual goal instead of nearest block
-        ArrayList<BlockLocation> path = planPath();
-        if (path == null) { return PathPlanningResult.NO_VALID_PATH; }
-        ArrayList<Vector3> pathNodes = new ArrayList<>();
-        for (BlockLocation bl : path) {
-            pathNodes.add(bl.getCenter().offsetY(-0.5));
+        PathPlanningResult path = planPath();
+        if (path.getStatus() == PathPlanningStatusCode.SUCCESS) {
+            debugDrawPath(path.getPath());
         }
-        Vector3 correctedGoal = goalPosition;
-        if (goalPosition.getY() <= 0) {
-            correctedGoal = new Vector3(correctedGoal.getX(), F3Information.getPosition().getY(), correctedGoal.getZ());
-        }
-        pathNodes.set(0, correctedGoal);
-        cachedPath = pathNodes;
-        debugDrawPath(pathNodes);
-        return PathPlanningResult.SUCCESS;
+        result = path;
     }
 
     public void debugDrawPath(ArrayList<Vector3> totalPath) {
@@ -144,7 +129,7 @@ public class PathPlanning {
     /**
      * sets nextBlockFaceToExplore
      */
-    private ArrayList<BlockLocation> planPath() {
+    private PathPlanningResult planPath() {
         Vector3 goal = goalPosition;
         assert(goal != null);
         Vector3 playerPos = Navigation.getInstance().getPredictedStablePosition();
@@ -155,7 +140,6 @@ public class PathPlanning {
 
         // A* specific stuff
         HashMap<BlockLocation, BlockLocation> cameFrom = new HashMap<>();
-        HashMap<BlockLocation, BlockLocation> unexploredCameFrom = new HashMap<>();
         HashMap<BlockLocation, Integer> dYRise = new HashMap<>();  // rising information
         dYRiseDebugSave = dYRise;
         HashMap<BlockLocation, Integer> dYFall = new HashMap<>();  // falling information
@@ -191,7 +175,7 @@ public class PathPlanning {
         dYRise.put(start, inTheAir ? 1 : 0);
         dYFall.put(start, 0);
 
-        // todo rework to account for block place/break costs
+        // todo rework to account for block place/break costs per block
 
         int iterations = 0;
 
@@ -204,9 +188,10 @@ public class PathPlanning {
             BlockLocation current = openSet.peek();
             if (current.getX() == Math.floor(goal.getX()) && current.getZ() == Math.floor(goal.getZ()) &&
                 (goal.getY() <= 0 || current.getY() == Math.floor(goal.getY()))) {
-                // find path to walk along (complete)
+                // find path to walk along
                 ArrayList<BlockLocation> path = reconstructPath(cameFrom, current);
                 unexplored.removeIf(bl -> !(path.contains(bl) || path.contains(bl.above()) || path.contains(bl.below())));
+                // find best place to look at
                 BlockLocation bestBlockToExplore;
                 DirectedBlockFace visibleFace = null;
                 do {
@@ -218,32 +203,47 @@ public class PathPlanning {
                     bestBlockToExplore.debugDraw();
                 }
                 AutoSpeedrunAPI.chatMessage("best (c):" + bestBlockToExplore);
+                Vector3 lookAtLocation = null;
                 if (bestBlockToExplore != null) {
-                    nextDBFToExplore = visibleFace;
+                    lookAtLocation = visibleFace.getCenter();
                     visibleFace.toBlockFace().debugDraw(-0.04f, 0.3f, 0.1f, 0.3f);
                     AutoSpeedrunAPI.chatMessage("visible:" + visibleFace);
                 }
-                return path;
+                // get blocks to break
+                ArrayList<BlockLocation> blocksToBreak = new ArrayList<>();
+                for (BlockLocation pathBlock : path) {
+                    if (wb.isSolidKnown(pathBlock)) {
+                        if (!blocksToBreak.contains(pathBlock)) {
+                            blocksToBreak.add(pathBlock);
+                        }
+                    }
+                    if (wb.isSolidKnown(pathBlock.above())) {
+                        if (!blocksToBreak.contains(pathBlock.above())) {
+                            blocksToBreak.add(pathBlock.above());
+                        }
+                    }
+                }
+                PathPlanningResult res = PathPlanningResult.fromBlockLocations(path, lookAtLocation, blocksToBreak);
+                // set last node to be actual goal position
+                res.getPath().set(0, goalPosition.getY() <= 0 ? goalPosition.withY(F3Information.getPosition().getY())
+                                                              : goalPosition);
+                return res;
             }
             openSet.remove(current);
             explored.add(current);
             if (!wb.isKnown(current)) {
                 unexplored.add(current);
-                unexploredCameFrom.put(current, cameFrom.getOrDefault(current, current));
             }
             for (BlockLocation neighbor : current.getNeighbors()) {
                 if (wb.isKnown(current)) {
                     if (!wb.isKnown(neighbor)) {
                         unexplored.add(neighbor);
-                        unexploredCameFrom.put(neighbor, current);
                     }
                     if (!wb.isKnown(neighbor.above())) {
                         unexplored.add(neighbor.above());
-                        unexploredCameFrom.put(neighbor.above(), current);
                     }
                     if (!wb.isKnown(neighbor.below())) {
                         unexplored.add(neighbor.below());
-                        unexploredCameFrom.put(neighbor.below(), current);
                     }
                 }
                 double d = 1.0;
@@ -300,17 +300,11 @@ public class PathPlanning {
             }
         }
         // todo fix up this path because its totally broken lol
-        if (unexplored.isEmpty()) { AutoSpeedrunAPI.chatMessage("no path 1!"); return null; }
-//        path = reconstructPath(cameFrom, unexplored.peek());
-        // find place to look at
-//        BlockLocation bestBlockToExplore = unexplored.peek();
-//        AutoSpeedrunAPI.chatMessage("bruh:" + bruhTodoDelete.applyAsDouble(bestBlockToExplore));
-//        if (bestBlockToExplore == null) { AutoSpeedrunAPI.chatMessage("no path 2!"); return null; }
-//        ArrayList<BlockLocation> path = reconstructPath(cameFrom, explored.peek());
-//        return path;
-//        nextBlockToExplore = bestBlockToExplore;
-        nextDBFToExplore = null;
-        return null;
+        if (unexplored.isEmpty()) {
+            AutoSpeedrunAPI.chatMessage("no path 1!");
+            return new PathPlanningResult(PathPlanningStatusCode.NO_VALID_PATH);
+        }
+        return new PathPlanningResult(PathPlanningStatusCode.NO_VALID_PATH);
     }
 
     public void debugDraw() {

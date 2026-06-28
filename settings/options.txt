@@ -17,7 +17,7 @@ touchscreen:false
 fullscreen:false
 bobView:false
 toggleCrouch:false
-toggleSprint:true
+toggleSprint:false
 mouseSensitivity:0.394650399684906
 fov:1.0
 gamma:5.0

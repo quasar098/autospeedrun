@@ -2,6 +2,7 @@ package name.quasar.autospeedrun.usercode;
 
 import name.quasar.autospeedrun.AutoSpeedrunAPI;
 import name.quasar.autospeedrun.usercode.geometry.Vector3;
+import org.lwjgl.glfw.GLFW;
 
 import static name.quasar.autospeedrun.usercode.Util.*;
 
@@ -80,7 +81,7 @@ public class MouseInputManager {
                 return false;
             case 0:
             case 1:
-                // is this even necessary it seems to work fine even with degPerPix commensurable with 0.1
+                // is this even necessary it seems to work alright even with degPerPix commensurable with 0.1
                 if (String.valueOf(mod(degPerPix, 0.1)).length() < 8) {
                     // todo alternative mouse handling if degPerPix*10 is approx a nonzero integer
                     // probably that only leaves the case that gcd(round(degPerPix*10), 360) != 1 which is never manageable probably
@@ -275,6 +276,40 @@ public class MouseInputManager {
                 return false;
         }
         return true;
+    }
+
+    private static boolean leftButtonCurr = false;
+    private static boolean rightButtonCurr = false;
+    private static boolean leftButtonPrev = false;
+    private static boolean rightButtonPrev = false;
+
+    public static void planPressLeftButton() {
+        leftButtonCurr = true;
+    }
+
+    public static void planPressRightButton() {
+        rightButtonCurr = true;
+    }
+
+    public static void handle() {
+        if (leftButtonCurr != leftButtonPrev) {
+            if (leftButtonCurr) {
+                AutoSpeedrunAPI.pressLeftClick();
+            } else {
+                AutoSpeedrunAPI.releaseLeftClick();
+            }
+        }
+        if (rightButtonCurr != rightButtonPrev) {
+            if (rightButtonCurr) {
+                AutoSpeedrunAPI.pressRightClick();
+            } else {
+                AutoSpeedrunAPI.releaseRightClick();
+            }
+        }
+        leftButtonPrev = leftButtonCurr;
+        rightButtonPrev = rightButtonCurr;
+        leftButtonCurr = false;
+        rightButtonCurr = false;
     }
 
     public static void reset() {

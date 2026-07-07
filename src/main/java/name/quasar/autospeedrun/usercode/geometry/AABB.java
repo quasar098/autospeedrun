@@ -25,6 +25,13 @@ public class AABB {
         this(min.getX(), min.getY(), min.getZ(), max.getX(), max.getY(), max.getZ());
     }
 
+    public AABB(Vector3 bottomCenter, double horizW, double vertH) {
+        this(
+            bottomCenter.offsetX(-horizW/2.0).offsetZ(-horizW/2.0),
+            bottomCenter.offsetX(horizW/2.0).offsetZ(horizW/2.0).offsetY(vertH)
+        );
+    }
+
     public double getMinX() {
         return minX;
     }
@@ -52,6 +59,13 @@ public class AABB {
     public Vector3 min() { return new Vector3(minX, minY, minZ); }
     public Vector3 max() { return new Vector3(maxX, maxY, maxZ); }
 
+    public AABB minmax(AABB other) {
+		return new AABB(
+            Math.min(this.minX, other.minX), Math.min(this.minY, other.minY), Math.min(this.minZ, other.minZ),
+            Math.max(this.maxX, other.maxX), Math.max(this.maxY, other.maxY), Math.max(this.maxZ, other.maxZ)
+        );
+    }
+
     public boolean equals(Object object) {
         if (this == object) {
             return true;
@@ -69,11 +83,26 @@ public class AABB {
     }
 
     public int hashCode() {
-        int i = Double.hashCode(this.minX);
-        i = 31 * i + Double.hashCode(this.minY);
-        i = 31 * i + Double.hashCode(this.minZ);
-        i = 31 * i + Double.hashCode(this.maxX);
-        i = 31 * i + Double.hashCode(this.maxY);
-        return 31 * i + Double.hashCode(this.maxZ);
+        int i = Double.hashCode(minX);
+        i = 31 * i + Double.hashCode(minY);
+        i = 31 * i + Double.hashCode(minZ);
+        i = 31 * i + Double.hashCode(maxX);
+        i = 31 * i + Double.hashCode(maxY);
+        return 31 * i + Double.hashCode(maxZ);
+    }
+
+    public AABB inflate(double x, double y, double z) {
+        return new AABB(
+            minX - x, minY - y, minZ - z,
+            maxX + x, maxY + y, maxZ + z
+        );
+    }
+
+    public AABB inflate(double d) {
+        return inflate(d, d, d);
+    }
+
+    public AABB deflate(double d) {
+        return inflate(-d);
     }
 }

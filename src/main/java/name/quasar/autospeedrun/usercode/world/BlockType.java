@@ -1,5 +1,7 @@
 package name.quasar.autospeedrun.usercode.world;
 
+import name.quasar.autospeedrun.usercode.geometry.Vector3;
+
 import java.util.ArrayList;
 
 public class BlockType {
@@ -14,6 +16,12 @@ public class BlockType {
         assert blockType.startsWith("minecraft:");
         this.value = blockType.replaceFirst("minecraft:", "");
         this.properties = null;
+        if (blockType.equals("flowing_water")) {
+            this.value = "water";
+        }
+        if (blockType.equals("flowing_lava")) {
+            this.value = "lava";
+        }
     }
 
     public BlockType(String blockType, ArrayList<String> properties) {
@@ -43,6 +51,32 @@ public class BlockType {
 
     public boolean isSolid() {
         return !getValue().equals("air") && solidBlockYOffset() == null;
+    }
+
+    public boolean isFluid() {
+        return getValue().equals("water") || getValue().equals("lava");
+    }
+
+    /** "reported" as in "seen on F3 menu" */
+    public int getReportedFluidHeight() {
+        for (String prop : properties) {
+            if (prop.startsWith("level: ")) {
+                return Integer.parseInt(prop.substring(7));
+            }
+        }
+        return 8;
+    }
+
+    /** block height */
+    public double getFluidHeight() {
+        assert isFluid();
+        return getReportedFluidHeight() / 9.0;
+    }
+
+    public Vector3 getFluidFlow() {
+        // todo ummm what do we do about this it doesnt show up on f3
+        // maybe ml?
+        return Vector3.ZERO;  // temp solution
     }
 
     public Integer solidBlockYOffset() {

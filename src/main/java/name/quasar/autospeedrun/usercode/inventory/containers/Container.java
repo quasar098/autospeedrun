@@ -1,6 +1,7 @@
 package name.quasar.autospeedrun.usercode.inventory.containers;
 
 import name.quasar.autospeedrun.AutoSpeedrunAPI;
+import name.quasar.autospeedrun.usercode.GlyphReading;
 import name.quasar.autospeedrun.usercode.Util;
 import name.quasar.autospeedrun.usercode.inventory.ContainerItem;
 
@@ -68,7 +69,7 @@ public abstract class Container {
     }
 
     public boolean isRecognized() {
-        String recognized = Util.readScreenStringForward(
+        String recognized = GlyphReading.readScreenStringForward(
             getIdTextScreenX(), getIdTextScreenY(), c -> c == 0x3f3f3f, Util.OPTIONS_TXT_GUI_SCALE
         );
 //        AutoSpeedrunApi.chatMessage("recognized:" + recognized + "," + getIdTextScreenX() + "," + getIdTextScreenY());

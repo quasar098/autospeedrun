@@ -86,6 +86,7 @@ public class Navigation {
         return predictedY;
     }
 
+    // todo convert this to AABB and move this debug thing to AABB
     public void drawPredictedPlayerBox() {
         Vector3 predictedStablePos = getPredictedStablePosition();
         if (predictedStablePos == null) { return; }

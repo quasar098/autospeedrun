@@ -4,6 +4,7 @@ import com.mojang.math.Vector3f;
 import name.quasar.autospeedrun.AutoSpeedrunAPI;
 import name.quasar.autospeedrun.debug.DebugWorldLine;
 import name.quasar.autospeedrun.usercode.Dimension;
+import name.quasar.autospeedrun.usercode.Util;
 
 import java.util.ArrayList;
 
@@ -130,6 +131,10 @@ public class BlockLocation {
         for (GreatCircle gc : gcs) {
             gc.debugDraw(camera);
         }
+    }
+
+    public static BlockLocation fromVector3(Dimension d, Vector3 vec) {
+        return new BlockLocation(d, Util.floor_Mth(vec.getX()), Util.floor_Mth(vec.getY()), Util.floor_Mth(vec.getZ()));
     }
 
     public void debugDraw() {

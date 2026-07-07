@@ -11,10 +11,10 @@ public class F3Information {
     public static boolean f3HasBackgroundDim = false;
 
     public static boolean isF3Open() {
-        if (Util.readScreenStringForward(4, 4, c -> c == 0xdddddd, 2).startsWith("Minecraft 1.16.1")) {
+        if (GlyphReading.readScreenStringForward(4, 4, c -> c == 0xdddddd, 2).startsWith("Minecraft 1.16.1")) {
             f3HasBackgroundDim = false;
             return true;
-        } else if (Util.readScreenStringForward(4, 4, 0xff3b3b3b, 2).startsWith("Minecraft 1.16.1")) {
+        } else if (GlyphReading.readScreenStringForward(4, 4, 0xff3b3b3b, 2).startsWith("Minecraft 1.16.1")) {
             // Screen.java
             // this.fillGradient(poseStack, 0, 0, this.width, this.height, -1072689136, -804253680);
             // wtf
@@ -59,7 +59,7 @@ public class F3Information {
 
     public static String getCachedPositionStr() {
         if (cachedPositionStr == null) {
-            cachedPositionStr = Util.readF3ScreenStringForward(4, 4 + 18*10, 2);
+            cachedPositionStr = GlyphReading.readF3ScreenStringForward(4, 4 + 18*10, 2);
             assert !cachedPositionStr.isEmpty();
         }
         return cachedPositionStr;
@@ -71,7 +71,7 @@ public class F3Information {
 
     public static Double getPitch() {
         if (cachedPitch == null) {
-            String anglesLine = Util.readF3ScreenStringForward(4, 4 + 18*13, 2);
+            String anglesLine = GlyphReading.readF3ScreenStringForward(4, 4 + 18*13, 2);
             assert !anglesLine.isEmpty();
             String[] splitPositionText = anglesLine
                     .replaceFirst("Facing: [^(]+\\([^)]+\\) \\(", "")
@@ -87,7 +87,7 @@ public class F3Information {
 
     public static Double getYaw() {
         if (cachedYaw == null) {
-            String anglesLine = Util.readF3ScreenStringForward(4, 4 + 18*13, 2);
+            String anglesLine = GlyphReading.readF3ScreenStringForward(4, 4 + 18*13, 2);
             assert !anglesLine.isEmpty();
             String[] splitPositionText = anglesLine
                     .replaceFirst("Facing: [^(]+\\([^)]+\\) \\(", "")
@@ -105,7 +105,7 @@ public class F3Information {
 
     public static Dimension getDimension() {
         if (cachedDimension == null) {
-            String f3ReadDimension = Util.readF3ScreenStringForward(4, 4 + 18*8, 2);
+            String f3ReadDimension = GlyphReading.readF3ScreenStringForward(4, 4 + 18*8, 2);
             if (f3ReadDimension.contains("minecraft:overworld")) {
                 cachedDimension = Dimension.OVERWORLD;
             } else if (f3ReadDimension.contains("minecraft:the_nether")) {
@@ -126,7 +126,7 @@ public class F3Information {
 
     public static BlockLocation getTargettedBlockLocation() {
         if (cachedTargettedBlockPosition == null) {
-            String positionLine = Util.readF3ScreenStringBackward(Util.SCREEN_W - 6, 4 + 18*10, 2);
+            String positionLine = GlyphReading.readF3ScreenStringBackward(Util.SCREEN_W - 6, 4 + 18*10, 2);
             String[] split = positionLine.replaceFirst("Targeted Block: ", "").split(", ");
             if (split.length != 3) {
                 return null;
@@ -149,7 +149,7 @@ public class F3Information {
 
     public static String getTargettedBlockName() {
         if (cachedTargettedBlockName == null) {
-            cachedTargettedBlockName = Util.readF3ScreenStringBackward(
+            cachedTargettedBlockName = GlyphReading.readF3ScreenStringBackward(
                 Util.SCREEN_W - 6, 4 + 18*11, new int[]{
                     63, 65, 66, 67, 68, 69, 71, 72, 74, 77, 78, 79, 80,
                     81, 82, 83, 85, 86, 87, 88, 89, 90, 70, 75, 84,
@@ -167,7 +167,7 @@ public class F3Information {
             int i = 0;
             while (true) {
                 // todo fix red/green text
-                String prop = Util.readF3ScreenStringBackward(
+                String prop = GlyphReading.readF3ScreenStringBackward(
                     Util.SCREEN_W - 6, 4 + 18 * (12 + i), new int[]{
                         63, 65, 66, 67, 68, 69, 71, 72, 74, 77, 78, 79, 80, 81, 82, 83, 85, 86, 87, 88, 89, 90,
                         16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 3, 70, 75, 84, 76, 73, 26, 0
@@ -204,7 +204,7 @@ public class F3Information {
     /* includes the "[0] " prefix */
     public static String getPiePathRawText() {
         if (cachedPiePathText == null) {
-            cachedPiePathText = Util.readScreenStringForward(Util.SCREEN_W - 330, Util.SCREEN_H - 416, 0xfffcfcfc, 1);
+            cachedPiePathText = GlyphReading.readScreenStringForward(Util.SCREEN_W - 330, Util.SCREEN_H - 416, 0xfffcfcfc, 1);
         }
         return cachedPiePathText;
     }
@@ -227,7 +227,7 @@ public class F3Information {
         }
         for (int i = 0; i < 9; i++) {
             if (cachedPieLabels[i] == null) {
-                cachedPieLabels[i] = Util.readScreenStringForward(
+                cachedPieLabels[i] = GlyphReading.readScreenStringForward(
                     Util.SCREEN_W - 330,
                     Util.SCREEN_H - 220 + 8 * i,
                     c -> Arrays.stream(pieTextColors).anyMatch(x -> x == c),
@@ -251,7 +251,7 @@ public class F3Information {
         }
         for (int i = 0; i < 9; i++) {
             if (cachedPieLabels[i] == null) {
-                cachedPieLabels[i] = Util.readScreenStringForward(
+                cachedPieLabels[i] = GlyphReading.readScreenStringForward(
                     Util.SCREEN_W - 330,
                     Util.SCREEN_H - 220 + 8 * i,
                     c -> Arrays.stream(pieTextColors).anyMatch(x -> x == c),
@@ -260,7 +260,7 @@ public class F3Information {
             }
             if (directory.equals(cachedPieLabels[i])) {
                 if (cachedPieRelativeResults[i] == null) {
-                    cachedPieRelativeResults[i] = Util.readScreenStringBackward(
+                    cachedPieRelativeResults[i] = GlyphReading.readScreenStringBackward(
                         Util.SCREEN_W - 61,
                         Util.SCREEN_H - 220 + 8 * i,
                         c -> Arrays.stream(pieTextColors).anyMatch(x -> x == c),
@@ -287,7 +287,7 @@ public class F3Information {
         }
         for (int i = 0; i < 9; i++) {
             if (cachedPieLabels[i] == null) {
-                cachedPieLabels[i] = Util.readScreenStringForward(
+                cachedPieLabels[i] = GlyphReading.readScreenStringForward(
                     Util.SCREEN_W - 330,
                     Util.SCREEN_H - 220 + 8 * i,
                     c -> Arrays.stream(pieTextColors).anyMatch(x -> x == c),
@@ -296,7 +296,7 @@ public class F3Information {
             }
             if (directory.equals(cachedPieLabels[i])) {
                 if (cachedPieGlobalResults[i] == null) {
-                    cachedPieGlobalResults[i] = Util.readScreenStringBackward(
+                    cachedPieGlobalResults[i] = GlyphReading.readScreenStringBackward(
                         Util.SCREEN_W - 11,
                         Util.SCREEN_H - 220 + 8 * i,
                         c -> Arrays.stream(pieTextColors).anyMatch(x -> x == c),

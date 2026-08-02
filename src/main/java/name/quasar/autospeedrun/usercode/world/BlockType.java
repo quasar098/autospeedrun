@@ -68,9 +68,9 @@ public class BlockType {
     }
 
     /** block height */
-    public double getFluidHeight() {
+    public float getFluidHeight() {
         assert isFluid();
-        return getReportedFluidHeight() / 9.0;
+        return getReportedFluidHeight() / 9.0F;
     }
 
     public Vector3 getFluidFlow() {
@@ -108,6 +108,46 @@ public class BlockType {
                 return -1;
             default:
                 return null;
+        }
+    }
+
+    public float getBlockSpeedFactor() {
+        switch (getValue()) {
+            case "honey_block":
+            case "soul_sand":
+                return 0.4F;
+            default:
+                return 1.0F;
+        }
+    }
+
+    public boolean isClimbable() {
+        switch (getValue()) {
+            case "ladder":
+            case "vine":
+            case "scaffolding":
+            case "weeping_vines":
+            case "weeping_vines_plant":
+            case "twisting_vines":
+            case "twisting_vines_plant":
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    public float getFriction() {
+        switch (getValue()) {
+            case "slime_block":
+                return 0.8F;
+            case "ice":
+            case "packed_ice":
+            case "frosted_ice":
+                return 0.98F;
+            case "blue_ice":
+                return 0.989F;
+            default:
+                return 0.6F;
         }
     }
 }

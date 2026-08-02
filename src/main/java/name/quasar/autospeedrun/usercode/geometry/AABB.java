@@ -59,6 +59,17 @@ public class AABB {
     public Vector3 min() { return new Vector3(minX, minY, minZ); }
     public Vector3 max() { return new Vector3(maxX, maxY, maxZ); }
 
+    public AABB move(Vector3 delta) {
+        return new AABB(min().add(delta), max().add(delta));
+    }
+
+    public AABB move(double dx, double dy, double dz) {
+        return move(new Vector3(dx, dy, dz));
+    }
+
+    /**
+     * get the smallest box that encloses both boxes
+     */
     public AABB minmax(AABB other) {
 		return new AABB(
             Math.min(this.minX, other.minX), Math.min(this.minY, other.minY), Math.min(this.minZ, other.minZ),

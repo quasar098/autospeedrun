@@ -7,45 +7,56 @@ import name.quasar.autospeedrun.usercode.geometry.BlockLocation;
 import name.quasar.autospeedrun.usercode.geometry.Vector3;
 import name.quasar.autospeedrun.usercode.world.BlockType;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
-import net.minecraft.world.Difficulty;
-import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.util.RewindableStream;
+import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.BooleanOp;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 import java.util.HashMap;
-import java.util.List;
+import java.util.stream.Stream;
 
 /** movement/input simulation stuff */
 public class SimulationTick {
     private Vector3 playerPos;
     private Vector3 playerVelo;
-    private float playerYaw;
-    private float playerPitch;
+    private float playerYaw;  // in degrees
+    private float playerPitch;  // in degrees
     private Dimension dimension;
     private HashMap<BlockLocation, BlockType> blocks;
     private boolean isInBoat;
 
     // next tick calculation stuff
     private SimulationInput input = null;
+    private FakeWorld fakeWorld = null;
     private boolean isSwimming = false;
     private boolean crouching = false;
     private boolean sprintingFlag = false;
+    private boolean shiftKeyDownFlag = false;  // notably distinct from input.shiftKeyDown
     private boolean wasTouchingWater = false;
     private boolean wasUnderwater = false;
     private boolean wasEyeInWater = false;
+    private boolean isTouchingLava = false;
     private boolean horizontalCollision = false;
+    private boolean verticalCollision = false;
     private boolean onGround = true;
+    private boolean jumping = false;
     private int waterVisionTime = 0;
     private int sprintTriggerTime = 0;
     private int noJumpDelay = 0;
     private float speed = (float)0.10000000149011612;
+    private float flyingSpeed = 0.02F;
+    private float xxa = 0.0f;
+    private float yya = 0.0f;
+    private float zza = 0.0f;
+    private Vector3 stuckSpeedMultiplier = Vector3.ZERO;
     private String fluidOnEyes = null;
     private HashMap<String, Double> fluidHeights = new HashMap<>();
+    private BlockLocation blockPosition = null;
 
     public SimulationTick(Dimension dimension) {
         this.dimension = dimension;
@@ -68,18 +79,28 @@ public class SimulationTick {
         next.isInBoat = this.isInBoat;
 
         next.input = new SimulationInput(kbm);
+        next.fakeWorld = new FakeWorld();  // todo maybe change
         next.isSwimming = this.isSwimming;
         next.crouching = this.crouching;
         next.sprintingFlag = this.sprintingFlag;
+        next.shiftKeyDownFlag = this.shiftKeyDownFlag;
         next.wasTouchingWater = this.wasTouchingWater;
         next.wasUnderwater = this.wasUnderwater;
         next.wasEyeInWater = this.wasEyeInWater;
+        next.isTouchingLava = this.isTouchingLava;
         next.horizontalCollision = this.horizontalCollision;
+        next.verticalCollision = this.verticalCollision;
         next.onGround = this.onGround;
+        next.jumping = this.jumping;
         next.sprintTriggerTime = this.sprintTriggerTime;
         next.waterVisionTime = this.waterVisionTime;
-        next.noJumpDelay = noJumpDelay;
+        next.noJumpDelay = this.noJumpDelay;
         next.speed = this.speed;
+        next.flyingSpeed = this.flyingSpeed;
+        next.xxa = this.xxa;
+        next.yya = this.yya;
+        next.zza = this.zza;
+        next.stuckSpeedMultiplier = this.stuckSpeedMultiplier;
         next.fluidOnEyes = this.fluidOnEyes;
         next.fluidHeights = this.fluidHeights;
         next.tick_LocalPlayer();
@@ -327,7 +348,10 @@ public class SimulationTick {
 //        this.inventory.tick();
         aiStep_LivingEntity();
 
-        this.speed = (float)0.10000000149011612;
+        this.flyingSpeed = 0.02F;
+        if (this.sprintingFlag) {
+            this.flyingSpeed = (float)(this.flyingSpeed + 0.005999999865889549);
+        }
 
         // lets assume we are always alive
         // im ignoring the this.touch() stuff because its only for edge cases like item pickup, pufferfish, etc.
@@ -355,51 +379,450 @@ public class SimulationTick {
         }
         playerVelo = new Vector3(dx, dy, dz);
 
-        if (this.jumping && this.isAffectedByFluids()) {
-            double k;
-            if (this.isInLava()) {
-                k = this.getFluidHeight(FluidTags.LAVA);
+        if (this.jumping) {
+            double inFluidDepth;
+            if (this.isTouchingLava) {
+                inFluidDepth = fluidHeights.getOrDefault("lava", 0.0);
             } else {
-                k = this.getFluidHeight(FluidTags.WATER);
+                inFluidDepth = fluidHeights.getOrDefault("water", 0.0);
             }
 
-            boolean bl = this.isInWater() && k > 0.0;
-            double l = this.getFluidJumpThreshold();
-            if (!bl || this.onGround && !(k > l)) {
-                if (!this.isInLava() || this.onGround && !(k > l)) {
-                    if ((this.onGround || bl && k <= l) && this.noJumpDelay == 0) {
-                        this.jumpFromGround();
+            boolean actuallyInWater = this.wasTouchingWater && inFluidDepth > 0.0;
+            if (!actuallyInWater || this.onGround && inFluidDepth <= 0.4) {
+                if (!this.isTouchingLava || this.onGround && inFluidDepth <= 0.4) {
+                    if (this.onGround && this.noJumpDelay == 0) {
+                        this.jumpFromGround_LivingEntity();
                         this.noJumpDelay = 10;
                     }
                 } else {
-                    this.jumpInLiquid(FluidTags.LAVA);
+                    playerVelo = playerVelo.add(new Vector3(0.0, 0.04F, 0.0));
                 }
             } else {
-                this.jumpInLiquid(FluidTags.WATER);
+                playerVelo = playerVelo.add(new Vector3(0.0, 0.04F, 0.0));
             }
         } else {
             this.noJumpDelay = 0;
         }
 
-        this.level.getProfiler().pop();
-        this.level.getProfiler().push("travel");
         this.xxa *= 0.98F;
         this.zza *= 0.98F;
-        this.updateFallFlying();
-        net.minecraft.world.phys.AABB aABB = this.getBoundingBox();
-        this.travel(new Vec3(this.xxa, this.yya, this.zza));
-        this.level.getProfiler().pop();
-        this.level.getProfiler().push("push");
-        if (this.autoSpinAttackTicks > 0) {
-            this.autoSpinAttackTicks--;
-            this.checkAutoSpinAttack(aABB, this.getBoundingBox());
+        travel_Player(new Vector3(this.xxa, this.yya, this.zza));
+
+        // we assume no entity pushing happens
+//        this.pushEntities_LivingEntity();
+
+        // lets assume we dont take drowning damage
+    }
+
+    private void travel_Player(Vector3 vec3) {
+        if (this.isSwimming() && !isInBoat) {
+            // dy = -Util.sin_Mth(playerPitch * Math.PI / 180.0); is equivalent
+            double dy = getLookAngle_Entity().getY();
+            double divingMult = dy < -0.2 ? 0.085 : 0.06;
+            // im omitting " || !this.level.getBlockState(new BlockPos(this.getX(), this.getY() + 0.9, this.getZ())).getFluidState().isEmpty()" because idk what it does
+            if (dy <= 0.0 || this.jumping) {
+                playerVelo = playerVelo.add(new Vector3(0.0, (dy - playerVelo.getY()) * divingMult, 0.0));
+            }
         }
 
-        this.pushEntities();
-        this.level.getProfiler().pop();
-        if (!this.level.isClientSide && this.isSensitiveToWater() && this.isInWaterRainOrBubble()) {
-            this.hurt(DamageSource.DROWN, 1.0F);
+        travel_LivingEntity(vec3);
+    }
+
+    private void travel_LivingEntity(Vector3 vec3) {
+        boolean goingDownwards = playerVelo.getY() <= 0.0;
+
+        // todo fluid movement
+//        FluidState fluidState = this.level.getFluidState(this.blockPosition());
+        if (wasTouchingWater) {
+            double e = playerPos.getY();
+            float waterSpeedMult = sprintingFlag ? 0.9F : 0.8F;
+            float g = 0.02F;
+            float depthStriderLevel = 0.0F;  // todo
+            if (depthStriderLevel > 3.0F) {
+                depthStriderLevel = 3.0F;
+            }
+
+            if (!this.onGround) {
+                depthStriderLevel *= 0.5F;
+            }
+
+            if (depthStriderLevel > 0.0F) {
+                waterSpeedMult += (0.54600006F - waterSpeedMult) * depthStriderLevel / 3.0F;
+                g += (this.speed - g) * depthStriderLevel / 3.0F;
+            }
+
+            // assume no dolphins grace
+//            if (this.hasEffect(MobEffects.DOLPHINS_GRACE)) {
+//                waterSpeedMult = 0.96F;
+//            }
+
+            moveRelative_Entity(g, vec3);
+            move_LocalPlayer("self", getPlayerVelo());
+            Vector3 vec32newVelo = this.getPlayerVelo();
+            if (this.horizontalCollision && this.onClimbable_LivingEntity()) {
+                vec32newVelo = new Vector3(vec32newVelo.getX(), 0.2, vec32newVelo.getZ());
+            }
+
+            this.setPlayerVelo(vec32newVelo.multComponentwise(new Vector3(waterSpeedMult, 0.8F, waterSpeedMult)));
+            Vector3 adjustedVelo = this.getFluidFallingAdjustedMovement_LivingEntity(goingDownwards, this.getPlayerVelo());
+            this.setPlayerVelo(adjustedVelo);
+            if (this.horizontalCollision && this.isFree_Entity(
+                adjustedVelo.getX(),
+                adjustedVelo.getY() + 0.6F - this.getPlayerPos().getY() + e,
+                adjustedVelo.getZ()
+            )) {
+                this.setPlayerVelo(new Vector3(adjustedVelo.getX(), 0.3F, adjustedVelo.getZ()));
+            }
+        } else if (isTouchingLava) {
+            double ex = this.getPlayerPos().getY();
+            this.moveRelative_Entity(0.02F, vec3);
+            this.move_LocalPlayer("self", getPlayerVelo());
+            if (this.fluidHeights.getOrDefault("lava", 0.0) <= 0.4) {
+                this.setPlayerVelo(this.getPlayerVelo().multComponentwise(new Vector3(0.5, 0.8F, 0.5)));
+                Vector3 adjustedVelo = this.getFluidFallingAdjustedMovement_LivingEntity(goingDownwards, this.getPlayerVelo());
+                this.setPlayerVelo(adjustedVelo);
+            } else {
+                this.setPlayerVelo(this.getPlayerVelo().mult(0.5));
+            }
+
+            this.setPlayerVelo(this.getPlayerVelo().add(new Vector3(0.0, -0.02, 0.0)));
+
+            Vector3 vec34 = this.getPlayerPos();
+            if (this.horizontalCollision && this.isFree_Entity(vec34.getX(), vec34.getY() + 0.6F - this.getPlayerPos().getY() + ex, vec34.getZ())) {
+                this.setPlayerVelo(new Vector3(vec34.getX(), 0.3F, vec34.getZ()));
+            }
+//      } else if (this.isFallFlying()) {  // assume no fall flying
+//          ...
+        } else {
+            BlockLocation blockLoc = new BlockLocation(
+                getDimension(),
+                Mth.floor(getPlayerPos().getX()),
+                Mth.floor(getPlayerBoundingBox().getMinY() - 0.5000001),
+                Mth.floor(getPlayerPos().getZ())
+            );
+            float friction = fakeWorld.getBlockState(blockLoc).getFriction();
+            float frictionAndDrag = this.onGround ? friction * 0.91F : 0.91F;
+            Vector3 vec37 = handleRelativeFrictionAndCalculateMovement_LivingEntity(vec3, friction);
+            double newYVelo = vec37.getY();
+            newYVelo -= 0.08;
+
+            this.setPlayerVelo(new Vector3(vec37.getY() * frictionAndDrag, newYVelo * 0.98F, vec37.getZ() * frictionAndDrag));
         }
+
+        this.calculateEntityAnimation(this, this instanceof FlyingAnimal);
+    }
+
+    private Vector3 handleRelativeFrictionAndCalculateMovement_LivingEntity(Vector3 vec3, float friction) {
+        moveRelative_Entity(this.getFrictionInfluencedSpeed_LivingEntity(friction), vec3);
+        this.setPlayerVelo(this.handleOnClimbable(this.getPlayerVelo()));
+        this.move_LocalPlayer("self", this.getPlayerVelo());
+        Vector3 vec32 = this.getPlayerVelo();
+        if ((this.horizontalCollision || this.jumping) && this.onClimbable()) {
+            vec32 = new Vec3(vec32.x, 0.2, vec32.z);
+        }
+
+        return vec32;
+    }
+
+    private float getFrictionInfluencedSpeed_LivingEntity(float f) {
+        return this.onGround ? this.speed * (0.21600002F / (f * f * f)) : this.flyingSpeed;
+    }
+
+    private boolean isFree_Entity(double dx, double dy, double dz) {
+        return this.isFree_Entity(this.getPlayerBoundingBox().move(dx, dy, dz));
+    }
+
+    private boolean isFree_Entity(AABB aabb) {
+        return fakeWorld.noCollision(aabb) && !fakeWorld.containsAnyLiquid(aabb);
+    }
+
+    public Vector3 getFluidFallingAdjustedMovement_LivingEntity(boolean goingDown, Vector3 ogVelo) {
+        if (!this.sprintingFlag) {
+            return new Vector3(
+                ogVelo.getX(),
+                goingDown && Math.abs(ogVelo.getY() - 0.005) >= 0.003 && Math.abs(ogVelo.getY() - 0.005) < 0.003
+                    ? -0.003 : ogVelo.getY() - 0.005,
+                ogVelo.getZ()
+            );
+        } else {
+            return ogVelo;
+        }
+    }
+
+    private boolean onClimbable_LivingEntity() {
+        BlockLocation blockPos = this.blockPosition;
+        BlockType blockState = fakeWorld.getBlockState(blockPosition);
+        if (blockState.isClimbable()) {
+            return true;
+//        } else if (block instanceof TrapDoorBlock && this.trapdoorUsableAsLadder(blockPos, blockState)) {
+//            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private void move_LocalPlayer(String moverType, Vector3 playerVelo) {
+        // kind of useless since i removed the autojump relevant code but whatever
+        move_Entity(moverType, playerVelo);
+    }
+
+    private void move_Entity(String moverType, Vector3 moveVec) {
+        // assuming no piston pushing
+//        if (Objects.equals(moverType, "piston")) {
+//            moveVec = this.limitPistonMovement(moveVec);
+//            if (moveVec.equals(Vec3.ZERO)) {
+//                return;
+//            }
+//        }
+
+        if (this.stuckSpeedMultiplier.lengthSquared() > 1.0E-7) {
+            moveVec = moveVec.multComponentwise(this.stuckSpeedMultiplier);
+            this.stuckSpeedMultiplier = Vector3.ZERO;
+            this.setPlayerVelo(Vector3.ZERO);
+        }
+
+        moveVec = maybeBackOffFromEdge_Player(moveVec, moverType);
+        Vector3 moveVec2 = collide_Entity(moveVec);
+        if (moveVec2.lengthSquared() > 1.0E-7) {
+            // i hope nothing bad happens by me simplifying all the bounding box code ...
+            setPlayerPos(getPlayerPos().add(moveVec2));
+        }
+
+        this.horizontalCollision = !Mth.equal(moveVec.getX(), moveVec2.getX()) || !Mth.equal(moveVec.getZ(), moveVec2.getZ());
+        this.verticalCollision = moveVec.getY() != moveVec2.getY();
+        this.onGround = this.verticalCollision && moveVec.getY() < 0.0;
+        BlockLocation blockLoc = getOnPos_Entity();
+        BlockType blockState = fakeWorld.getBlockState(blockLoc);
+        // assume no fall damage
+//        this.checkFallDamage(moveVec2.getY(), this.onGround, blockState, blockLoc);
+        Vector3 newPlayerVelo = this.getPlayerVelo();
+        if (moveVec.getX() != moveVec2.getX()) {
+            this.setPlayerVelo(new Vector3(0.0, newPlayerVelo.getY(), newPlayerVelo.getZ()));
+        }
+
+        if (moveVec.getZ() != moveVec2.getZ()) {
+            this.setPlayerVelo(new Vector3(newPlayerVelo.getX(), newPlayerVelo.getY(), 0.0));
+        }
+
+        if (moveVec.getY() != moveVec2.getY()) {
+            setPlayerVelo(getPlayerVelo().withY(0.0));
+        }
+
+        // assume no weird stuffs here (stairs, magma, slime, redstone ore)
+//        if (this.onGround && !this.isSteppingCarefully()) {
+//            block.stepOn(this.level, blockLoc, this);
+//        }
+
+        // todo check inside lava
+        try {
+            this.isTouchingLava = false;
+            this.checkInsideBlocks_Entity();
+        } catch (Throwable var18) {
+            throw new UnsupportedOperationException("ummm touching blocks issue (?)");
+        }
+
+        float speedFactor = fakeWorld.getBlockState(this.blockPosition).getBlockSpeedFactor();
+        if (speedFactor == 1.0F) {
+            speedFactor = fakeWorld.getBlockState(new BlockLocation(
+                getDimension(),
+                Mth.floor(getPlayerPos().getX()),
+                Mth.floor(getPlayerBoundingBox().getMinY() - 0.5000001),
+                Mth.floor(getPlayerPos().getZ())
+            )).getBlockSpeedFactor();
+        }
+        this.setPlayerVelo(this.getPlayerVelo().multComponentwise(new Vector3(speedFactor, 1.0, speedFactor)));
+
+        // assume no fire i guess
+//        if (fakeWorld.getBlockStatesIfLoaded(getPlayerBoundingBox().deflate(0.001))
+//            .noneMatch(blockType -> blockType.getValue().equals("fire") || blockType.getValue().equals("lava"))
+//            && this.remainingFireTicks <= 0) {
+//            this.setRemainingFireTicks(-this.getFireImmuneTicks());
+//        }
+
+        // assume no fire
+//        if (this.isInWaterRainOrBubble() && this.isOnFire()) {
+//            this.playSound(SoundEvents.GENERIC_EXTINGUISH_FIRE, 0.7F, 1.6F + (this.random.nextFloat() - this.random.nextFloat()) * 0.4F);
+//            this.setRemainingFireTicks(-this.getFireImmuneTicks());
+//        }
+    }
+
+    private void checkInsideBlocks_Entity() {
+        AABB aABB = getPlayerBoundingBox();
+        BlockLocation blockLoc = new BlockLocation(
+            getDimension(),
+            Util.floor_Mth(aABB.getMinX() + 0.001),
+            Util.floor_Mth(aABB.getMinY() + 0.001),
+            Util.floor_Mth(aABB.getMinZ() + 0.001)
+        );
+        BlockLocation blockLoc2 = new BlockLocation(
+            getDimension(),
+            Util.floor_Mth(aABB.getMaxX() - 0.001),
+            Util.floor_Mth(aABB.getMaxY() - 0.001),
+            Util.floor_Mth(aABB.getMaxZ() - 0.001)
+        );
+        for (long i = blockLoc.getX(); i <= blockLoc2.getX(); i++) {
+            for (long j = blockLoc.getY(); j <= blockLoc2.getY(); j++) {
+                for (long k = blockLoc.getZ(); k <= blockLoc2.getZ(); k++) {
+                    BlockLocation collideLocation = new BlockLocation(getDimension(), i, j, k);
+                    BlockType blockType = this.fakeWorld.getBlockState(collideLocation);
+
+                    try {
+                        if (blockType.getValue().equals("lava")) {
+                            float f = collideLocation.getY() + blockType.getFluidHeight();
+                            if (aABB.getMinY() < f || f > aABB.getMaxY()) {
+                                isTouchingLava = true;
+                            }
+                        }
+                    } catch (Throwable var12) {
+                        throw new UnsupportedOperationException("ummm entity inside block issue (?)");
+                    }
+                }
+            }
+        }
+    }
+
+    private BlockLocation getOnPos_Entity() {
+        int i = Mth.floor(getPlayerPos().getX());
+        int j = Mth.floor(getPlayerPos().getY() - 0.2F);
+        int k = Mth.floor(getPlayerPos().getZ());
+        BlockLocation blockLoc = new BlockLocation(getDimension(), i, j, k);
+        if (!fakeWorld.getBlockState(blockLoc).isSolid()) {  // originally it is .isAir() but idk if that means nonsolids or just air
+            BlockType blockState = fakeWorld.getBlockState(blockLoc.below());
+            // what are the changes we walk on top of walls/fences ... :clueless:
+//            Block block = blockState.getBlock();
+//            if (block.is(BlockTags.FENCES) || block.is(BlockTags.WALLS) || block instanceof FenceGateBlock) {
+//                return blockLoc.below();
+//            }
+        }
+        return blockLoc;
+    }
+
+    // todo
+    private Vector3 collide_Entity(Vector3 vec3) {
+        AABB aABB = getPlayerBoundingBox();
+        CollisionContext collisionContext = CollisionContext.of(this);
+        VoxelShape voxelShape = this.level.getWorldBorder().getCollisionShape();
+        Stream<VoxelShape> stream = Shapes.joinIsNotEmpty(voxelShape, Shapes.create(aABB.deflate(1.0E-7)), BooleanOp.AND) ? Stream.empty() : Stream.of(voxelShape);
+        Stream<VoxelShape> stream2 = this.level.getEntityCollisions(this, aABB.expandTowards(vec3), entity -> true);
+        RewindableStream<VoxelShape> rewindableStream = new RewindableStream<>(Stream.concat(stream2, stream));
+        Vec3 vec32 = vec3.lengthSqr() == 0.0 ? vec3 : collideBoundingBoxHeuristically(this, vec3, aABB, this.level, collisionContext, rewindableStream);
+        boolean bl = vec3.x != vec32.x;
+        boolean bl2 = vec3.y != vec32.y;
+        boolean bl3 = vec3.z != vec32.z;
+        boolean bl4 = this.onGround || bl2 && vec3.y < 0.0;
+        if (this.maxUpStep > 0.0F && bl4 && (bl || bl3)) {
+            Vec3 vec33 = collideBoundingBoxHeuristically(this, new Vec3(vec3.x, this.maxUpStep, vec3.z), aABB, this.level, collisionContext, rewindableStream);
+            Vec3 vec34 = collideBoundingBoxHeuristically(
+                this, new Vec3(0.0, this.maxUpStep, 0.0), aABB.expandTowards(vec3.x, 0.0, vec3.z), this.level, collisionContext, rewindableStream
+            );
+            if (vec34.y < this.maxUpStep) {
+                Vec3 vec35 = collideBoundingBoxHeuristically(this, new Vec3(vec3.x, 0.0, vec3.z), aABB.move(vec34), this.level, collisionContext, rewindableStream)
+                    .add(vec34);
+                if (getHorizontalDistanceSqr(vec35) > getHorizontalDistanceSqr(vec33)) {
+                    vec33 = vec35;
+                }
+            }
+
+            if (getHorizontalDistanceSqr(vec33) > getHorizontalDistanceSqr(vec32)) {
+                return vec33.add(
+                    collideBoundingBoxHeuristically(this, new Vec3(0.0, -vec33.y + vec3.y, 0.0), aABB.move(vec33), this.level, collisionContext, rewindableStream)
+                );
+            }
+        }
+
+        return vec32;
+    }
+
+    private Vector3 maybeBackOffFromEdge_Player(Vector3 moveVec, String moverType) {
+        if ((moverType.equals("self") || moverType.equals("player")) && this.onGround && this.shiftKeyDownFlag) {
+            double moveX = moveVec.getX();
+            double moveZ = moveVec.getZ();
+
+            // todo actually impl collision stuff to prevent shift sliding off or something
+//            while (moveX != 0.0 && this.level.noCollision(this, this.getBoundingBox().move(moveX, -this.maxUpStep, 0.0))) {
+//                if (moveX < 0.05 && moveX >= -0.05) {
+//                    moveX = 0.0;
+//                } else if (moveX > 0.0) {
+//                    moveX -= 0.05;
+//                } else {
+//                    moveX += 0.05;
+//                }
+//            }
+//
+//            while (moveZ != 0.0 && this.level.noCollision(this, this.getBoundingBox().move(0.0, -this.maxUpStep, moveZ))) {
+//                if (moveZ < 0.05 && moveZ >= -0.05) {
+//                    moveZ = 0.0;
+//                } else if (moveZ > 0.0) {
+//                    moveZ -= 0.05;
+//                } else {
+//                    moveZ += 0.05;
+//                }
+//            }
+//
+//            while (moveX != 0.0 && moveZ != 0.0 && this.level.noCollision(this, this.getBoundingBox().move(moveX, -this.maxUpStep, moveZ))) {
+//                if (moveX < 0.05 && moveX >= -0.05) {
+//                    moveX = 0.0;
+//                } else if (moveX > 0.0) {
+//                    moveX -= 0.05;
+//                } else {
+//                    moveX += 0.05;
+//                }
+//
+//                if (moveZ < 0.05 && moveZ >= -0.05) {
+//                    moveZ = 0.0;
+//                } else if (moveZ > 0.0) {
+//                    moveZ -= 0.05;
+//                } else {
+//                    moveZ += 0.05;
+//                }
+//            }
+
+            moveVec = new Vector3(moveX, moveVec.getY(), moveZ);
+        }
+
+        return moveVec;
+    }
+
+    private void moveRelative_Entity(float f, Vector3 vec3) {
+        Vector3 inputVector = getInputVector_Entity(vec3, f, playerYaw);
+        setPlayerVelo(getPlayerVelo().add(inputVector));
+    }
+
+    private Vector3 getInputVector_Entity(Vector3 vec3, float f, float yawAngle) {
+        double d = vec3.lengthSquared();
+		if (d < 1.0E-7) {
+			return Vector3.ZERO;
+		} else {
+			Vector3 adjustedVector = (d > 1.0 ? vec3.normalized() : vec3).mult(f);
+			float h = Util.sin_Mth(yawAngle * (float) (Math.PI / 180.0));
+			float i = Util.cos_Mth(yawAngle * (float) (Math.PI / 180.0));
+			return new Vector3(adjustedVector.getX() * i - adjustedVector.getZ() * h, adjustedVector.getY(), adjustedVector.getZ() * i + adjustedVector.getX() * h);
+		}
+    }
+
+    private Vector3 getLookAngle_Entity() {
+        float pitchRad = playerPitch * (float) (Math.PI / 180.0);
+        float yawRad = -playerYaw * (float) (Math.PI / 180.0);
+        return new Vector3(
+            Util.sin_Mth(yawRad) * Util.cos_Mth(pitchRad),
+            -Util.sin_Mth(pitchRad), Util.cos_Mth(yawRad) * Util.cos_Mth(pitchRad)
+        );
+    }
+
+    private void jumpFromGround_LivingEntity() {
+        float f = this.getJumpPower();
+        if (this.hasEffect(MobEffects.JUMP)) {
+            f += 0.1F * (this.getEffect(MobEffects.JUMP).getAmplifier() + 1);
+        }
+
+        Vec3 vec3 = this.getDeltaMovement();
+        this.setDeltaMovement(vec3.x, f, vec3.z);
+        if (this.isSprinting()) {
+            float g = this.yRot * (float) (Math.PI / 180.0);
+            this.setDeltaMovement(this.getDeltaMovement().add(-Mth.sin(g) * 0.2F, 0.0, Mth.cos(g) * 0.2F));
+        }
+
+        this.hasImpulse = true;
     }
 
     private boolean hasEnoughImpulseToStartSprinting_LocalPlayer() {
@@ -480,16 +903,19 @@ public class SimulationTick {
         return playerVelo;
     }
 
+    /** in degrees */
     public float getPlayerYaw() {
         return playerYaw;
     }
 
+    /** in degrees */
     public float getPlayerPitch() {
         return playerPitch;
     }
 
     public SimulationTick setPlayerPos(Vector3 playerPos) {
         this.playerPos = playerPos;
+        this.blockPosition = new BlockLocation(getDimension(), Util.floor_Mth(playerPos.getX()), Util.floor_Mth(playerPos.getY()), Util.floor_Mth(playerPos.getZ()));
         return this;
     }
 
@@ -497,12 +923,14 @@ public class SimulationTick {
         this.playerVelo = playerVelo;
         return this;
     }
-    
+
+    /** in degrees */
     public SimulationTick setPlayerYaw(float playerYaw) {
         this.playerYaw = playerYaw;
         return this;
     }
-    
+
+    /** in degrees */
     public SimulationTick setPlayerPitch(float playerPitch) {
         this.playerPitch = playerPitch;
         return this;

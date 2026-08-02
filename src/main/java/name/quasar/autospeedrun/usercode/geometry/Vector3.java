@@ -90,6 +90,10 @@ public class Vector3 {
         return Math.sqrt(getX() * getX() + getY() * getY() + getZ() * getZ());
     }
 
+    public double lengthSquared() {
+        return getX() * getX() + getY() * getY() + getZ() * getZ();
+    }
+
     public Vector3 cross(Vector3 b) {
         Vector3 a = this;
         return new Vector3(
@@ -97,6 +101,11 @@ public class Vector3 {
             a.getZ()*b.getX()-a.getX()*b.getZ(),
             a.getX()*b.getY()-a.getY()*b.getX()
         );
+    }
+
+    public Vector3 multComponentwise(Vector3 b) {
+        Vector3 a = this;
+        return new Vector3(a.getX()*b.getX(), a.getY()*b.getY(), a.getZ()*b.getZ());
     }
 
     /**

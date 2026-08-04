@@ -1,6 +1,8 @@
 package name.quasar.autospeedrun.usercode.world;
 
+import name.quasar.autospeedrun.usercode.geometry.BlockLocation;
 import name.quasar.autospeedrun.usercode.geometry.Vector3;
+import name.quasar.autospeedrun.usercode.simulation.FakeWorld;
 
 import java.util.ArrayList;
 
@@ -149,5 +151,19 @@ public class BlockType {
             default:
                 return 0.6F;
         }
+    }
+
+    public float getJumpFactor() {
+        switch (getValue()) {
+            case "honey_block":
+                return 0.5F;
+            default:
+                return 1.0F;
+        }
+    }
+
+    public boolean isSuffocating(FakeWorld fakeWorld, BlockLocation bl) {
+        // todo implement actual
+        return true;
     }
 }

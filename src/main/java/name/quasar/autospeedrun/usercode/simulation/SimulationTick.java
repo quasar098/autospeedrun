@@ -7,10 +7,10 @@ import name.quasar.autospeedrun.usercode.geometry.BlockLocation;
 import name.quasar.autospeedrun.usercode.geometry.Vector3;
 import name.quasar.autospeedrun.usercode.world.BlockType;
 import net.minecraft.core.BlockPos;
-import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RewindableStream;
-import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -57,6 +57,9 @@ public class SimulationTick {
     private String fluidOnEyes = null;
     private HashMap<String, Double> fluidHeights = new HashMap<>();
     private BlockLocation blockPosition = null;
+
+    private final int JUMP_BOOST_LVL = 1;  // todo make configurable
+    private final float maxUpStep = 0.6F;
 
     public SimulationTick(Dimension dimension) {
         this.dimension = dimension;
@@ -497,7 +500,7 @@ public class SimulationTick {
             BlockLocation blockLoc = new BlockLocation(
                 getDimension(),
                 Mth.floor(getPlayerPos().getX()),
-                Mth.floor(getPlayerBoundingBox().getMinY() - 0.5000001),
+                Mth.floor(getPlayerPos().getY() - 0.5000001),
                 Mth.floor(getPlayerPos().getZ())
             );
             float friction = fakeWorld.getBlockState(blockLoc).getFriction();
@@ -508,20 +511,34 @@ public class SimulationTick {
 
             this.setPlayerVelo(new Vector3(vec37.getY() * frictionAndDrag, newYVelo * 0.98F, vec37.getZ() * frictionAndDrag));
         }
-
-        this.calculateEntityAnimation(this, this instanceof FlyingAnimal);
     }
 
     private Vector3 handleRelativeFrictionAndCalculateMovement_LivingEntity(Vector3 vec3, float friction) {
         moveRelative_Entity(this.getFrictionInfluencedSpeed_LivingEntity(friction), vec3);
-        this.setPlayerVelo(this.handleOnClimbable(this.getPlayerVelo()));
+        this.setPlayerVelo(this.handleOnClimbable_LivingEntity(this.getPlayerVelo()));
         this.move_LocalPlayer("self", this.getPlayerVelo());
         Vector3 vec32 = this.getPlayerVelo();
-        if ((this.horizontalCollision || this.jumping) && this.onClimbable()) {
-            vec32 = new Vec3(vec32.x, 0.2, vec32.z);
+        if ((this.horizontalCollision || this.jumping) && this.onClimbable_LivingEntity()) {
+            vec32 = new Vector3(vec32.getX(), 0.2, vec32.getZ());
         }
 
         return vec32;
+    }
+
+    private Vector3 handleOnClimbable_LivingEntity(Vector3 vec3) {
+        if (this.onClimbable_LivingEntity()) {
+            double newX = Mth.clamp(vec3.getX(), -0.15F, 0.15F);
+            double newY = Math.max(vec3.getY(), -0.15F);
+            double newZ = Mth.clamp(vec3.getZ(), -0.15F, 0.15F);
+            if (newY < 0.0 && !fakeWorld.getBlockState(blockPosition).getValue().equals("scaffolding")
+                && shiftKeyDownFlag) {
+                newY = 0.0;
+            }
+
+            vec3 = new Vector3(newX, newY, newZ);
+        }
+
+        return vec3;
     }
 
     private float getFrictionInfluencedSpeed_LivingEntity(float f) {
@@ -626,7 +643,7 @@ public class SimulationTick {
             speedFactor = fakeWorld.getBlockState(new BlockLocation(
                 getDimension(),
                 Mth.floor(getPlayerPos().getX()),
-                Mth.floor(getPlayerBoundingBox().getMinY() - 0.5000001),
+                Mth.floor(getPlayerPos().getY() - 0.5000001),
                 Mth.floor(getPlayerPos().getZ())
             )).getBlockSpeedFactor();
         }
@@ -688,7 +705,8 @@ public class SimulationTick {
         BlockLocation blockLoc = new BlockLocation(getDimension(), i, j, k);
         if (!fakeWorld.getBlockState(blockLoc).isSolid()) {  // originally it is .isAir() but idk if that means nonsolids or just air
             BlockType blockState = fakeWorld.getBlockState(blockLoc.below());
-            // what are the changes we walk on top of walls/fences ... :clueless:
+            // what are the chances we walk on top of walls/fences ... :clueless:
+            // todo do this
 //            Block block = blockState.getBlock();
 //            if (block.is(BlockTags.FENCES) || block.is(BlockTags.WALLS) || block instanceof FenceGateBlock) {
 //                return blockLoc.below();
@@ -698,39 +716,126 @@ public class SimulationTick {
     }
 
     // todo
-    private Vector3 collide_Entity(Vector3 vec3) {
-        AABB aABB = getPlayerBoundingBox();
+    private Vector3 collide_Entity(Vector3 moveVec) {
+        AABB playerAABB = getPlayerBoundingBox();
         CollisionContext collisionContext = CollisionContext.of(this);
-        VoxelShape voxelShape = this.level.getWorldBorder().getCollisionShape();
-        Stream<VoxelShape> stream = Shapes.joinIsNotEmpty(voxelShape, Shapes.create(aABB.deflate(1.0E-7)), BooleanOp.AND) ? Stream.empty() : Stream.of(voxelShape);
-        Stream<VoxelShape> stream2 = this.level.getEntityCollisions(this, aABB.expandTowards(vec3), entity -> true);
+        // assume world border is irrelevant
+//        VoxelShape voxelShape = this.level.getWorldBorder().getCollisionShape();
+//        Stream<VoxelShape> stream = Shapes.joinIsNotEmpty(voxelShape, Shapes.create(playerAABB.inflate(-1.0E-7)), BooleanOp.AND) ? Stream.empty() : Stream.of(voxelShape);
+        Stream<VoxelShape> stream2 = this.level.getEntityCollisions(this, playerAABB.expandTowards(moveVec), entity -> true);
         RewindableStream<VoxelShape> rewindableStream = new RewindableStream<>(Stream.concat(stream2, stream));
-        Vec3 vec32 = vec3.lengthSqr() == 0.0 ? vec3 : collideBoundingBoxHeuristically(this, vec3, aABB, this.level, collisionContext, rewindableStream);
-        boolean bl = vec3.x != vec32.x;
-        boolean bl2 = vec3.y != vec32.y;
-        boolean bl3 = vec3.z != vec32.z;
-        boolean bl4 = this.onGround || bl2 && vec3.y < 0.0;
-        if (this.maxUpStep > 0.0F && bl4 && (bl || bl3)) {
-            Vec3 vec33 = collideBoundingBoxHeuristically(this, new Vec3(vec3.x, this.maxUpStep, vec3.z), aABB, this.level, collisionContext, rewindableStream);
-            Vec3 vec34 = collideBoundingBoxHeuristically(
-                this, new Vec3(0.0, this.maxUpStep, 0.0), aABB.expandTowards(vec3.x, 0.0, vec3.z), this.level, collisionContext, rewindableStream
+        Vector3 vec32 = moveVec.lengthSquared() == 0.0
+            ? moveVec
+            : collideBoundingBoxHeuristically(this, moveVec, playerAABB, this.level, collisionContext, rewindableStream);
+        boolean bl = moveVec.getX() != vec32.getX();
+        boolean bl2 = moveVec.getY() != vec32.getY();
+        boolean bl3 = moveVec.getZ() != vec32.getZ();
+        boolean bl4 = this.onGround || bl2 && moveVec.getY() < 0.0;
+        if (bl4 && (bl || bl3)) {
+            Vector3 vec33 = collideBoundingBoxHeuristically(this, new Vector3(moveVec.getX(), this.maxUpStep, moveVec.getZ()), playerAABB, this.level, collisionContext, rewindableStream);
+            Vector3 vec34 = collideBoundingBoxHeuristically(
+                this, new Vec3(0.0, this.maxUpStep, 0.0), playerAABB.expandTowards(moveVec.getX(), 0.0, moveVec.getZ()), this.level, collisionContext, rewindableStream
             );
-            if (vec34.y < this.maxUpStep) {
-                Vec3 vec35 = collideBoundingBoxHeuristically(this, new Vec3(vec3.x, 0.0, vec3.z), aABB.move(vec34), this.level, collisionContext, rewindableStream)
+            if (vec34.getY() < this.maxUpStep) {
+                Vector3 vec35 = collideBoundingBoxHeuristically(this, new Vector3(moveVec.getX(), 0.0, moveVec.getZ()), playerAABB.move(vec34), this.level, collisionContext, rewindableStream)
                     .add(vec34);
-                if (getHorizontalDistanceSqr(vec35) > getHorizontalDistanceSqr(vec33)) {
+                if (vec35.getX()*vec35.getX()+vec35.getZ()+vec35.getZ() > vec33.getX()*vec33.getX()+vec33.getZ()*vec33.getZ()) {
                     vec33 = vec35;
                 }
             }
 
-            if (getHorizontalDistanceSqr(vec33) > getHorizontalDistanceSqr(vec32)) {
+            if (vec33.getX()*vec33.getX()+vec33.getZ()*vec33.getZ() > vec32.getX()*vec32.getX()+vec32.getZ()*vec32.getZ()) {
                 return vec33.add(
-                    collideBoundingBoxHeuristically(this, new Vec3(0.0, -vec33.y + vec3.y, 0.0), aABB.move(vec33), this.level, collisionContext, rewindableStream)
+                    collideBoundingBoxHeuristically(this, new Vector3(0.0, -vec33.getY() + moveVec.getY(), 0.0), playerAABB.move(vec33), this.level, collisionContext, rewindableStream)
                 );
             }
         }
 
         return vec32;
+    }
+
+    private static Vector3 collideBoundingBoxHeuristically(
+        Entity entity, Vector3 vec3, AABB collideBox, Level level, CollisionContext collisionContext, RewindableStream<VoxelShape> rewindableStream
+    ) {
+        boolean bl = vec3.getX() == 0.0;
+        boolean bl2 = vec3.getY() == 0.0;
+        boolean bl3 = vec3.getZ() == 0.0;
+        if ((!bl || !bl2) && (!bl || !bl3) && (!bl2 || !bl3)) {
+            RewindableStream<VoxelShape> rewindableStream2 = new RewindableStream<>(
+                Stream.concat(rewindableStream.getStream(), level.getBlockCollisions(entity, collideBox.expandTowards(vec3)))
+            );
+            return collideBoundingBoxLegacy(vec3, collideBox, rewindableStream2);
+        } else {
+            return collideBoundingBox(vec3, collideBox, level, collisionContext, rewindableStream);
+        }
+    }
+
+    private static Vector3 collideBoundingBoxLegacy(Vector3 vec3, AABB aABB, RewindableStream<VoxelShape> rewindableStream) {
+        double d = vec3.getX();
+        double e = vec3.getY();
+        double f = vec3.getZ();
+        if (e != 0.0) {
+            e = Shapes.collide(Direction.Axis.Y, aABB, rewindableStream.getStream(), e);
+            if (e != 0.0) {
+                aABB = aABB.move(0.0, e, 0.0);
+            }
+        }
+
+        boolean bl = Math.abs(d) < Math.abs(f);
+        if (bl && f != 0.0) {
+            f = Shapes.collide(Direction.Axis.Z, aABB, rewindableStream.getStream(), f);
+            if (f != 0.0) {
+                aABB = aABB.move(0.0, 0.0, f);
+            }
+        }
+
+        if (d != 0.0) {
+            d = Shapes.collide(Direction.Axis.X, aABB, rewindableStream.getStream(), d);
+            if (!bl && d != 0.0) {
+                aABB = aABB.move(d, 0.0, 0.0);
+            }
+        }
+
+        if (!bl && f != 0.0) {
+            f = Shapes.collide(Direction.Axis.Z, aABB, rewindableStream.getStream(), f);
+        }
+
+        return new Vec3(d, e, f);
+    }
+
+    private static Vec3 collideBoundingBox(
+        Vec3 vec3, AABB aABB, LevelReader levelReader, CollisionContext collisionContext, RewindableStream<VoxelShape> rewindableStream
+    ) {
+        double d = vec3.x;
+        double e = vec3.y;
+        double f = vec3.z;
+        if (e != 0.0) {
+            e = Shapes.collide(Direction.Axis.Y, aABB, levelReader, e, collisionContext, rewindableStream.getStream());
+            if (e != 0.0) {
+                aABB = aABB.move(0.0, e, 0.0);
+            }
+        }
+
+        boolean bl = Math.abs(d) < Math.abs(f);
+        if (bl && f != 0.0) {
+            f = Shapes.collide(Direction.Axis.Z, aABB, levelReader, f, collisionContext, rewindableStream.getStream());
+            if (f != 0.0) {
+                aABB = aABB.move(0.0, 0.0, f);
+            }
+        }
+
+        if (d != 0.0) {
+            d = Shapes.collide(Direction.Axis.X, aABB, levelReader, d, collisionContext, rewindableStream.getStream());
+            if (!bl && d != 0.0) {
+                aABB = aABB.move(d, 0.0, 0.0);
+            }
+        }
+
+        if (!bl && f != 0.0) {
+            f = Shapes.collide(Direction.Axis.Z, aABB, levelReader, f, collisionContext, rewindableStream.getStream());
+        }
+
+        return new Vec3(d, e, f);
     }
 
     private Vector3 maybeBackOffFromEdge_Player(Vector3 moveVec, String moverType) {
@@ -810,19 +915,33 @@ public class SimulationTick {
     }
 
     private void jumpFromGround_LivingEntity() {
-        float f = this.getJumpPower();
-        if (this.hasEffect(MobEffects.JUMP)) {
-            f += 0.1F * (this.getEffect(MobEffects.JUMP).getAmplifier() + 1);
+        float newYVelo = this.getJumpPower_LivingEntity();
+        if (JUMP_BOOST_LVL != 0) {
+            newYVelo += 0.1F * (JUMP_BOOST_LVL + 1);
         }
 
-        Vec3 vec3 = this.getDeltaMovement();
-        this.setDeltaMovement(vec3.x, f, vec3.z);
-        if (this.isSprinting()) {
-            float g = this.yRot * (float) (Math.PI / 180.0);
-            this.setDeltaMovement(this.getDeltaMovement().add(-Mth.sin(g) * 0.2F, 0.0, Mth.cos(g) * 0.2F));
+        this.setPlayerVelo(this.getPlayerVelo().withY(newYVelo));
+        if (this.sprintingFlag) {
+            float g = this.playerYaw * (float) (Math.PI / 180.0);
+            this.setPlayerVelo(this.getPlayerVelo().add(new Vector3(-Util.sin_Mth(g) * 0.2F, 0.0, Util.cos_Mth(g) * 0.2F)));
         }
+    }
 
-        this.hasImpulse = true;
+    private float getJumpPower_LivingEntity() {
+        return 0.42F * getBlockJumpFactor_Entity();
+    }
+
+    private float getBlockJumpFactor_Entity() {
+        float f = fakeWorld.getBlockState(this.blockPosition).getJumpFactor();
+        Vector3 playerPos = getPlayerPos();
+        BlockLocation blockLocBelow = new BlockLocation(
+            getDimension(),
+            Mth.floor(playerPos.getX()),
+            Mth.floor(playerPos.getY() - 0.5000001),
+            Mth.floor(playerPos.getZ())
+        );
+        float g = fakeWorld.getBlockState(blockLocBelow).getJumpFactor();
+        return f == 1.0 ? g : f;
     }
 
     private boolean hasEnoughImpulseToStartSprinting_LocalPlayer() {
@@ -839,49 +958,71 @@ public class SimulationTick {
     }
 
     private void checkInBlock_LocalPlayer(double x, double y, double z) {
-        BlockPos blockPos = new BlockPos(x, y, z);
-        if (this.blocked(blockPos)) {
-            double g = x - blockPos.getX();
-            double h = z - blockPos.getZ();
-            Direction direction = null;
+        BlockLocation blockLoc = new BlockLocation(getDimension(), Util.floor_Mth(x), Util.floor_Mth(y), Util.floor_Mth(z));
+        if (this.blocked_LocalPlayer(blockLoc)) {
+            double g = x - blockLoc.getX();
+            double h = z - blockLoc.getZ();
+            String direction = null;
             double i = 9999.0;
-            if (!this.blocked(blockPos.west()) && g < i) {
+            if (!this.blocked_LocalPlayer(blockLoc.offsetX(-1)) && g < i) {
                 i = g;
-                direction = Direction.WEST;
+                direction = "west";
             }
 
-            if (!this.blocked(blockPos.east()) && 1.0 - g < i) {
+            if (!this.blocked_LocalPlayer(blockLoc.offsetX(1)) && 1.0 - g < i) {
                 i = 1.0 - g;
-                direction = Direction.EAST;
+                direction = "east";
             }
 
-            if (!this.blocked(blockPos.north()) && h < i) {
+            if (!this.blocked_LocalPlayer(blockLoc.offsetZ(-1)) && h < i) {
                 i = h;
-                direction = Direction.NORTH;
+                direction = "north";
             }
 
-            if (!this.blocked(blockPos.south()) && 1.0 - h < i) {
+            if (!this.blocked_LocalPlayer(blockLoc.offsetZ(1)) && 1.0 - h < i) {
                 i = 1.0 - h;
-                direction = Direction.SOUTH;
+                direction = "south";
             }
 
             if (direction != null) {
-                Vec3 vec3 = this.getDeltaMovement();
+                Vector3 velo = this.getPlayerVelo();
                 switch (direction) {
-                    case WEST:
-                        this.setDeltaMovement(-0.1, vec3.y, vec3.z);
+                    case "west":
+                        this.setPlayerVelo(new Vector3(-0.1, velo.getY(), velo.getZ()));
                         break;
-                    case EAST:
-                        this.setDeltaMovement(0.1, vec3.y, vec3.z);
+                    case "east":
+                        this.setPlayerVelo(new Vector3(0.1, velo.getY(), velo.getZ()));
                         break;
-                    case NORTH:
-                        this.setDeltaMovement(vec3.x, vec3.y, -0.1);
+                    case "north":
+                        this.setPlayerVelo(new Vector3(velo.getX(), velo.getY(), -0.1));
                         break;
-                    case SOUTH:
-                        this.setDeltaMovement(vec3.x, vec3.y, 0.1);
+                    case "south":
+                        this.setPlayerVelo(new Vector3(velo.getX(), velo.getY(), 0.1));
                 }
             }
         }
+    }
+
+    private boolean blocked_LocalPlayer(BlockLocation blockLoc) {
+        AABB aABB = this.getPlayerBoundingBox();
+
+        for (int i = Mth.floor(aABB.getMinY()); i < Mth.ceil(aABB.getMaxY()); i++) {
+            BlockLocation newBL = new BlockLocation(
+                getDimension(),
+                blockLoc.getX(),
+                i,
+                blockLoc.getZ()
+            );
+            if (!this.freeAt_Player(newBL)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean freeAt_Player(BlockLocation blockLoc) {
+        return !this.fakeWorld.getBlockState(blockLoc).isSuffocating(fakeWorld, blockLoc);
     }
 
     /* misc, getters, setters */

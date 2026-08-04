@@ -1,5 +1,7 @@
 package name.quasar.autospeedrun.usercode.geometry;
 
+import net.minecraft.world.phys.Vec3;
+
 /**
  * axis aligned bounding box. largely similar to net.minecraft.world.phys.AABB
  */
@@ -115,5 +117,37 @@ public class AABB {
 
     public AABB deflate(double d) {
         return inflate(-d);
+    }
+
+    public AABB expandTowards(Vector3 vector3) {
+        return expandTowards(vector3.getX(), vector3.getY(), vector3.getZ());
+    }
+
+    public AABB expandTowards(double vx, double vy, double vz) {
+        double newMinX = this.minX;
+        double newMinY = this.minY;
+        double newMinZ = this.minZ;
+        double newMaxX = this.maxX;
+        double newMaxY = this.maxY;
+        double newMaxZ = this.maxZ;
+        if (vx < 0.0) {
+            newMinX += vx;
+        } else if (vx > 0.0) {
+            newMaxX += vx;
+        }
+
+        if (vy < 0.0) {
+            newMinY += vy;
+        } else if (vy > 0.0) {
+            newMaxY += vy;
+        }
+
+        if (vz < 0.0) {
+            newMinZ += vz;
+        } else if (vz > 0.0) {
+            newMaxZ += vz;
+        }
+
+        return new AABB(newMinX, newMinY, newMinZ, newMaxX, newMaxY, newMaxZ);
     }
 }

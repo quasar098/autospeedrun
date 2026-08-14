@@ -1,5 +1,6 @@
 package name.quasar.autospeedrun.usercode.world;
 
+import name.quasar.autospeedrun.usercode.geometry.AABB;
 import name.quasar.autospeedrun.usercode.geometry.BlockLocation;
 import name.quasar.autospeedrun.usercode.geometry.Vector3;
 import name.quasar.autospeedrun.usercode.simulation.FakeWorld;
@@ -165,5 +166,17 @@ public class BlockType {
     public boolean isSuffocating(FakeWorld fakeWorld, BlockLocation bl) {
         // todo implement actual
         return true;
+    }
+
+    // it has to be a list because some hitboxes (e.g. stair, fence, cauldron) are weird and made of multiple AABB
+    // todo actually add all the blocks
+    public AABB[] getCompositeCollisionBoxes(BlockLocation bl) {
+        long x = bl.getX();
+        long y = bl.getY();
+        long z = bl.getZ();
+        switch (getValue()) {
+            default:
+                return new AABB[]{ new AABB(x, y, z, x+1, y+1, z+1) };
+        }
     }
 }

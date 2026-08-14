@@ -1,5 +1,6 @@
 package name.quasar.autospeedrun.usercode.geometry;
 
+import name.quasar.autospeedrun.usercode.simulation.Direction;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -149,5 +150,47 @@ public class AABB {
         }
 
         return new AABB(newMinX, newMinY, newMinZ, newMaxX, newMaxY, newMaxZ);
+    }
+
+    public double getXSize() { return this.maxX - this.minX; }
+    public double getYSize() { return this.maxY - this.minY; }
+    public double getZSize() { return this.maxZ - this.minZ; }
+
+    /**
+     * beware: may return null
+     */
+    public AABB collidesWith(AABB other) {
+        double maxX = Math.min(other.maxX, this.maxX);
+        double maxY = Math.min(other.maxY, this.maxY);
+        double maxZ = Math.min(other.maxZ, this.maxZ);
+        double minX = Math.max(other.minX, this.minX);
+        double minY = Math.max(other.minY, this.minY);
+        double minZ = Math.max(other.minZ, this.minZ);
+        return maxX > minX && maxY > minY && maxZ > minZ
+            ? new AABB(minX, minY, minZ, maxX, maxY, maxZ) : null;
+    }
+
+    public double min(Direction.Axis axis) {
+        switch (axis) {
+            case X:
+                return minX;
+            case Y:
+                return minY;
+            case Z:
+                return minZ;
+        }
+        return 0.0;
+    }
+
+    public double max(Direction.Axis axis) {
+        switch (axis) {
+            case X:
+                return maxX;
+            case Y:
+                return maxY;
+            case Z:
+            default:
+                return maxZ;
+        }
     }
 }

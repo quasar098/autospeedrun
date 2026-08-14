@@ -1,7 +1,6 @@
 package name.quasar.autospeedrun.usercode.geometry;
 
 import name.quasar.autospeedrun.usercode.simulation.Direction;
-import net.minecraft.world.phys.Vec3;
 
 /**
  * axis aligned bounding box. largely similar to net.minecraft.world.phys.AABB
@@ -159,7 +158,7 @@ public class AABB {
     /**
      * beware: may return null
      */
-    public AABB collidesWith(AABB other) {
+    public AABB intersection(AABB other) {
         double maxX = Math.min(other.maxX, this.maxX);
         double maxY = Math.min(other.maxY, this.maxY);
         double maxZ = Math.min(other.maxZ, this.maxZ);
@@ -168,6 +167,29 @@ public class AABB {
         double minZ = Math.max(other.minZ, this.minZ);
         return maxX > minX && maxY > minY && maxZ > minZ
             ? new AABB(minX, minY, minZ, maxX, maxY, maxZ) : null;
+    }
+
+    /**
+     * beware: may return null
+     */
+    public boolean intersects2d(Direction.Axis ignoredAxis, AABB other) {
+        Direction.Axis perp1 = ignoredAxis.perp1();
+        Direction.Axis perp2 = ignoredAxis.perp2();
+        double max1 = Math.min(other.max(perp1), this.max(perp1));
+        double max2 = Math.min(other.max(perp2), this.max(perp2));
+        double min1 = Math.max(other.min(perp1), this.min(perp1));
+        double min2 = Math.max(other.min(perp2), this.min(perp2));
+        return min1 < max1 && min2 < max2;
+    }
+
+    public double distanceUntilCollision(Direction.Axis axis, AABB other, double d) {
+        if (intersects2d(axis, other)) {
+            double posA = d > 0 ? this.max(axis) : this.min(axis);
+            double posB = d > 0 ? other.min(axis) : other.max(axis);
+            return d > 0 ? Math.min(d, posB - posA) : Math.max(d, posB - posA);
+        } else {
+            return d;
+        }
     }
 
     public double min(Direction.Axis axis) {

@@ -6,12 +6,7 @@ import name.quasar.autospeedrun.usercode.geometry.AABB;
 import name.quasar.autospeedrun.usercode.geometry.BlockLocation;
 import name.quasar.autospeedrun.usercode.geometry.Vector3;
 import name.quasar.autospeedrun.usercode.world.BlockType;
-import net.minecraft.core.AxisCycle;
-import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.shapes.Shapes;
 
 import java.util.HashMap;
 
@@ -745,101 +740,100 @@ public class SimulationTick {
     }
 
     private Vector3 collideBoundingBoxHeuristically_Entity(
-        Vector3 delta, AABB playerAABB
+        Vector3 delta, AABB aabb
     ) {
         boolean dxZero = delta.getX() == 0.0;
         boolean dyZero = delta.getY() == 0.0;
         boolean dzZero = delta.getZ() == 0.0;
         if ((!dxZero || !dyZero) && (!dxZero || !dzZero) && (!dyZero || !dzZero)) {
             // fast path if 0-1 directions are nonzero
-            return collideBoundingBoxLegacy_Entity(delta, playerAABB);
+            return collideBoundingBoxLegacy_Entity(delta, aabb);
         } else {
             // slow path if 2+ directions are nonzero
-            return collideBoundingBox_Entity(delta, playerAABB);
+            return collideBoundingBox_Entity(delta, aabb);
         }
     }
 
-    private Vector3 collideBoundingBoxLegacy_Entity(Vector3 delta, AABB playerAABB) {
+    private Vector3 collideBoundingBoxLegacy_Entity(Vector3 delta, AABB aabb) {
         double dx = delta.getX();
         double dy = delta.getY();
         double dz = delta.getZ();
         if (dy != 0.0) {
-            dy = Shapes_collide(Direction.Axis.Y, playerAABB, dy);
+            dy = Shapes_collide(Direction.Axis.Y, aabb, dy);
             if (dy != 0.0) {
-                playerAABB = playerAABB.move(0.0, dy, 0.0);
+                aabb = aabb.move(0.0, dy, 0.0);
             }
         }
 
         boolean zFirst = Math.abs(dx) < Math.abs(dz);
         if (zFirst && dz != 0.0) {
-            dz = Shapes_collide(Direction.Axis.Z, playerAABB, dz);
+            dz = Shapes_collide(Direction.Axis.Z, aabb, dz);
             if (dz != 0.0) {
-                playerAABB = playerAABB.move(0.0, 0.0, dz);
+                aabb = aabb.move(0.0, 0.0, dz);
             }
         }
 
         if (dx != 0.0) {
-            dx = Shapes_collide(Direction.Axis.X, playerAABB, dx);
+            dx = Shapes_collide(Direction.Axis.X, aabb, dx);
             if (!zFirst && dx != 0.0) {
-                playerAABB = playerAABB.move(dx, 0.0, 0.0);
+                aabb = aabb.move(dx, 0.0, 0.0);
             }
         }
 
         if (!zFirst && dz != 0.0) {
-            dz = Shapes_collide(Direction.Axis.Z, playerAABB, dz);
+            dz = Shapes_collide(Direction.Axis.Z, aabb, dz);
         }
 
         return new Vector3(dx, dy, dz);
     }
 
-    private Vector3 collideBoundingBox_Entity(Vector3 delta, AABB playerAABB) {
+    private Vector3 collideBoundingBox_Entity(Vector3 delta, AABB aabb) {
         double dx = delta.getX();
         double dy = delta.getY();
         double dz = delta.getZ();
         if (dy != 0.0) {
-            dy = Shapes_collide(Direction.Axis.Y, playerAABB, dy);
+            dy = Shapes_collide(Direction.Axis.Y, aabb, dy);
             if (dy != 0.0) {
-                playerAABB = playerAABB.move(0.0, dy, 0.0);
+                aabb = aabb.move(0.0, dy, 0.0);
             }
         }
 
         boolean bl = Math.abs(dx) < Math.abs(dz);
         if (bl && dz != 0.0) {
-            dz = Shapes_collide(Direction.Axis.Z, playerAABB, dz);
+            dz = Shapes_collide(Direction.Axis.Z, aabb, dz);
             if (dz != 0.0) {
-                playerAABB = playerAABB.move(0.0, 0.0, dz);
+                aabb = aabb.move(0.0, 0.0, dz);
             }
         }
 
         if (dx != 0.0) {
-            dx = Shapes_collide(Direction.Axis.X, playerAABB, dx);
+            dx = Shapes_collide(Direction.Axis.X, aabb, dx);
             if (!bl && dx != 0.0) {
-                playerAABB = playerAABB.move(dx, 0.0, 0.0);
+                aabb = aabb.move(dx, 0.0, 0.0);
             }
         }
 
         if (!bl && dz != 0.0) {
-            dz = Shapes_collide(Direction.Axis.Z, playerAABB, dz);
+            dz = Shapes_collide(Direction.Axis.Z, aabb, dz);
         }
 
         return new Vector3(dx, dy, dz);
     }
 
     // not perfectly accurate
-    public double Shapes_collide(Direction.Axis axis, AABB playerAABB, double d) {
-        if (playerAABB.getXSize() < 1.0E-6 || playerAABB.getYSize() < 1.0E-6 || playerAABB.getZSize() < 1.0E-6) {
+    public double Shapes_collide(Direction.Axis axis, AABB aabb, double d) {
+        if (aabb.getXSize() < 1.0E-6 || aabb.getYSize() < 1.0E-6 || aabb.getZSize() < 1.0E-6) {
             return d;
         } else if (Math.abs(d) < 1.0E-7) {
             return 0.0;
         } else {
-            BlockPos.MutableBlockPos mutableBlockPos = new BlockPos.MutableBlockPos();
-            int minPerp1 = Util.floor_Mth(playerAABB.min(axis.perp1()) - 1.0E-7) - 1;
-            int maxPerp1 = Util.floor_Mth(playerAABB.max(axis.perp1()) + 1.0E-7) + 1;
-            int minPerp2 = Util.floor_Mth(playerAABB.min(axis.perp2()) - 1.0E-7) - 1;
-            int maxPerp2 = Util.floor_Mth(playerAABB.max(axis.perp2()) + 1.0E-7) + 1;
-            double minMain1 = playerAABB.min(axis) - 1.0E-7;
-            double maxMain1 = playerAABB.max(axis) + 1.0E-7;
-            int start = d > 0.0 ? Util.floor_Mth(playerAABB.max(axis) - 1.0E-7) - 1 : Util.floor_Mth(playerAABB.min(axis) + 1.0E-7) + 1;
+            int minPerp1 = Util.floor_Mth(aabb.min(axis.perp1()) - 1.0E-7) - 1;
+            int maxPerp1 = Util.floor_Mth(aabb.max(axis.perp1()) + 1.0E-7) + 1;
+            int minPerp2 = Util.floor_Mth(aabb.min(axis.perp2()) - 1.0E-7) - 1;
+            int maxPerp2 = Util.floor_Mth(aabb.max(axis.perp2()) + 1.0E-7) + 1;
+            double minMain1 = aabb.min(axis) - 1.0E-7;
+            double maxMain1 = aabb.max(axis) + 1.0E-7;
+            int start = d > 0.0 ? Util.floor_Mth(aabb.max(axis) - 1.0E-7) - 1 : Util.floor_Mth(aabb.min(axis) + 1.0E-7) + 1;
             int end = d > 0.0 ? Util.floor_Mth(maxMain1 + d) + 1 : Util.floor_Mth(minMain1 + d) - 1;
             int inc = d > 0.0 ? 1 : -1;
 
@@ -860,13 +854,16 @@ public class SimulationTick {
                         }
 
                         if (s < 3) {
-                            BlockType blockType = fakeWorld.getBlockState(Direction.Axis.makeBL(axis, getDimension(), iMain, iPerp1, iPerp2));
+                            BlockLocation bl = Direction.Axis.makeBL(axis, getDimension(), iMain, iPerp1, iPerp2);
+                            BlockType blockType = fakeWorld.getBlockState(bl);
+                            // todo fix when fences or pistons maybe
 //                            if ((s != 1 || blockType.hasLargeCollisionShape()) && (s != 2 || blockType.is(Blocks.MOVING_PISTON))) {
                             if ((s != 1) && (s != 2)) {
-                                d = blockType.getCollisionShape(levelReader, mutableBlockPos, collisionContext)
-                                    .collide(axis3, aABB.move(-mutableBlockPos.getX(), -mutableBlockPos.getY(), -mutableBlockPos.getZ()), d);
-                                if (Math.abs(d) < 1.0E-7) {
-                                    return 0.0;
+                                for (AABB aabbOther : blockType.getCompositeCollisionBoxes(bl)) {
+                                    d = aabbOther.distanceUntilCollision(axis, aabb, d);
+                                    if (Math.abs(d) < 1.0E-7) {
+                                        return 0.0;
+                                    }
                                 }
 
                                 end = d > 0.0 ? Util.floor_Mth(maxMain1 + d) + 1 : Util.floor_Mth(minMain1 + d) - 1;
@@ -876,9 +873,7 @@ public class SimulationTick {
                 }
             }
 
-            double[] ds = new double[]{d};
-            stream.forEach(voxelShape -> ds[0] = voxelShape.collide(axis3, aABB, ds[0]));
-            return ds[0];
+            return d;
         }
     }
 

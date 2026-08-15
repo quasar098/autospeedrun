@@ -3,7 +3,6 @@ package name.quasar.autospeedrun.usercode.world;
 import name.quasar.autospeedrun.usercode.geometry.AABB;
 import name.quasar.autospeedrun.usercode.geometry.BlockLocation;
 import name.quasar.autospeedrun.usercode.geometry.Vector3;
-import name.quasar.autospeedrun.usercode.simulation.FakeWorld;
 
 import java.util.ArrayList;
 
@@ -53,7 +52,7 @@ public class BlockType {
     }
 
     public boolean isSolid() {
-        return !getValue().equals("air") && solidBlockYOffset() == null;
+        return !getValue().equals("air") && !isFluid() && solidBlockYOffset() == null;
     }
 
     public boolean isFluid() {
@@ -163,9 +162,9 @@ public class BlockType {
         }
     }
 
-    public boolean isSuffocating(FakeWorld fakeWorld, BlockLocation bl) {
+    public boolean isSuffocating(World world, BlockLocation bl) {
         // todo implement actual
-        return true;
+        return isSolid();
     }
 
     // it has to be a list because some hitboxes (e.g. stair, fence, cauldron) are weird and made of multiple AABB
@@ -175,6 +174,8 @@ public class BlockType {
         long y = bl.getY();
         long z = bl.getZ();
         switch (getValue()) {
+            case "air":
+                return new AABB[]{};
             default:
                 return new AABB[]{ new AABB(x, y, z, x+1, y+1, z+1) };
         }

@@ -5,10 +5,7 @@ import name.quasar.autospeedrun.AutoSpeedrunAPI;
 import name.quasar.autospeedrun.debug.DebugWorldLine;
 import name.quasar.autospeedrun.usercode.F3Information;
 import name.quasar.autospeedrun.usercode.Util;
-import name.quasar.autospeedrun.usercode.geometry.BlockFace;
-import name.quasar.autospeedrun.usercode.geometry.BlockLocation;
-import name.quasar.autospeedrun.usercode.geometry.DirectedBlockFace;
-import name.quasar.autospeedrun.usercode.geometry.Vector3;
+import name.quasar.autospeedrun.usercode.geometry.*;
 import name.quasar.autospeedrun.usercode.pathing.Navigation;
 
 import java.util.ArrayList;
@@ -19,7 +16,7 @@ import java.util.Map;
  * collect information about all the blocks seen in the world
  * todo integrate some ml into predicting blocks given nearby blocks
  */
-public class WorldBlocks {
+public class WorldBlocks implements World {
     private static WorldBlocks instance = null;
 
     public static WorldBlocks getInstance() {
@@ -310,5 +307,23 @@ public class WorldBlocks {
                 }
             }
         }
+    }
+
+    @Override
+    public BlockType getBlockState(BlockLocation bl) {
+        // todo
+        return BlockType.AIR;
+    }
+
+    @Override
+    public boolean noCollision(AABB aabb) {
+        // todo
+        return true;
+    }
+
+    @Override
+    public boolean containsAnyLiquid(AABB aabb) {
+        // todo
+        return false;
     }
 }

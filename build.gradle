@@ -26,7 +26,9 @@ dependencies {
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
-	
+
+	testImplementation 'org.junit.jupiter:junit-jupiter:5.11.0'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 processResources {
@@ -38,6 +40,7 @@ processResources {
 }
 
 tasks.withType(JavaCompile).configureEach {
+	options.compilerArgs << "-Xlint:-options"
 	it.options.release = 8
 }
 
@@ -75,4 +78,9 @@ publishing {
 		// The repositories here will be used for publishing your artifact, not for
 		// retrieving dependencies.
 	}
+}
+
+test {
+	// Tells Gradle to run tests using the JUnit 5 platform
+	useJUnitPlatform()
 }

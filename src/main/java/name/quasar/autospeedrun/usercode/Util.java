@@ -68,6 +68,14 @@ public class Util {
         }
     }
 
+    public static double clamp_Mth(double v, double a, double b) {
+        if (v < a) {
+            return a;
+        } else {
+            return v > b ? b : v;
+        }
+    }
+
     private static final float[] SIN = new float[65536];
 
     static {
@@ -82,5 +90,13 @@ public class Util {
 
     public static float cos_Mth(float f) {
         return SIN[(int)(f * 10430.378F + 16384.0F) & 65535];
+    }
+
+    public static boolean equal_Mth(float a, float b) {
+        return Math.abs(b - a) < 1.0E-5F;
+    }
+
+    public static boolean equal_Mth(double a, double b) {
+        return Math.abs(b - a) < 1.0E-5F;
     }
 }

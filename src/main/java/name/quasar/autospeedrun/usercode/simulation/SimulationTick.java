@@ -6,7 +6,8 @@ import name.quasar.autospeedrun.usercode.geometry.AABB;
 import name.quasar.autospeedrun.usercode.geometry.BlockLocation;
 import name.quasar.autospeedrun.usercode.geometry.Vector3;
 import name.quasar.autospeedrun.usercode.world.BlockType;
-import net.minecraft.util.Mth;
+import name.quasar.autospeedrun.usercode.world.World;
+import net.minecraft.core.AxisCycle;
 
 import java.util.HashMap;
 
@@ -17,12 +18,11 @@ public class SimulationTick {
     private float playerYaw;  // in degrees
     private float playerPitch;  // in degrees
     private Dimension dimension;
-    private HashMap<BlockLocation, BlockType> blocks;
     private boolean isInBoat;
 
     // next tick calculation stuff
     private SimulationInput input = null;
-    private FakeWorld fakeWorld = null;
+    private World world = null;
     private boolean isSwimming = false;
     private boolean crouching = false;
     private boolean sprintingFlag = false;
@@ -53,12 +53,11 @@ public class SimulationTick {
 
     public SimulationTick(Dimension dimension) {
         this.dimension = dimension;
-        this.blocks = new HashMap<>();
         this.isInBoat = false;
     }
 
     /** return a copy of the simulation tick advanced by one tick. the kbm is reset btw */
-    public SimulationTick getNext(FakeKBMInputs kbm) {
+    public SimulationTick getNext(FakeKBMInputs kbm, World world) {
         if (getNextCache != null) {
             return getNextCache;
         }
@@ -68,11 +67,10 @@ public class SimulationTick {
         next.playerYaw = this.playerYaw;
         next.playerPitch = this.playerPitch;
         next.dimension = this.dimension;
-        next.blocks = this.blocks;
         next.isInBoat = this.isInBoat;
 
         next.input = new SimulationInput(kbm);
-        next.fakeWorld = new FakeWorld();  // todo maybe change
+        next.world = world;
         next.isSwimming = this.isSwimming;
         next.crouching = this.crouching;
         next.sprintingFlag = this.sprintingFlag;
@@ -154,11 +152,11 @@ public class SimulationTick {
             return;
         }
 
-        BlockLocation blockPos = BlockLocation.fromVector3(dimension, waterEyeCheckPos);
-        BlockType blockType = blocks.getOrDefault(blockPos, BlockType.AIR);
+        BlockLocation blockLoc = BlockLocation.fromVector3(dimension, waterEyeCheckPos);
+        BlockType blockType = world.getBlockState(blockLoc);
 
         if (blockType.isFluid()) {
-            double e = blockPos.getY() + blockType.getFluidHeight();
+            double e = blockLoc.getY() + blockType.getFluidHeight();
             if (e > waterEyeCheckPos.getY()) {
                 fluidOnEyes = blockType.getValue();
             }
@@ -214,7 +212,7 @@ public class SimulationTick {
             for (int y = minY; y < maxY; y++) {
                 for (int z = minZ; z < maxZ; z++) {
                     BlockLocation blockLoc = new BlockLocation(dimension, x, y, z);
-                    BlockType blockType = blocks.getOrDefault(blockLoc, BlockType.AIR);
+                    BlockType blockType = world.getBlockState(blockLoc);
                     if (blockType.getValue().equals(fluidType)) {
                         double fluidTopY = y + blockType.getFluidHeight();
                         if (fluidTopY >= playerAABB.getMinY()) {
@@ -371,6 +369,7 @@ public class SimulationTick {
             dz = 0.0;
         }
         playerVelo = new Vector3(dx, dy, dz);
+        serverAiStep_LocalPlayer();
 
         if (this.jumping) {
             double inFluidDepth;
@@ -405,6 +404,12 @@ public class SimulationTick {
 //        this.pushEntities_LivingEntity();
 
         // lets assume we dont take drowning damage
+    }
+
+    private void serverAiStep_LocalPlayer() {
+        this.xxa = this.input.leftImpulse;
+        this.zza = this.input.forwardImpulse;
+        this.jumping = this.input.jumping;
     }
 
     private void travel_Player(Vector3 vec3) {
@@ -489,11 +494,11 @@ public class SimulationTick {
         } else {
             BlockLocation blockLoc = new BlockLocation(
                 getDimension(),
-                Mth.floor(getPlayerPos().getX()),
-                Mth.floor(getPlayerPos().getY() - 0.5000001),
-                Mth.floor(getPlayerPos().getZ())
+                Util.floor_Mth(getPlayerPos().getX()),
+                Util.floor_Mth(getPlayerPos().getY() - 0.5000001),
+                Util.floor_Mth(getPlayerPos().getZ())
             );
-            float friction = fakeWorld.getBlockState(blockLoc).getFriction();
+            float friction = world.getBlockState(blockLoc).getFriction();
             float frictionAndDrag = this.onGround ? friction * 0.91F : 0.91F;
             Vector3 vec37 = handleRelativeFrictionAndCalculateMovement_LivingEntity(vec3, friction);
             double newYVelo = vec37.getY();
@@ -517,10 +522,10 @@ public class SimulationTick {
 
     private Vector3 handleOnClimbable_LivingEntity(Vector3 vec3) {
         if (this.onClimbable_LivingEntity()) {
-            double newX = Mth.clamp(vec3.getX(), -0.15F, 0.15F);
+            double newX = Util.clamp_Mth(vec3.getX(), -0.15F, 0.15F);
             double newY = Math.max(vec3.getY(), -0.15F);
-            double newZ = Mth.clamp(vec3.getZ(), -0.15F, 0.15F);
-            if (newY < 0.0 && !fakeWorld.getBlockState(blockPosition).getValue().equals("scaffolding")
+            double newZ = Util.clamp_Mth(vec3.getZ(), -0.15F, 0.15F);
+            if (newY < 0.0 && !world.getBlockState(blockPosition).getValue().equals("scaffolding")
                 && shiftKeyDownFlag) {
                 newY = 0.0;
             }
@@ -540,7 +545,7 @@ public class SimulationTick {
     }
 
     private boolean isFree_Entity(AABB aabb) {
-        return fakeWorld.noCollision(aabb) && !fakeWorld.containsAnyLiquid(aabb);
+        return world.noCollision(aabb) && !world.containsAnyLiquid(aabb);
     }
 
     public Vector3 getFluidFallingAdjustedMovement_LivingEntity(boolean goingDown, Vector3 ogVelo) {
@@ -558,7 +563,7 @@ public class SimulationTick {
 
     private boolean onClimbable_LivingEntity() {
         BlockLocation blockPos = this.blockPosition;
-        BlockType blockState = fakeWorld.getBlockState(blockPosition);
+        BlockType blockState = world.getBlockState(blockPosition);
         if (blockState.isClimbable()) {
             return true;
 //        } else if (block instanceof TrapDoorBlock && this.trapdoorUsableAsLadder(blockPos, blockState)) {
@@ -595,11 +600,11 @@ public class SimulationTick {
             setPlayerPos(getPlayerPos().add(moveVec2));
         }
 
-        this.horizontalCollision = !Mth.equal(moveVec.getX(), moveVec2.getX()) || !Mth.equal(moveVec.getZ(), moveVec2.getZ());
+        this.horizontalCollision = !Util.equal_Mth(moveVec.getX(), moveVec2.getX()) || !Util.equal_Mth(moveVec.getZ(), moveVec2.getZ());
         this.verticalCollision = moveVec.getY() != moveVec2.getY();
         this.onGround = this.verticalCollision && moveVec.getY() < 0.0;
         BlockLocation blockLoc = getOnPos_Entity();
-        BlockType blockState = fakeWorld.getBlockState(blockLoc);
+        BlockType blockState = world.getBlockState(blockLoc);
         // assume no fall damage
 //        this.checkFallDamage(moveVec2.getY(), this.onGround, blockState, blockLoc);
         Vector3 newPlayerVelo = this.getPlayerVelo();
@@ -628,19 +633,19 @@ public class SimulationTick {
             throw new UnsupportedOperationException("ummm touching blocks issue (?)");
         }
 
-        float speedFactor = fakeWorld.getBlockState(this.blockPosition).getBlockSpeedFactor();
+        float speedFactor = world.getBlockState(this.blockPosition).getBlockSpeedFactor();
         if (speedFactor == 1.0F) {
-            speedFactor = fakeWorld.getBlockState(new BlockLocation(
+            speedFactor = world.getBlockState(new BlockLocation(
                 getDimension(),
-                Mth.floor(getPlayerPos().getX()),
-                Mth.floor(getPlayerPos().getY() - 0.5000001),
-                Mth.floor(getPlayerPos().getZ())
+                Util.floor_Mth(getPlayerPos().getX()),
+                Util.floor_Mth(getPlayerPos().getY() - 0.5000001),
+                Util.floor_Mth(getPlayerPos().getZ())
             )).getBlockSpeedFactor();
         }
         this.setPlayerVelo(this.getPlayerVelo().multComponentwise(new Vector3(speedFactor, 1.0, speedFactor)));
 
         // assume no fire i guess
-//        if (fakeWorld.getBlockStatesIfLoaded(getPlayerBoundingBox().deflate(0.001))
+//        if (world.getBlockStatesIfLoaded(getPlayerBoundingBox().deflate(0.001))
 //            .noneMatch(blockType -> blockType.getValue().equals("fire") || blockType.getValue().equals("lava"))
 //            && this.remainingFireTicks <= 0) {
 //            this.setRemainingFireTicks(-this.getFireImmuneTicks());
@@ -671,7 +676,7 @@ public class SimulationTick {
             for (long j = blockLoc.getY(); j <= blockLoc2.getY(); j++) {
                 for (long k = blockLoc.getZ(); k <= blockLoc2.getZ(); k++) {
                     BlockLocation collideLocation = new BlockLocation(getDimension(), i, j, k);
-                    BlockType blockType = this.fakeWorld.getBlockState(collideLocation);
+                    BlockType blockType = this.world.getBlockState(collideLocation);
 
                     try {
                         if (blockType.getValue().equals("lava")) {
@@ -689,12 +694,12 @@ public class SimulationTick {
     }
 
     private BlockLocation getOnPos_Entity() {
-        int i = Mth.floor(getPlayerPos().getX());
-        int j = Mth.floor(getPlayerPos().getY() - 0.2F);
-        int k = Mth.floor(getPlayerPos().getZ());
+        int i = Util.floor_Mth(getPlayerPos().getX());
+        int j = Util.floor_Mth(getPlayerPos().getY() - 0.2F);
+        int k = Util.floor_Mth(getPlayerPos().getZ());
         BlockLocation blockLoc = new BlockLocation(getDimension(), i, j, k);
-        if (!fakeWorld.getBlockState(blockLoc).isSolid()) {  // originally it is .isAir() but idk if that means nonsolids or just air
-            BlockType blockState = fakeWorld.getBlockState(blockLoc.below());
+        if (!world.getBlockState(blockLoc).isSolid()) {  // originally it is .isAir() but idk if that means nonsolids or just air
+            BlockType blockState = world.getBlockState(blockLoc.below());
             // what are the chances we walk on top of walls/fences ... :clueless:
             // todo do this
 //            Block block = blockState.getBlock();
@@ -746,10 +751,10 @@ public class SimulationTick {
         boolean dyZero = delta.getY() == 0.0;
         boolean dzZero = delta.getZ() == 0.0;
         if ((!dxZero || !dyZero) && (!dxZero || !dzZero) && (!dyZero || !dzZero)) {
-            // fast path if 0-1 directions are nonzero
+            // legacy path if 2+ directions are nonzero
             return collideBoundingBoxLegacy_Entity(delta, aabb);
         } else {
-            // slow path if 2+ directions are nonzero
+            // new path if 0-1 directions are nonzero
             return collideBoundingBox_Entity(delta, aabb);
         }
     }
@@ -759,7 +764,7 @@ public class SimulationTick {
         double dy = delta.getY();
         double dz = delta.getZ();
         if (dy != 0.0) {
-            dy = Shapes_collide(Direction.Axis.Y, aabb, dy);
+            dy = VoxelShape_collide(Direction.Axis.Y, aabb, dy);
             if (dy != 0.0) {
                 aabb = aabb.move(0.0, dy, 0.0);
             }
@@ -767,24 +772,80 @@ public class SimulationTick {
 
         boolean zFirst = Math.abs(dx) < Math.abs(dz);
         if (zFirst && dz != 0.0) {
-            dz = Shapes_collide(Direction.Axis.Z, aabb, dz);
+            dz = VoxelShape_collide(Direction.Axis.Z, aabb, dz);
             if (dz != 0.0) {
                 aabb = aabb.move(0.0, 0.0, dz);
             }
         }
 
         if (dx != 0.0) {
-            dx = Shapes_collide(Direction.Axis.X, aabb, dx);
+            dx = VoxelShape_collide(Direction.Axis.X, aabb, dx);
             if (!zFirst && dx != 0.0) {
                 aabb = aabb.move(dx, 0.0, 0.0);
             }
         }
 
         if (!zFirst && dz != 0.0) {
-            dz = Shapes_collide(Direction.Axis.Z, aabb, dz);
+            dz = VoxelShape_collide(Direction.Axis.Z, aabb, dz);
         }
 
         return new Vector3(dx, dy, dz);
+    }
+
+    // not perfectly accurate (copy pasted method body from Shapes_collide)
+    private double VoxelShape_collide(Direction.Axis axis, AABB aabb, double d) {
+        if (aabb.getXSize() < 1.0E-6 || aabb.getYSize() < 1.0E-6 || aabb.getZSize() < 1.0E-6) {
+            return d;
+        } else if (Math.abs(d) < 1.0E-7) {
+            return 0.0;
+        } else {
+            int minPerp1 = Util.floor_Mth(aabb.min(axis.perp1()) - 1.0E-7) - 1;
+            int maxPerp1 = Util.floor_Mth(aabb.max(axis.perp1()) + 1.0E-7) + 1;
+            int minPerp2 = Util.floor_Mth(aabb.min(axis.perp2()) - 1.0E-7) - 1;
+            int maxPerp2 = Util.floor_Mth(aabb.max(axis.perp2()) + 1.0E-7) + 1;
+            double minMain1 = aabb.min(axis) - 1.0E-7;
+            double maxMain1 = aabb.max(axis) + 1.0E-7;
+            int start = d > 0.0 ? Util.floor_Mth(aabb.max(axis) - 1.0E-7) - 1 : Util.floor_Mth(aabb.min(axis) + 1.0E-7) + 1;
+            int end = d > 0.0 ? Util.floor_Mth(maxMain1 + d) + 1 : Util.floor_Mth(minMain1 + d) - 1;
+            int inc = d > 0.0 ? 1 : -1;
+            for (long iMain = start; d > 0.0 ? iMain <= end : iMain >= end; iMain += inc) {
+                for (long iPerp1 = minPerp1; iPerp1 <= maxPerp1; iPerp1++) {
+                    for (long iPerp2 = minPerp2; iPerp2 <= maxPerp2; iPerp2++) {
+                        int s = 0;
+                        if (iPerp1 == minPerp1 || iPerp1 == maxPerp1) {
+                            s++;
+                        }
+
+                        if (iPerp2 == minPerp2 || iPerp2 == maxPerp2) {
+                            s++;
+                        }
+
+                        if (iMain == start || iMain == end) {
+                            s++;
+                        }
+
+                        if (s < 3) {
+                            BlockLocation bl = Direction.Axis.makeBL(axis, getDimension(), iMain, iPerp1, iPerp2);
+                            BlockType blockType = world.getBlockState(bl);
+                            // todo fix when fences or pistons maybe
+//                            if ((s != 1 || blockType.hasLargeCollisionShape()) && (s != 2 || blockType.is(Blocks.MOVING_PISTON))) {
+                            if ((s != 1) && (s != 2)) {
+                                for (AABB aabbOther : blockType.getCompositeCollisionBoxes(bl)) {
+                                    d = aabbOther.distanceUntilCollision(axis, aabb, d);
+                                    if (Math.abs(d) < 1.0E-7) {
+                                        return 0.0;
+                                    }
+                                }
+
+                                end = d > 0.0 ? Util.floor_Mth(maxMain1 + d) + 1 : Util.floor_Mth(minMain1 + d) - 1;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return d;
+        }
     }
 
     private Vector3 collideBoundingBox_Entity(Vector3 delta, AABB aabb) {
@@ -821,7 +882,7 @@ public class SimulationTick {
     }
 
     // not perfectly accurate
-    public double Shapes_collide(Direction.Axis axis, AABB aabb, double d) {
+    private double Shapes_collide(Direction.Axis axis, AABB aabb, double d) {
         if (aabb.getXSize() < 1.0E-6 || aabb.getYSize() < 1.0E-6 || aabb.getZSize() < 1.0E-6) {
             return d;
         } else if (Math.abs(d) < 1.0E-7) {
@@ -836,7 +897,6 @@ public class SimulationTick {
             int start = d > 0.0 ? Util.floor_Mth(aabb.max(axis) - 1.0E-7) - 1 : Util.floor_Mth(aabb.min(axis) + 1.0E-7) + 1;
             int end = d > 0.0 ? Util.floor_Mth(maxMain1 + d) + 1 : Util.floor_Mth(minMain1 + d) - 1;
             int inc = d > 0.0 ? 1 : -1;
-
             for (long iMain = start; d > 0.0 ? iMain <= end : iMain >= end; iMain += inc) {
                 for (long iPerp1 = minPerp1; iPerp1 <= maxPerp1; iPerp1++) {
                     for (long iPerp2 = minPerp2; iPerp2 <= maxPerp2; iPerp2++) {
@@ -855,7 +915,7 @@ public class SimulationTick {
 
                         if (s < 3) {
                             BlockLocation bl = Direction.Axis.makeBL(axis, getDimension(), iMain, iPerp1, iPerp2);
-                            BlockType blockType = fakeWorld.getBlockState(bl);
+                            BlockType blockType = world.getBlockState(bl);
                             // todo fix when fences or pistons maybe
 //                            if ((s != 1 || blockType.hasLargeCollisionShape()) && (s != 2 || blockType.is(Blocks.MOVING_PISTON))) {
                             if ((s != 1) && (s != 2)) {
@@ -971,15 +1031,15 @@ public class SimulationTick {
     }
 
     private float getBlockJumpFactor_Entity() {
-        float f = fakeWorld.getBlockState(this.blockPosition).getJumpFactor();
+        float f = world.getBlockState(this.blockPosition).getJumpFactor();
         Vector3 playerPos = getPlayerPos();
         BlockLocation blockLocBelow = new BlockLocation(
             getDimension(),
-            Mth.floor(playerPos.getX()),
-            Mth.floor(playerPos.getY() - 0.5000001),
-            Mth.floor(playerPos.getZ())
+            Util.floor_Mth(playerPos.getX()),
+            Util.floor_Mth(playerPos.getY() - 0.5000001),
+            Util.floor_Mth(playerPos.getZ())
         );
-        float g = fakeWorld.getBlockState(blockLocBelow).getJumpFactor();
+        float g = world.getBlockState(blockLocBelow).getJumpFactor();
         return f == 1.0 ? g : f;
     }
 
@@ -1045,7 +1105,7 @@ public class SimulationTick {
     private boolean blocked_LocalPlayer(BlockLocation blockLoc) {
         AABB aABB = this.getPlayerBoundingBox();
 
-        for (int i = Mth.floor(aABB.getMinY()); i < Mth.ceil(aABB.getMaxY()); i++) {
+        for (int i = Util.floor_Mth(aABB.getMinY()); i < Util.ceil_Mth(aABB.getMaxY()); i++) {
             BlockLocation newBL = new BlockLocation(
                 getDimension(),
                 blockLoc.getX(),
@@ -1061,7 +1121,7 @@ public class SimulationTick {
     }
 
     private boolean freeAt_Player(BlockLocation blockLoc) {
-        return !this.fakeWorld.getBlockState(blockLoc).isSuffocating(fakeWorld, blockLoc);
+        return !this.world.getBlockState(blockLoc).isSuffocating(world, blockLoc);
     }
 
     /* misc, getters, setters */
@@ -1136,9 +1196,5 @@ public class SimulationTick {
 
     private SimulationInput getSimulationInput() {
         return input;
-    }
-
-    public HashMap<BlockLocation, BlockType> getBlocks() {
-        return blocks;
     }
 }

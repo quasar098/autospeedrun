@@ -18,7 +18,7 @@ public class SimulationInput {
 
     public void tick(boolean crawlingOrCrouching) {
         assert options != null;
-        this.up = this.options.keyJump;
+        this.up = this.options.keyUp;
         this.down = this.options.keyDown;
         this.left = this.options.keyLeft;
         this.right = this.options.keyRight;

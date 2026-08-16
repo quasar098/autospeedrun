@@ -1,7 +1,6 @@
 package name.quasar.autospeedrun.usercode.geometry;
 
 import com.mojang.math.Vector3f;
-import net.fabricmc.loader.impl.lib.sat4j.core.Vec;
 
 public class Vector3 {
     public static Vector3 ZERO = new Vector3(0, 0, 0);

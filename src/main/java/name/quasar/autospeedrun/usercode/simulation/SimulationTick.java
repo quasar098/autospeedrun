@@ -7,7 +7,6 @@ import name.quasar.autospeedrun.usercode.geometry.BlockLocation;
 import name.quasar.autospeedrun.usercode.geometry.Vector3;
 import name.quasar.autospeedrun.usercode.world.BlockType;
 import name.quasar.autospeedrun.usercode.world.World;
-import net.minecraft.core.AxisCycle;
 
 import java.util.HashMap;
 
@@ -48,7 +47,7 @@ public class SimulationTick {
     private HashMap<String, Double> fluidHeights = new HashMap<>();
     private BlockLocation blockPosition = null;
 
-    private final int JUMP_BOOST_LVL = 1;  // todo make configurable
+    private final int JUMP_BOOST_LVL = 0;  // todo make configurable
     private final float maxUpStep = 0.6F;
 
     public SimulationTick(Dimension dimension) {
@@ -1017,7 +1016,7 @@ public class SimulationTick {
     private void jumpFromGround_LivingEntity() {
         float newYVelo = this.getJumpPower_LivingEntity();
         if (JUMP_BOOST_LVL != 0) {
-            newYVelo += 0.1F * (JUMP_BOOST_LVL + 1);
+            newYVelo += 0.1F * JUMP_BOOST_LVL;
         }
 
         this.setPlayerVelo(this.getPlayerVelo().withY(newYVelo));
@@ -1060,27 +1059,27 @@ public class SimulationTick {
     private void checkInBlock_LocalPlayer(double x, double y, double z) {
         BlockLocation blockLoc = new BlockLocation(getDimension(), Util.floor_Mth(x), Util.floor_Mth(y), Util.floor_Mth(z));
         if (this.blocked_LocalPlayer(blockLoc)) {
-            double g = x - blockLoc.getX();
-            double h = z - blockLoc.getZ();
+            double x2 = x - blockLoc.getX();
+            double z2 = z - blockLoc.getZ();
             Direction direction = null;
             double i = 9999.0;
-            if (!this.blocked_LocalPlayer(blockLoc.offsetX(-1)) && g < i) {
-                i = g;
+            if (!this.blocked_LocalPlayer(blockLoc.offsetX(-1)) && x2 < i) {
+                i = x2;
                 direction = Direction.WEST;
             }
 
-            if (!this.blocked_LocalPlayer(blockLoc.offsetX(1)) && 1.0 - g < i) {
-                i = 1.0 - g;
+            if (!this.blocked_LocalPlayer(blockLoc.offsetX(1)) && 1.0 - x2 < i) {
+                i = 1.0 - x2;
                 direction = Direction.EAST;
             }
 
-            if (!this.blocked_LocalPlayer(blockLoc.offsetZ(-1)) && h < i) {
-                i = h;
+            if (!this.blocked_LocalPlayer(blockLoc.offsetZ(-1)) && z2 < i) {
+                i = z2;
                 direction = Direction.NORTH;
             }
 
-            if (!this.blocked_LocalPlayer(blockLoc.offsetZ(1)) && 1.0 - h < i) {
-                i = 1.0 - h;
+            if (!this.blocked_LocalPlayer(blockLoc.offsetZ(1)) && 1.0 - z2 < i) {
+                i = 1.0 - z2;
                 direction = Direction.SOUTH;
             }
 
@@ -1104,9 +1103,9 @@ public class SimulationTick {
     }
 
     private boolean blocked_LocalPlayer(BlockLocation blockLoc) {
-        AABB aABB = this.getPlayerBoundingBox();
+        AABB playerAABB = this.getPlayerBoundingBox();
 
-        for (int i = Util.floor_Mth(aABB.getMinY()); i < Util.ceil_Mth(aABB.getMaxY()); i++) {
+        for (int i = Util.floor_Mth(playerAABB.getMinY()); i < Util.ceil_Mth(playerAABB.getMaxY()); i++) {
             BlockLocation newBL = new BlockLocation(
                 getDimension(),
                 blockLoc.getX(),
@@ -1122,7 +1121,7 @@ public class SimulationTick {
     }
 
     private boolean freeAt_Player(BlockLocation blockLoc) {
-        return !this.world.getBlockState(blockLoc).isSuffocating(world, blockLoc);
+        return !this.world.getBlockState(blockLoc).isSuffocating();
     }
 
     /* misc, getters, setters */

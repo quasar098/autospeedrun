@@ -186,7 +186,7 @@ public class AABB {
     public double distanceUntilCollision(Direction.Axis axis, AABB other, double d) {
         if (intersects2d(axis, other)) {
             if (d > 0) {
-                return Math.min(d, Math.max(0, other.max(axis) - this.min(axis)));
+                return Math.min(d, Math.max(0, this.min(axis) - other.max(axis)));
             } else {
                 return Math.max(d, Math.min(0, this.max(axis) - other.min(axis)));
             }

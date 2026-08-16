@@ -4,7 +4,7 @@ import name.quasar.autospeedrun.usercode.geometry.AABB;
 import name.quasar.autospeedrun.usercode.geometry.BlockLocation;
 import name.quasar.autospeedrun.usercode.geometry.Vector3;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public class BlockType {
 
@@ -12,7 +12,7 @@ public class BlockType {
     public static final BlockType UNKNOWN_SOLID = new BlockType("minecraft:unknown_solid");
 
     private String value = null;
-    private final ArrayList<String> properties;
+    private final List<String> properties;
 
     public BlockType(String blockType) {
         assert blockType.startsWith("minecraft:");
@@ -26,7 +26,7 @@ public class BlockType {
         }
     }
 
-    public BlockType(String blockType, ArrayList<String> properties) {
+    public BlockType(String blockType, List<String> properties) {
         assert blockType.startsWith("minecraft:");
         this.value = blockType.replaceFirst("minecraft:", "");
         this.properties = properties;
@@ -162,13 +162,9 @@ public class BlockType {
         }
     }
 
-    public boolean isSuffocating(World world, BlockLocation bl) {
-        // todo implement actual
-        return isSolid();
-    }
-
     // it has to be a list because some hitboxes (e.g. stair, fence, cauldron) are weird and made of multiple AABB
     // todo actually add all the blocks
+    // maybe it is advantageous to move these to separate data files because this is not ideal probably
     public AABB[] getCompositeCollisionBoxes(BlockLocation bl) {
         long x = bl.getX();
         long y = bl.getY();
@@ -176,8 +172,108 @@ public class BlockType {
         switch (getValue()) {
             case "air":
                 return new AABB[]{};
+            case "prismarine_slab":
+            case "prismarine_brick_slab":
+            case "dark_prismarine_slab":
+            case "oak_slab":
+            case "spruce_slab":
+            case "birch_slab":
+            case "jungle_slab":
+            case "acacia_slab":
+            case "dark_oak_slab":
+            case "stone_slab":
+            case "smooth_stone_slab":
+            case "sandstone_slab":
+            case "cut_sandstone_slab":
+            case "petrified_oak_slab":
+            case "cobblestone_slab":
+            case "brick_slab":
+            case "stone_brick_slab":
+            case "nether_brick_slab":
+            case "quartz_slab":
+            case "red_sandstone_slab":
+            case "cut_red_sandstone_slab":
+            case "purpur_slab":
+            case "polished_granite_slab":
+            case "smooth_red_sandstone_slab":
+            case "mossy_stone_brick_slab":
+            case "polished_diorite_slab":
+            case "mossy_cobblestone_slab":
+            case "end_stone_brick_slab":
+            case "smooth_sandstone_slab":
+            case "smooth_quartz_slab":
+            case "granite_slab":
+            case "andesite_slab":
+            case "red_nether_brick_slab":
+            case "polished_andesite_slab":
+            case "diorite_slab":
+            case "crimson_slab":
+            case "warped_slab":
+            case "blackstone_slab":
+            case "polished_blackstone_brick_slab":
+            case "polished_blackstone_slab":
+                if (properties.contains("type: top")) {
+                    return new AABB[] { new AABB(x, y+0.5, z, x+1, y+1, z+1) };
+                } else {
+                    return new AABB[] { new AABB(x, y, z, x+1, y+0.5, z+1) };
+                }
             default:
                 return new AABB[]{ new AABB(x, y, z, x+1, y+1, z+1) };
+        }
+    }
+
+    public boolean isNoCollider() {
+        // Material.java
+        switch (getValue()) {
+            // noCollider false
+            // todo blocks with material CLOTH_DECORATION,PLANT,WATER_PLANT,REPLACEABLE_PLANT,REPLACEABLE_WATER_PLANT,
+            //  WATER,BUBBLE_COLUMN,LAVA,TOP_SNOW,FIRE,WEB,DECORATION,BAMBOO_SAPLING would also return false
+            case "air":
+            case "structure_void":
+            case "nether_portal":
+            case "end_portal":
+            case "end_gateway":
+                return false;
+            default:
+                return true;
+        }
+    }
+
+    public boolean isCollisionShapeFullBlock() {
+        // apparently this is usually implemented by checking the actual shape is the same but that seems insanely
+        // inefficient so i'm just going to precompute a list of all blocks that follow this
+        // todo do the aforementioned precompution
+
+        // temporary fix
+        switch (getValue()) {
+            case "stone_slab":
+            case "stone":
+            case "air":
+                return false;
+            default:
+                return true;
+        }
+    }
+
+    /* also determines if players get pushed out of the block */
+    public boolean isSuffocating() {
+        // blocks with noCollider result in false, nonfull blocks result in false
+        // (isSuffocating -> false) specially set predicate blocks may result in false
+        switch (getValue()) {
+            // todo all glasses
+            // todo all stained glasses
+            case "moving_piston":
+            case "oak_leaves":
+            case "spruce_leaves":
+            case "birch_leaves":
+            case "jungle_leaves":
+            case "acacia_leaves":
+            case "dark_oak_leaves":
+            case "shulker_box":  // todo apparently shulker box is only suffocating if it's closed
+            case "piston":  // same with piston
+                return false;
+            default:
+                return !isNoCollider() && isCollisionShapeFullBlock();
         }
     }
 }

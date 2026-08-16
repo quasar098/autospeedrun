@@ -353,7 +353,8 @@ public class SimulationTick {
             this.noJumpDelay--;
         }
 
-        playerVelo = playerVelo.mult(0.98);
+        // i am super confused whether isEffectiveAi is supposed to be true or false
+//        playerVelo = playerVelo.mult(0.98);
 
         Vector3 oldPlayerVelo = playerVelo;
         double dx = oldPlayerVelo.getX();
@@ -504,7 +505,7 @@ public class SimulationTick {
             double newYVelo = vec37.getY();
             newYVelo -= 0.08;
 
-            this.setPlayerVelo(new Vector3(vec37.getY() * frictionAndDrag, newYVelo * 0.98F, vec37.getZ() * frictionAndDrag));
+            this.setPlayerVelo(new Vector3(vec37.getX() * frictionAndDrag, newYVelo * 0.98F, vec37.getZ() * frictionAndDrag));
         }
     }
 

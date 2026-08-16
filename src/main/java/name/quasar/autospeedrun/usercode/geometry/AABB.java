@@ -172,11 +172,11 @@ public class AABB {
     public boolean intersects2d(Direction.Axis ignoredAxis, AABB other) {
         Direction.Axis perp1 = ignoredAxis.perp1();
         Direction.Axis perp2 = ignoredAxis.perp2();
-        double max1 = Math.min(other.max(perp1), this.max(perp1));
-        double max2 = Math.min(other.max(perp2), this.max(perp2));
-        double min1 = Math.max(other.min(perp1), this.min(perp1));
-        double min2 = Math.max(other.min(perp2), this.min(perp2));
-        return max1 < min1 && max2 < min2;
+        double minOfUpper1 = Math.min(other.max(perp1), this.max(perp1));
+        double minOfUpper2 = Math.min(other.max(perp2), this.max(perp2));
+        double maxOfLower1 = Math.max(other.min(perp1), this.min(perp1));
+        double maxOfLower2 = Math.max(other.min(perp2), this.min(perp2));
+        return maxOfLower1 < minOfUpper1 && maxOfLower2 < minOfUpper2;
     }
 
     public boolean intersects1d(Direction.Axis axis, AABB other) {
@@ -186,9 +186,9 @@ public class AABB {
     public double distanceUntilCollision(Direction.Axis axis, AABB other, double d) {
         if (intersects2d(axis, other)) {
             if (d > 0) {
-                return Math.min(d, Math.max(0, this.min(axis) - other.max(axis)));
+                return Math.min(d, Math.max(0, other.max(axis) - this.min(axis)));
             } else {
-                return Math.max(d, Math.min(0, other.min(axis) - this.max(axis)));
+                return Math.max(d, Math.min(0, this.max(axis) - other.min(axis)));
             }
         } else {
             return d;
@@ -217,5 +217,12 @@ public class AABB {
             default:
                 return maxZ;
         }
+    }
+
+    public String toString() {
+        return String.format(
+            "V3<%.3f, %.3f, %.3f, %.3f, %.3f, %.3f>",
+            getMinX(), getMinY(), getMinZ(), getMaxX(), getMaxY(), getMaxZ()
+        );
     }
 }

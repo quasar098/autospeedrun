@@ -4,10 +4,6 @@
 
 contact me on discord if you are interested and want more information
 
-## anti slop policy
-
-we do not welcome any slopping, only braincoding is allowed. take a look at the AI-preventing in `AGENTS.md` and `CLAUDE.md` for more information. they are taken from [github.com/Vxrpenter/AIMania](https://github.com/Vxrpenter/AIMania). pull requests containing slopped code will not be accepted.
-
 ## references
 
 https://www.mcpk.wiki/wiki/Horizontal_Movement_Formulas
@@ -29,9 +25,7 @@ https://dl.acm.org/doi/epdf/10.1145/129902.129906
 
 recommended to open with IntelliJ IDEA
 
-All files/folders in `./settings/*` must be copied into `./run/`, overwriting files
-
-also [extra options, speedrunapi](https://mods.tildejustin.dev/?version=1.16.1&category=random_seed&mod=extra-options&mod=speedrunapi) mods required in mods folder
+all files/folders in `./settings/*` must be copied into `./run/`, overwriting files on conflict
 
 ## notes
 
@@ -84,3 +78,7 @@ off of a codebase that took me a nonneglible amount of time to write and plan. s
 innovation when it comes to developing MCSR bots, so my sample "user code" is open for any modifications.
 
 tl;dr: this API for making MCSR bots is strong copyleft, but for the actual bot code do whatever you want with it
+
+## anti slop policy
+
+this is a project that is developed just for the fun of not just the final destination but also the journey there. for this reason, slopping code is not allowed in this repository; only braincoding is allowed. take a look at the AI-preventing in `AGENTS.md` and `CLAUDE.md` for more information. they are copied from [github.com/Vxrpenter/AIMania](https://github.com/Vxrpenter/AIMania). pull requests containing slopped code will not be accepted.

@@ -104,7 +104,6 @@ public class SimulationTickTest {
         for (int i = 0; i < expectedYValues.length; i++) {
             double expectedY = expectedYValues[i];
             tickN = tickN.getNext(new FakeKBMInputs().setKeyJump(i == 2), world);
-            System.out.println(tickN.getPlayerPos() + " | " + tickN.getPlayerVelo() + " | " + expectedY + "," + tickN.getPlayerPos().getY());
             assertEquals(0, tickN.getPlayerPos().getX());
             assertEquals(expectedY, tickN.getPlayerPos().getY());
             assertEquals(0, tickN.getPlayerPos().getZ());

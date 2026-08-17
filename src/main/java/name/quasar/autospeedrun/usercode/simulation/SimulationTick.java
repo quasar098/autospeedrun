@@ -102,7 +102,8 @@ public class SimulationTick {
     
     private AABB getPlayerBoundingBox() {
         Vector3 aaa = playerPos.offsetX(-0.3).offsetZ(-0.3);
-        Vector3 bbb = playerPos.offsetX(0.3).offsetZ(0.3).offsetY(1.8);
+        // beware: entity height stored as a float !! (1.8f != 1.8)
+        Vector3 bbb = playerPos.offsetX(0.3).offsetZ(0.3).offsetY(1.8f);
         return new AABB(aaa, bbb);
     }
 

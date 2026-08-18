@@ -1,8 +1,10 @@
 package name.quasar.autospeedrun;
 
+import name.quasar.autospeedrun.recording.RecordedScenario;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.TextComponent;
+import net.minecraft.world.phys.Vec3;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -10,8 +12,10 @@ public class Util {
     public static final String MOD_ID = "autospeedrun";
     public static final Logger LOGGER = LogManager.getLogger(MOD_ID);
 
-    public static String debugPathJoin(String... path) { return String.join("\u001e", path); }
+    // recording stuff
+    public static RecordedScenario recordedScenario = null;
 
+    // most other stuff
     public static boolean togglePaused = false;
     public static boolean isDebuggingMousePosition = false;
 
@@ -29,6 +33,8 @@ public class Util {
                     new TextComponent(action).withStyle(ChatFormatting.AQUA), false);
         }
     }
+
+    public static String debugPathJoin(String... path) { return String.join("\u001e", path); }
 
     public static String keyNameFromConstant(int n) {
         // glfwGetKeyName is fucked up

@@ -1,5 +1,7 @@
 package name.quasar.autospeedrun.usercode.simulation;
 
+import name.quasar.autospeedrun.recording.RecordedScenario;
+import name.quasar.autospeedrun.recording.RecordedTick;
 import name.quasar.autospeedrun.usercode.Dimension;
 import name.quasar.autospeedrun.usercode.geometry.BlockLocation;
 import name.quasar.autospeedrun.usercode.geometry.Vector3;
@@ -7,7 +9,18 @@ import name.quasar.autospeedrun.usercode.world.BlockType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -107,6 +120,58 @@ public class SimulationTickTest {
             assertEquals(0, tickN.getPlayerPos().getX());
             assertEquals(expectedY, tickN.getPlayerPos().getY());
             assertEquals(0, tickN.getPlayerPos().getZ());
+        }
+    }
+
+    @Test
+    @DisplayName("Test all scenarios-testcases/*")
+    void testAllScenariosTestcases() {
+        URL scenariosTestcases = getClass().getClassLoader().getResource("scenarios-testcases");
+        try (Stream<Path> paths = Files.list(Paths.get(scenariosTestcases.toURI()))) {
+            // should i be using a spliterator for parallel testing capabilities? maybe eventually...
+            Iterator<Path> nextFile = paths.iterator();
+            while (nextFile.hasNext()) {
+                Path p = nextFile.next();
+                System.out.printf("Testing %s...\n", p.toUri());
+                try (FileInputStream fis = new FileInputStream(new File(p.toUri())); ObjectInputStream ois = new ObjectInputStream(fis)) {
+                    RecordedScenario scenario = (RecordedScenario) ois.readObject();
+
+                    TestWorld world = new TestWorld();
+                    world.setBlocks(scenario.blocks);
+
+                    RecordedTick recordedTick0 = scenario.ticks.get(0);
+                    SimulationTick tick0 = new SimulationTick(Dimension.OVERWORLD)
+                        .setPlayerPos(new Vector3(recordedTick0.playerX, recordedTick0.playerY, recordedTick0.playerZ))
+                        .setPlayerVelo(new Vector3(0, 0, 0))
+                        .setPlayerYaw(recordedTick0.playerYaw)
+                        .setPlayerPitch(recordedTick0.playerPitch);
+
+                    SimulationTick tickN = tick0;
+                    for (int i = 0; i < scenario.ticks.size(); i++) {
+                        FakeKBMInputs inputs = new FakeKBMInputs()
+                            .setKeyDown(recordedTick0.keyDown)
+                            .setKeyUp(recordedTick0.keyUp)
+                            .setKeyLeft(recordedTick0.keyLeft)
+                            .setKeyRight(recordedTick0.keyRight)
+                            .setKeyJump(recordedTick0.keyJump)
+                            .setKeyShift(recordedTick0.keyShift)
+                            .setKeySprint(recordedTick0.keySprint);
+
+                        tickN.setPlayerPitch(recordedTick0.playerPitch);
+                        tickN.setPlayerYaw(recordedTick0.playerYaw);
+                        tickN = tickN.getNext(inputs, world);
+
+                        RecordedTick expected = scenario.ticks.get(i);
+                        assertEquals(expected.playerX, tickN.getPlayerPos().getX());
+                        assertEquals(expected.playerY, tickN.getPlayerPos().getY());
+                        assertEquals(expected.playerZ, tickN.getPlayerPos().getZ());
+                    }
+                } catch (ClassNotFoundException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        } catch (IOException | URISyntaxException e) {
+            throw new RuntimeException(e);
         }
     }
 }

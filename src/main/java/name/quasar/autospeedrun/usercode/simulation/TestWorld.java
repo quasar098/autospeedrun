@@ -9,7 +9,7 @@ import java.util.HashMap;
 
 // todo implement everything
 public class TestWorld implements World {
-    private final HashMap<BlockLocation, BlockType> blocks = new HashMap<>();
+    private HashMap<BlockLocation, BlockType> blocks = new HashMap<>();
 
     public TestWorld() {
 
@@ -32,6 +32,10 @@ public class TestWorld implements World {
 
     public void setBlock(BlockLocation blockLoc, BlockType blockType) {
         blocks.put(blockLoc, blockType);
+    }
+
+    public void setBlocks(HashMap<BlockLocation, BlockType> blocks) {
+        this.blocks = blocks;
     }
 
 }

@@ -1,21 +1,34 @@
 package name.quasar.autospeedrun.recording;
 
+import name.quasar.autospeedrun.usercode.Dimension;
+import name.quasar.autospeedrun.usercode.geometry.BlockLocation;
+import name.quasar.autospeedrun.usercode.world.BlockType;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Registry;
 import net.minecraft.network.chat.TextComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 
 import java.io.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 
 public class RecordedScenario implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public ArrayList<RecordedTick> ticks;
+    public HashMap<BlockLocation, BlockType> blocks = null;
+
+    private transient boolean currentlyDoingLocalPlayerTick = false;
 
     public RecordedScenario() {
         this.ticks = new ArrayList<>();
+        this.blocks = new HashMap<>();
     }
 
     public void recordTick() {
@@ -27,7 +40,16 @@ public class RecordedScenario implements Serializable {
         ticks.add(new RecordedTick(Minecraft.getInstance()));
     }
 
+    public void saveBlock(BlockPos blockPos, BlockState result) {
+        // todo use Minecraft.getInstance().level.dimension().location().getPath() switch case on dimension maybe
+        blocks.put(
+            new BlockLocation(Dimension.OVERWORLD, blockPos.getX(), blockPos.getY(), blockPos.getZ()),
+            new BlockType("minecraft:" + Registry.BLOCK.getKey(result.getBlock()).getPath())
+        );
+    }
+
     public void store() {
+
         if (Minecraft.getInstance().player == null) {
             System.out.println("there is no player ???");
             return;
@@ -56,5 +78,13 @@ public class RecordedScenario implements Serializable {
 
     public static RecordedScenario load(String name) {
         return new RecordedScenario();  // todo
+    }
+
+    public boolean isCurrentlyDoingLocalPlayerTick() {
+        return currentlyDoingLocalPlayerTick;
+    }
+
+    public void setCurrentlyDoingLocalPlayerTick(boolean currentlyDoingLocalPlayerTick) {
+        this.currentlyDoingLocalPlayerTick = currentlyDoingLocalPlayerTick;
     }
 }

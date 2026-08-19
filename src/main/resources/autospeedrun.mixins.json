@@ -5,8 +5,9 @@
   "mixins": [
     "DebugRendererMixin",
     "InputConstantsMixin",
-    "ScreenMixin",
-    "RecordMixin"
+    "LevelRecordMixin",
+    "LocalPlayerRecordMixin",
+    "ScreenMixin"
   ],
   "injectors": {
     "defaultRequire": 1

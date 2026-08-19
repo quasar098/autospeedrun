@@ -4,9 +4,11 @@ import name.quasar.autospeedrun.usercode.geometry.AABB;
 import name.quasar.autospeedrun.usercode.geometry.BlockLocation;
 import name.quasar.autospeedrun.usercode.geometry.Vector3;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class BlockType {
+public class BlockType implements Serializable {
+    private static final long serialVersionUID = 1L;
 
     public static final BlockType AIR = new BlockType("minecraft:air");
     public static final BlockType UNKNOWN_SOLID = new BlockType("minecraft:unknown_solid");

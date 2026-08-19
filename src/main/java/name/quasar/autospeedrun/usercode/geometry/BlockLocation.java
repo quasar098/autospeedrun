@@ -6,9 +6,12 @@ import name.quasar.autospeedrun.debug.DebugWorldLine;
 import name.quasar.autospeedrun.usercode.Dimension;
 import name.quasar.autospeedrun.usercode.Util;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class BlockLocation {
+public class BlockLocation implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private final Dimension dimension;
     private final long x;
     private final long y;

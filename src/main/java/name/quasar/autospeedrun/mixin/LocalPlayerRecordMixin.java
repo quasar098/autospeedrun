@@ -8,11 +8,19 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(LocalPlayer.class)
-public abstract class RecordMixin {
+public abstract class LocalPlayerRecordMixin {
     @Inject(method = "tick", at = @At("HEAD"))
-    public void tick(CallbackInfo ci) {
+    public void tickHead(CallbackInfo ci) {
         if (Util.recordedScenario != null) {
+            Util.recordedScenario.setCurrentlyDoingLocalPlayerTick(true);
             Util.recordedScenario.recordTick();
+        }
+    }
+
+    @Inject(method = "tick", at = @At("TAIL"))
+    public void tickTail(CallbackInfo ci) {
+        if (Util.recordedScenario != null) {
+            Util.recordedScenario.setCurrentlyDoingLocalPlayerTick(false);
         }
     }
 }

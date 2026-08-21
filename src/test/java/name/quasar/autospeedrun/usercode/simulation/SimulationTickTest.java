@@ -9,7 +9,6 @@ import name.quasar.autospeedrun.usercode.world.BlockType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -23,6 +22,7 @@ import java.util.Iterator;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 // todo make this more generalized by recording inputs/positions/velocities(?)/blocks and saving them to resource files so it's easy to add test cases
 
@@ -127,44 +127,48 @@ public class SimulationTickTest {
     @DisplayName("Test all scenarios-testcases/*")
     void testAllScenariosTestcases() {
         URL scenariosTestcases = getClass().getClassLoader().getResource("scenarios-testcases");
+        assertNotNull(scenariosTestcases);
         try (Stream<Path> paths = Files.list(Paths.get(scenariosTestcases.toURI()))) {
             // should i be using a spliterator for parallel testing capabilities? maybe eventually...
             Iterator<Path> nextFile = paths.iterator();
             while (nextFile.hasNext()) {
                 Path p = nextFile.next();
-                System.out.printf("Testing %s...\n", p.toUri());
-                try (FileInputStream fis = new FileInputStream(new File(p.toUri())); ObjectInputStream ois = new ObjectInputStream(fis)) {
+                System.out.printf("Testing %s\n", p);
+                try (FileInputStream fis = new FileInputStream(p.toString()); ObjectInputStream ois = new ObjectInputStream(fis)) {
                     RecordedScenario scenario = (RecordedScenario) ois.readObject();
 
                     TestWorld world = new TestWorld();
                     world.setBlocks(scenario.blocks);
 
                     RecordedTick recordedTick0 = scenario.ticks.get(0);
-                    SimulationTick tick0 = new SimulationTick(Dimension.OVERWORLD)
+
+                    SimulationTick tickN = new SimulationTick(Dimension.OVERWORLD)
                         .setPlayerPos(new Vector3(recordedTick0.playerX, recordedTick0.playerY, recordedTick0.playerZ))
                         .setPlayerVelo(new Vector3(0, 0, 0))
                         .setPlayerYaw(recordedTick0.playerYaw)
                         .setPlayerPitch(recordedTick0.playerPitch);
-
-                    SimulationTick tickN = tick0;
+                    System.out.println("===");
                     for (int i = 0; i < scenario.ticks.size(); i++) {
+                        RecordedTick recordedTick = scenario.ticks.get(i);
+                        System.out.println(recordedTick);
                         FakeKBMInputs inputs = new FakeKBMInputs()
-                            .setKeyDown(recordedTick0.keyDown)
-                            .setKeyUp(recordedTick0.keyUp)
-                            .setKeyLeft(recordedTick0.keyLeft)
-                            .setKeyRight(recordedTick0.keyRight)
-                            .setKeyJump(recordedTick0.keyJump)
-                            .setKeyShift(recordedTick0.keyShift)
-                            .setKeySprint(recordedTick0.keySprint);
+                            .setKeyDown(recordedTick.keyDown)
+                            .setKeyUp(recordedTick.keyUp)
+                            .setKeyLeft(recordedTick.keyLeft)
+                            .setKeyRight(recordedTick.keyRight)
+                            .setKeyJump(recordedTick.keyJump)
+                            .setKeyShift(recordedTick.keyShift)
+                            .setKeySprint(recordedTick.keySprint);
 
-                        tickN.setPlayerPitch(recordedTick0.playerPitch);
-                        tickN.setPlayerYaw(recordedTick0.playerYaw);
+                        tickN.setPlayerPitch(recordedTick.playerPitch);
+                        tickN.setPlayerYaw(scenario.ticks.get(Math.max(0, i-1)).playerYaw);
                         tickN = tickN.getNext(inputs, world);
 
                         RecordedTick expected = scenario.ticks.get(i);
-                        assertEquals(expected.playerX, tickN.getPlayerPos().getX());
-                        assertEquals(expected.playerY, tickN.getPlayerPos().getY());
-                        assertEquals(expected.playerZ, tickN.getPlayerPos().getZ());
+                        String failMsg = String.format("failure on tick %d on test \"%s\"", i, p);
+                        assertEquals(expected.playerX, tickN.getPlayerPos().getX(), failMsg);
+                        assertEquals(expected.playerY, tickN.getPlayerPos().getY(), failMsg);
+                        assertEquals(expected.playerZ, tickN.getPlayerPos().getZ(), failMsg);
                     }
                 } catch (ClassNotFoundException e) {
                     throw new RuntimeException(e);
